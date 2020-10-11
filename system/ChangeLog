@@ -1,0 +1,75 @@
+Cambios en la version 0.0.13a
+-----------------------------
+- Se corrigieron problemas de compilación ocasionados por problemas de
+  dependencias entre las librerias.
+
+Cambios en la version 0.0.13
+----------------------------
+- Se cambio el nombre de la herramienta safcfg por gm_safcfg.
+- Se completaron los servicios .get_server_list y .get_service_list de server
+  gm_config para que devuelvan la información correspondiente y en XML.
+- Se cambio la salida del miembro Dump de CGMTdb para que devuelva XML.
+- Cambio el nombre de la herramienta gm_viewcfg por gm_cfgview y se le agregó
+  la consulta de servers y servicios por mensaje interactivo.
+- Se implemento el archivo de configuracion de parametros para los servers
+- Se implementó el nivel de logueo variable y un mensaje para controlarlo
+  desde gmon_config.
+- Se eliminó un viejo Bug en los servers waited que hacía que los servicios
+  interactivos dejaran de funcionar después de un par de dias.
+- Se completó la documentación y se corrigieron errores en la misma.
+
+Cambios en la version 0.0.12
+----------------------------
+- Implementación se server gm_squeue para administracion de SAF
+- Herramienta safcfg para mantenimiento de los archivos de SAF
+- Documentación de los scripts de administración del sistema
+- Graficos y documentacion de modos de comunicacion
+- Graficos y documentacion de servers del sistema
+
+Cambios en la version 0.0.11
+----------------------------
+- Implementacion de server gm_timer (eventos temporizados)
+- Implementacion de server gm_buffer (almacenamiento compartido de buffers)
+- Implementacion de mensajes interactivos
+- Implementacion de servicios .get_server_list y .get_service_list
+  - Cliente que consulta estos servicios para obtener informacion del Monitor
+
+Cambios en la version 0.0.10
+----------------------------
+- Implementación de los manesajes para control transaccional en cliente.
+- Implementacion de gm_transac, server de soporte transaccional.
+- Implementacion de control transaccional en server base.
+- Seleccion de server menos cargado para mensajes de tipo CONSULTA/RESPUESTA.
+- Implementación de los mensajes de notificación (aviso).
+- Cambio de toda la configuración a memoria compartida.
+
+Cambios en la version 0.0.9
+---------------------------
+- Se incorporó el esquema basado en autoconf, automake y libtool.
+- Se agregó al la clase CTcp el contros de disponibilidad del canal antes de
+la escritura.
+- Se reprogramo el server de estado de la UPS del ejemplo como Waited.
+- Se cambiaron los parámetros de time-out para utilizar centécimas de segundo
+en lugar de segundos como era anteriormente.
+- Se corrigieron delay innecesarios en esperas de dats que provocaban retrasos
+de comunicación.
+- Se actualizó la documentación para reflejar los cambios en el desarrollo.
+
+Cambios en la version 0.0.8
+---------------------------
+- Se unificó la configuracion de path en el archivo config que se encuentra en
+la raiz de este arbol de directorios.
+- Se crearon scripts para la configuración y administración del sistema.
+- Se creó una nueva modalida de server, el WAITED.
+- Se Creó la documentación del sistema en formato DOCBOOK y se distribuye la
+fuente en XML.
+- Se reorganizó el arbol de directorio de cada modulo que compone la
+distribución.
+- Se apicó la versión al repositorio CVS de Source Forge (las anteriores no).
+- Se incorporaron los mensajes para suscripción automática de servicios por
+parte de los servidres (a travez del server gm_config).
+- Se implementó la posibilidad de registración multiple de un servicio siempre
+en el mismo modo, esto permite distribuir los requerimientos o enviar a
+multiples servers segun el mensaje.
+- Se arreglaron todas la funciones con time-out para que funcionen como deben.
+- Se reorganizaron los path don se instala el sistema.

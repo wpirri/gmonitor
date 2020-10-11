@@ -1,0 +1,36 @@
+
+ Server gm_default
+ ------------------------------------------------------------------------------
+
+ ------------------------------------------------------------------------------
+ -    Servicio     -       Modo       -             Convocar                  -
+ ------------------------------------------------------------------------------
+ .set_timer          GM_MSG_TYPE_CR     Call()
+ .kill_timer         GM_MSG_TYPE_NOT    Notify()
+ .committrans        GM_MSG_TYPE_MSG    Post()
+ .aborttrans         GM_MSG_TYPE_MSG    Post()
+
+
+.set_timer y .kill_timer usan la siguiente esctructura
+
+typedef union _ST_STIMER
+{
+  struct
+  {
+    unsigned int id;
+    char servicio[32];
+    char modo_servicio;
+    unsigned int delay; /* Para setar un timer por tiempo */
+    char tipo_timer;     /* Repetitivo / Unico */
+    unsigned long at;    /* Para setear un timer en una hora determinada */
+    unsigned long len;
+    char data[1];
+  } set_timer;
+  struct
+  {
+    unsigned int id;
+  } kill_timer;
+} ST_STIMER;
+
+.set_timer devuelve el ID del nuevo timer en el miembro id de la estructura.
+los valores van de 1 a GMTIMER_MAX_ID (8192)

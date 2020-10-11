@@ -1,0 +1,104 @@
+<?xml version="1.0" standalone="no"?>
+
+<preface>
+<title>Acerca de este manual</title>
+<para>Este manual está destinado a orientar al administrador del sistema en los pasos necesarios para obtener, compilar, instalar y parametrizar el sistema monitor transaccional GNU-Monitor.</para>
+</preface>
+
+<chapter>
+<title>Obteniendo los fuentes</title>
+<para>El sitio indicado para obtener una versión estable de los archivos fuente del sistema es en los <ulink url="http://www.sf.net/projects/gnu-monitor">downloads de Source Forge</ulink>. Allí­ se encuentran los módulos del proyecto en tres grupos de archivos separados en <ulink url="http://sourceforge.net/project/showfiles.php?group_id=65592">sistema</ulink>, <ulink url="http://sourceforge.net/project/showfiles.php?group_id=65592">documentación</ulink> y <ulink url="http://sourceforge.net/project/showfiles.php?group_id=65592">ejemplos</ulink>.</para>
+<para>También se encuentra disponible un <ulink url="http://gnu-monitor.cvs.sourceforge.net/gnu-monitor">repositorio CVS</ulink> donde se puede obtener lo último desarrollado aunque no siempre estable.</para>
+<para>Es posible sincronizar con el CVS directamente usando: <command>cvs -z3 -d:pserver:anonymous@gnu-monitor.cvs.sourceforge.net:/cvsroot/gnu-monitor co nombre-del-modulo</command>.</para>
+</chapter>
+
+<chapter>
+<title>Compilación</title>
+<section>
+<title>Entorno necesario</title>
+<para>El sistema Gnu-Monitor esta desarrollado para funcionar en plataforma Linux o FreeBSD principalmente y no ha sido probado en otros sistemas operativos.</para>
+<para>Es necesario contar con un compilador C++ como puede ser el Gnu C/C++ gcc que es el que usamos para el desarrollo.</para>
+</section>
+<section>
+<title>Descomprimiendo los fuentes</title>
+<para>Si los fuentes fueron obtenidos por su distribución comprimida será necesario descomprimirlos utilizando: <command>tar xzvf nombre-del-modulo-n.n.n.tar.gz</command> que creará el directorio <filename>nombre-del-modulo</filename> donde se descomprimirán los fuentes del sistema monitor, incluidos el listener, el ruteador de transacciones, las librerías para el manejo de colas y los servidores principales, los ejemplos provistos o la documentación del sistema según el modulo que se descomprima.</para>
+</section>
+<section>
+<title>Compilando</title>
+  <para>Antes de compilar será necesario ejecutar el script <command>configure</command> que se encuentra en la raiz del módulo system, con los parámetros necesarios según están explicados en el archivo INSTALL.</para>
+  <section>
+  <title>configure</title>
+    <para>Para la mayoría de los sistemas que cumplan con el LSB (Linux Standard Base) deberá alcanzar con una configuración como: <command>./configure --prefix=/usr --sysconfdir=/etc/sysconfig --localstatedir=/var</command></para>
+    <section>
+      <title>--prefix=/usr</title>
+      <para>Este modificador provoca que los programas, headers y librerías se instalen bajo <filename>/usr</filename> en lugar de <filename>/usr/local</filename> como se hace por defecto.</para>
+    </section>
+    <section>
+      <title>--sysconfdir=/etc/sysconfig</title>
+      <para>Este modificador provoca que los archivos de configuración se instalen en <filename>/etc/sysconfig</filename> en lugar de <filename>$PREFIX/etc</filename> ya que la primera es una ubicación mas razonable.</para>
+    </section>
+    <section>
+      <title>--localstatedir=/var</title>
+      <para>Este modificador provoca que los archivos de log del sistema monitor se alojen en <filename>/var/log/gmonitor</filename> en lugar de <filename>$PREFIX/var/gmonitor</filename>.</para>
+    </section>
+  </section>
+  <section>
+  <title>Compilando todo</title>
+  <para>Para compilar todo el sistema GNU-Monitor (listener, ruteador, colas y servers básicos) solo es necesario ejecutar <command>make</command> dentro del directorio <filename>system</filename>.</para>
+  </section>
+  <section>
+  <title>Compilando el lístener propietario</title>
+  <para>Si se deséa compilar úniamente el componente lístener del sistema se deberá ejecutar <command>make build-listener</command>.</para>
+  </section>
+  <section>
+  <title>Compilando el sistema básico del monitor</title>
+  <para>Si lo que se necesita es solamente compilar el sistema básico compuesto por el lístener, el ruteador de transacciones y las librerías para el manejo de las colas de los servidores el comando a utilizar es <command>make build-monitor</command>.</para>
+  </section>
+  <section>
+  <title>Compilando servers básicos</title>
+  <para>Los servers básicos son los que realizan las funciones administrativas del sistema GNU-Monitor y se pueden compilar de manera independiente del resto de los programas utilizando <command>make build-server</command>.</para>
+  </section>
+  <section>
+  <title>Compilando el cliente</title>
+  <para>El cliente necesario para comunicarse con el sistema GNU-Monitor puede ser compilado utilizando por medio del comando <command>make build-client</command>.</para>
+  </section>
+  <section>
+  <title>Compilando los ejemplos</title>
+  <para>Dentro del módulo samples se encuentran tres ejemplos (por el momento) en los que se puede observar la composición de clientes y servers.</para>
+  <para>El ejemplo <filename>eco</filename> corresponde a un cliente que solicita un <function>.eco</function> al monitor pasándole una cadena de caracteres en el mensaje. Esta función será resuelta por el server <systemitem>gm_default</systemitem> que forma parte del servicio básico del sistema. Este ejempo se compila simplemente ejecutando <command>make</command>.</para>
+  <para>El ejemplo <filename>statups</filename> es un sistema para monitorear el estado de una UPS conectada a través del puerto serie del computador. Se provee un server y un cliente para poder compartir el estado de la UPS en toda la red. Ambos se compilan mediante el comando <command>make</command>.</para>
+  <para>El ejemplo <filename>info</filename> corresponde a un cliente que solicita un <function>.get_server_list</function> al monitor para que le devuelva la lista de servers y sus descripciones en formato XML. Esta función será resuelta por el server <systemitem>gm_config</systemitem> que forma parte del servicio básico del sistema. Este ejempo se compila simplemente ejecutando <command>make</command>.</para>
+  </section>
+</section>
+</chapter>
+
+<chapter>
+<title>Instalación</title>
+<section>
+<title>Instalando el monitor transaccional completo</title>
+<para>La instalaión del monitor se realiza ejecutando <command>make install</command>.</para>
+</section>
+<section>
+<title>Instalando el cliente</title>
+<para>La instalación del cliente se realiza mediante el comando <command>install-client</command>.</para>
+</section>
+<section>
+<title>Instalando los ejemplos</title>
+<para>Cada ejemplo tiene su propia instalación , para el caso del server tambien  sería necesario darlo de alta mediante el aplicativo <command>gmon_config</command>.</para>
+</section>
+</chapter>
+
+<chapter>
+<title>Parametrización</title>
+<para>Antes de la compilación y mediante el script <command>configure</command>, como se explicó en capitulos anteriores, se parametrizan los diferentes directorios donde se instalarán los programas, librerías y headers del sistema GNU-Monitor.</para>
+<para>Luego de la instalación se pueden parametrizar nuevos servers utilizando el menú interactivo <command>gmon_config</command> que se explica con mas detalle en el manual del sistema.</para>
+<para>Antes de levantar el monitor será necesario parametrizar <command>inetd</command> o <command>xinetd</command> en el caso que se utilice alguno de ellos o descomentar la línea que levanta el lístener <command>gmd</command> en caso contrario. Para inetd basta con descomentar la línea que el script de instalación del monitor agregó en su archivo de configuración. Para <command>xinetd</command> hay que editar el archivo <filename>gmonitor</filename> generalmente loalizado en <filename>/etc/xinetd.d/</filename> y en la línea que dice <programlisting>disable = yes</programlisting> colocar <programlisting>disable = no</programlisting>. Tanto para <command>inetd</command> como para <command>xinetd</command> luego del cambio de configuración será necesario reiniciar el servicio.</para>
+</chapter>
+
+<chapter>
+<title>Configuración del Kernel</title>
+<para>En sistemas donde es necesario levantar cierta cantidad de servidores puede llegar a no ser suficiente la cantidad máxima de colas de mensajes permitidas por el sistema operativo. En el linux que se utilizó para desarrollar el Monitor este valor era de 16.</para>
+<para>Se calcula que la cantidad de colas necesarias para el funcionamiento del monitor deberá ser por lo menos del doble de las instancias de servidores que se van a levantar y dos mas para el router (gmt), lo que me permitiría con esta configuración correr hasta siete instancias ya sean del mismo o de diferentes servidores.</para>
+<para>De ser necesario utilizar <command>sysctl</command>(8) para corregir los parámetros del kernel modificando o agregando nuevos tokens (kernel.msgmni corresponde a colas) en el archivo de configuración en /etc/sysctl.conf.</para>
+<para>Con semáforos y memoria compartida no hay problema ya que se utiliza solo una instancia de cada uno.</para>
+</chapter>

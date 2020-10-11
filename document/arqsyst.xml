@@ -1,0 +1,64 @@
+<?xml version="1.0" standalone="no"?>
+<chapter lang="es" id="arqsyst">
+  <title>Arquitectura del sistema</title>
+  <para>El sistema está compuesto principalmente por dos grupos de aplicaciones uno cliente y el otro servidor.</para>
+  <para>El módulo cliente lo integra una librería (libgmc) que resuelve la API de comunicación con el server. En capítulos siguientes se detallará con más profundidad este módulo.</para>
+  <para>El módulo servidor está formado por varias aplicaciones (gmd, gmt, gmq) y librerías (libgmq, libgmqw) con funciones específicas.</para>
+  <para>Para el funcionamiento del servidor se provee una serie de scripts (gmon_config, gmon_status, gmon_start, gmon_stop) que ayudan al mantenimiento, configuración y utilización del sistema.</para>
+  <section>
+    <title>Interface cliente</title>
+    <para>La interface cliente la compone una librería dinámica "libgmc.so" que debe ser linkeada con el programa que va a actuar como cliente, la declaración de la interface se encuentra en el archivo "gmc.h".</para>
+    <para>Esta librería brinda una API orientada a objetos que resuelve todas la opciones de comunicación con el sistema Gnu-Monitor.</para>
+    <para>Este cliente permite cuatro modalidades para realizar la comunicación, cada una de ellas se aplica a una necesidad diferente en cuanto a volumen de datos de consulta, respuesta o utilización de la información.</para>
+    <para>Los distintos modos (consulta/respuesta, evento, interactivo y encolado) seran detallados en capítulos siguientes.</para>
+  </section>
+  <section>
+    <title>Lístener</title>
+    <para>Es el encargado de recibir los pedidos de conexión, controlar los permisos según la procedencia del mensaje y enviarlos a la cola del monitor gmt para que este lo resuelva.</para>
+    <para>Este lístener puede funcionar de forma autónoma escuchando en el puerto TCP 5533 o a través de inetd / xinetd.</para>
+  </section>
+  <section>
+    <title>Ruteador de transacciones</title>
+    <para>Recibe el mensaje, lee el header y realiza los controles correspondientes a su integridad. Luego según el servicio que haya sido solicitado por el cliente determina el o los servidores de destino y envía el mensaje a la o las colas correspondientes según el tipo de mensaje.</para>
+    <para>Una vez recibida la respuesta genera el mensaje para el listener y se lo devuelve.</para>
+  </section>
+  <section>
+    <title>Servers a través de stdio</title>
+    <para>Este tipo de servidores permite que cualquier aplicación que admita la entrada de datos por stdin y produzca su salida por stdout o stderr pueda ejecutarse dentro del sistema Gnu-Monitor.</para>
+    <para>El módulo se encarga de levantar la aplicación y escribirle en su stdin los datos que se hayan pasado como mensaje en la consulta. Al finalizar la aplicación llamada (que también puede ser un script) se enviará como respuesta los datos obtenidos por stdout o stderr según cual haya sido el valor de retorno de esta aplicación.</para>
+  </section>
+  <section>
+    <title>Servers autónomos</title>
+    <para>En general es el tipo de aplicaciones que van a ser utilizadas para incorporar al sistema Gnu-Monitor y está compuesta por dos librerías de las cuales una debe ser linkeada con el programa de acuerdo al tipo de server que se necesite según las características que se detallan en el manual del programador.</para>
+    <para>Estas librería (libgmq.so y libgmqw.so) se encargan del alta y mantenimiento de las colas de mensajes necesarias para la comunicación con el ruteador de transacciones.</para>
+    <para>El programa se deberá codificar utilizando como base el objeto CGMServer o CGMServerWaited y la librería llamara a sus miembros en las distintas instancias de tratamiento de los mensajes recibidos como veremos más adelante.</para>
+  </section>
+  <section>
+    <title>Scripts de soporte</title>
+    <para>Para facilitar la utilización y mantenimiento del sistema Gnu-Monitor se proveen una serie de scripts que realizan las tareas administrativas mas comunes.</para>
+    <section>
+      <title>gmond</title>
+      <para>Este script a través de sus parámetros permite subir y bajar el sistema Gnu-Monitor. El mismo se instalará en /etc/init.d y deberá ejecutarse con permiso de root o del usuario que se destine a correr el sistema Gnu-Monitor.</para>
+      <para>Vale la pena aclarar que el subir y bajar unicamente afecta a los servers asociados al sistema Gnu-Monitor y no al listener salvo que se utilice el propietario.</para>
+    </section>
+    <section>
+      <title>gmon_start</title>
+      <para>Permite arrancar un server en particular al pasarle su nombre como parametro o todos los servers si el parametro es all.</para>
+      <para>El servidor debe estar dado de alta previamente en la tabla de configuración de servidores, esto puede hacerse a través de gmon_config.</para>
+    </section>
+    <section>
+      <title>gmon_stop</title>
+      <para>Permite detener un server en particular al pasarle su nombre como parámetro o todos los servers si el parámetro es all.</para>
+      </section>
+    <section>
+      <title>gmon_status</title>
+      <para>Permite obtener el estado de ejecución de un server en particular al pasarle su nombre como parámetro o todos los servers si el parámetro es all.</para>
+    </section>
+    <section>
+      <title>gmon_config</title>
+      <para>Este es un script que a través de una interface interactiva permite realizar las mismas tareas que los antes mencionados.</para>
+      <para>A su vez también permite la administración de los servidores facilitando la configuración del sistema en el alta, baja y modificación de las tablas de parametrización.</para>
+    </section>
+  </section>
+</chapter>
+

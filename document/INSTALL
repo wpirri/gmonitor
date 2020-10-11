@@ -1,0 +1,35 @@
+Documentacion del sistema GNU-Monitor
+-------------------------------------
+
+  Esta documentación se encuentra en formato docbook. Consta de archivos XML
+que son procesados para producir los documentos en los distintos formatos.
+  Ejecutando make en la lines de comando desde dentro del directorio donde se
+encuentan los fuentes de la documentación se generará la totalidad de los
+documentos en formato pdf y html.
+  Según los parámetros pasados a make se pueden realizar compilaciones
+parciales que incluyan unicamente algunos de los documentos. Estos parámetros
+son:
+doc-html:       Genera unicamente la documentación en formato pdf.
+doc-pdf:        Genera unicamente la documentación en formato html.
+man-html:       Genera solo el set de manuales agrupados en formato html.
+man-inst-html:  Genera unicamente el manual de instalación en formato html.
+man-prog-html:  Genera unicamente el manual del programador en formato html.
+man-sys-html:   Genera unicamente el manual del sistema en formato html.
+man-faq-html:   Genera unicamente la guía de preguntas mas frecuentes en
+                formato html.
+	
+man-pdf:        Genera solo el set de manuales agrupados en formato pdf.
+man-inst-pdf:   Genera unicamente el manual de instalación en formato pdf.
+man-prog-pdf:   Genera unicamente el manual del programador en formato pdf.
+man-sys-pdf:    Genera unicamente el manual del sistema en formato pdf.
+man-faq-pdf:    Genera unicamente la guía de preguntas mas frecuentes en
+                formato pdf.
+
+install:        Instala la documentación por defecto en
+                /usr/local/share/doc/gmonitor pero se puede cambiar el destino
+                asignandole un valor a la variable docdir
+
+		Ej. #> make docdir=/srv/www/htdoc/manuales/gmonitor install
+
+                Para que instale en /srv/www/htdoc/manuales/gmonitor
+

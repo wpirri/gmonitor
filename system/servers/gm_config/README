@@ -1,0 +1,15 @@
+
+ Server gm_config
+ ------------------------------------------------------------------------------
+
+ ------------------------------------------------------------------------------
+ -    Servicio     -       Modo       -             Convocar                  -
+ ------------------------------------------------------------------------------
+ .suscribe           GM_MSG_TYPE_NOT    Notify()
+ .unsuscribe         GM_MSG_TYPE_NOT    Notify()
+ .check_service      GM_MSG_TYPE_CR     Call()
+ .get_server_list    GM_MSG_TYPE_CR     Call()
+ .get_server_list    GM_MSG_TYPE_INT    Connect() Send() Recv() Discon()
+ .get_service_list   GM_MSG_TYPE_CR     Call()
+ .get_service_list   GM_MSG_TYPE_INT    Connect() Send() Recv() Discon()
+

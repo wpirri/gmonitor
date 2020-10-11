@@ -1,0 +1,40 @@
+<?xml version="1.0" standalone="no"?>
+<chapter lang="es" id="ruteo">
+	<title>Ruteador de transacciones</title>
+  <para>El ruteador es el encargado de canalizar los requerimientos del cliente, enviarlos al o a los servidores que corresponda y devolver la respuesta total o en fragmentos nuevamente al cliente o server que lo haya solicitado.</para>
+	<section>
+		<title>Selección del rutéo</title>
+    <para>El ruteo se realiza con la información mantenida en una matriz de servicios alojada en memoria compartida.</para>
+    <para>Al llegar un requerimiento se determina el tipo de mensaje (Consulta/Respuesta, Evento, Aviso, Interactivo o Encolado) y se procede a rutear según corresponda.</para>
+    <section>
+      <title>Consulta / Respuesta</title>
+      <para>Para rutear los mensajes de este tipo se arma una lista de los servers que resuelven el servicio solicitado y se envía el mensaje al que tenga menos trabajos encolados.</para>
+      <para>Si la respuesta es correcta se pasan los datos al mensaje de respuesta y se contesta.</para>
+      <graphic fileref="images/ruteo-modo1.jpg" format="JPG" width="80%" scale="40" />
+    </section>  
+    <section>
+      <title>Evento</title>
+      <para>Para rutear los mensajes de este tipo se arma una lista de los servers que resuelven el servicio solicitado y se envía el mensaje a todos ellos.</para>
+      <para>Si la respuesta de al menos uno de los servers es correcta se contesta OK el servicio.</para>
+      <graphic fileref="images/ruteo-modo2.jpg" format="JPG" width="80%" scale="40" />
+    </section>  
+    <section>
+      <title>Interactivo</title>
+      <para>Antes de rutear este tipo de mensaje se verifica si se trata del primer requerimiento o es la continucón de uno previamente realizado.</para>
+      <para>De ser el primero se arma una lista con los servers que resuelven el servicio y se le envía el mensaje. Al volver la respuesta si se supera el tamaño máximo sugerido en el requerimiento se almacena el la respuesta completa en un buffer y se contesta indicando que tiene continuación.</para>
+      <para>Si no es el primer mensaje del requerimiento se busca el buffer que contenga el mensaje de respuesta y se devuelve hasta donde permita el tamaño máximo sugerido en el requerimiento.</para>
+      <graphic fileref="images/ruteo-modo3.jpg" format="JPG" width="80%" scale="40" />
+    </section>  
+    <section>
+      <title>Encolado</title>
+      <para>Este tipo de mensaje permite almacenar todos los requerimientos en un archivo de STORE AND FORWARD para que un server offline pueda recogerlos en algún otro momento.</para>
+      <graphic fileref="images/ruteo-modo4.jpg" format="JPG" width="80%" scale="40" />
+    </section>  
+    <section>
+      <title>Aviso</title>
+      <para>Para rutear los mensajes de este tipo se arma una lista de los servers que resuelven el servicio solicitado y se envía el mensaje al que tenga menos trabajos encolados.</para>
+      <para>Si la respuesta es correcta se contesta aprobada.</para>
+      <graphic fileref="images/ruteo-modo5.jpg" format="JPG" width="80%" scale="40" />
+    </section>  
+  </section>  
+</chapter>

@@ -1,0 +1,572 @@
+<?xml version="1.0" standalone="no"?>
+
+<chapter lang="es" id="svrstio">
+	<title>Server standalone</title>
+	<para>Este tipo de server es el que está completamente integrado al sistema lo que le permite acceder a todas las facilidades que brinda la interface del server con el monitor.</para>
+	<para>Su característica principal es que permanece inactivo hasta el arrivo de algún mensaje o evento y vuelve a ese estado de inactividad una vez resuelto el servicio correspondiente.</para>
+	<para>Para poder realizar tareas programadas con este tipo de server es necesario trabajar junto con el servicio de timers del server gm_timer ya que por su arquitectura este tipo de server solamente responde a eventos externos.</para>
+	<para>Para ello el server debe estar construido basado en un objeto de la clase <classname>CGMServer</classname> y el programa se deberá linkear con la librería <filename>libgmq.so</filename>.</para>
+	<section>
+		<title>Referencia rápida</title>
+		<para>A continuación se observan los miembros de la clase <classname>CGMServerBase</classname> y <classname>CGMServer</classname> que implementa la interface del server.</para>
+		<para>En la clase <classname>CGMServerBase</classname> encontramos una serie de miembros que pueden utilizarse para intercambiar datos con el sistema Gnu-Monitor y obtener datos del cliente que convocó al servicio en el server.</para>
+		<para>En la clase <classname>CGMServer</classname> encontramos una serie de miembros que son llamados por el sistema Gnu-Monitor en distintas instancias durante la vida del server y la recepción de mensajes.</para>
+		<section>
+			<title>Miembros para comunicarse con el sistema Gnu-Monitor</title>
+			<para>Son los que pueden ser convocados desde el server para enviar mensajes al monitor.</para>
+			<table><title>Miembros para comunicarse con el sistema Gnu-Monitor</title>
+			<tgroup cols="2">
+			<thead>
+				<row>
+					<entry>Miembro</entry>
+					<entry>Descripción</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><function>Notify</function></entry>
+					<entry>Envía un mensaje de tipo evento a un destinatario identificado por su IdUsuario.</entry>
+				</row>
+				<row>
+					<entry><function>Broadcast</function></entry>
+					<entry>Envía un mensaje de tipo evento a múltiples destinatarios identificados por IdUsuario, IdCliente e IdGrupo.</entry>
+				</row>
+				<row>
+					<entry><function>Post</function></entry>
+					<entry>Envía un mensaje al sistema Gnu-Monitor.</entry>
+				</row>
+				<row>
+					<entry><function>Suscribe</function></entry>
+					<entry>Informa al sistema Gnu-Monitor que el server resuelve el servicio pasado como parámetro.</entry>
+				</row>
+				<row>
+					<entry><function>UnSuscribe</function></entry>
+					<entry>Informa al sistema Gnu-Monitor que el server deja de resolver el servicio pasado como parámetro.</entry>
+				</row>
+				<row>
+					<entry><function>Call</function></entry>
+					<entry>Envía un mensaje del tipo CONSULTA/RESPUESTA al sistema Gnu-Monitor.</entry>
+				</row>
+				<row>
+					<entry><varname>m_ClientData</varname></entry>
+					<entry>Al recibir una solicitud de servicio por parte de un cliente este miembro que es un objeto de la clase <classname>CGMInitData</classname> contiene los datos de este.</entry>
+				</row>
+				<row>
+					<entry><varname>m_monitor_path</varname></entry>
+					<entry>Contiene el path completo al binario del monitor.</entry>
+				</row>
+				<row>
+					<entry><varname>m_config_path</varname></entry>
+					<entry>Contiene el path donde se encuentran los archivos de configuración del sistema Gnu-Monitor.</entry>
+				</row>
+				<row>
+					<entry><varname>m_server_name</varname></entry>
+					<entry>Contiene el nombre del server que se pasa como parámetro al arrancarlo.</entry>
+				</row>
+			</tbody>
+			</tgroup>
+			</table>
+		</section>
+		<section>
+			<title>Miembros llamados por el sistema Gnu-Monitor</title>
+			<para>Son los que el sistema monitor convoca para pasar mensajes o eventos al server y deben ser resueltos por el programador.</para>
+			<table><title>Miembros llamados por el sistema Gnu-Monitor</title>
+			<tgroup cols="2">
+			<thead>
+				<row>
+					<entry>Miembro</entry>
+					<entry>Descripción</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><function>CGMServer</function></entry>
+					<entry>Constructor de la case, se lo llama cuando se crea el objeto al arrancar el server.</entry>
+				</row>
+				<row>
+					<entry><function>~CGMServer</function></entry>
+					<entry>Destructor de la clase, se lo llama cuando se destruye el objeto al terminar el server.</entry>
+				</row>
+				<row>
+					<entry><function>Init</function></entry>
+					<entry>Este miembro es llamado al inicializar el server.</entry>
+				</row>
+				<row>
+					<entry><function>Exit</function></entry>
+					<entry>Este miembro es llamado al terminar el server, antes de convocar al destructor.</entry>
+				</row>
+				<row>
+					<entry><function>BeginTrans</function></entry>
+					<entry>Este miembro es llamado cuando el cliente indica que comienza una transacción.</entry>
+				</row>
+				<row>
+					<entry><function>CommitTrans</function></entry>
+					<entry>Este miembro es llamado cuando el cliente indica la finalización satisfactoria de una transacción.</entry>
+				</row>
+				<row>
+					<entry><function>RollbackTrans</function></entry>
+					<entry>Este miembro el llamado cuando el cliente aborta una transacción, se corta o cancela la comunicación con el cliente o se produce un time-out por inactividad sin haber terminado la transacción en forma satisfactoria por el cliente.</entry>
+				</row>
+				<row>
+					<entry><function>PreMain</function></entry>
+					<entry>Este miembro es llamado al recibir un mensaje y antes de convocar al miembro <function>Main</function> para procesarlo.</entry>
+				</row>
+				<row>
+					<entry><function>PosMain</function></entry>
+					<entry>Este miembro es llamado luego de haber sido procesado el mensaje de forma satisfactoria por el miembro <function>Main</function>.</entry>
+				</row>
+				<row>
+					<entry><function>Main</function></entry>
+					<entry>Este miembro es llamado para procesar el mensaje recibido y debe generar el mensaje de respuesta en caso de ser necesario.</entry>
+				</row>
+			</tbody>
+			</tgroup>
+			</table>
+		</section>
+	</section>
+	<section>
+		<title>Miembros para comunicarse con el sistema Gnu-Monitor</title>
+		<para>Son los que pueden ser convocados desde el server para enviar mensajes al monitor de la misma forma que si se tratara de un cliente.</para>
+		<section>
+			<title>Notify</title>
+			<para>Envía una notificación de evento a un grupo, cliente o usuario en particular.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Notify</function></funcdef>
+				<paramdef>const char <parameter>*dst</parameter></paramdef>
+				<paramdef>const char <parameter>*data</parameter></paramdef>
+				<paramdef>unsigned int <parameter>len</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<para>El parámetro <parameter>dst</parameter> indica el nombre del grupo de destino para el mensaje.</para>
+			<para>El parámetro <parameter>data</parameter> es un puntero al mensaje a enviar.</para>
+			<para>El parámetro <parameter>len</parameter> es el tamaño del mensaje.</para>
+		</section>
+		<section>
+			<title>Broadcast</title>
+			<para>Notifica un evento a todos los grupos, clientes y usuarios que cumplan las condiciones de la máscara pasada como parámetro. Para este miembro se pueden utilizar los comodines * y &amp; para formar los nombres de los destinatarios.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Broadcast</function></funcdef>
+				<paramdef>const char <parameter>*user</parameter></paramdef>
+				<paramdef>const char <parameter>*client</parameter></paramdef>
+				<paramdef>const char <parameter>*group</parameter></paramdef>
+				<paramdef>const char <parameter>*data</parameter></paramdef>
+				<paramdef>unsigned int <parameter>len</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<para>El parámetro <parameter>user</parameter> contiene la máscara para el usuario de destino del mensaje.</para>
+			<para>El parámetro <parameter>client</parameter> contiene la máscara para el cliente de destino del mensaje.</para>
+			<para>El parámetro <parameter>group</parameter> contiene la máscara para el grupo de destino del mensaje.</para>
+			<para>El parámetro <parameter>data</parameter> es un puntero al mensaje a enviar.</para>
+			<para>El parámetro <parameter>len</parameter> es el tamaño del mensaje.</para>
+		</section>
+		<section>
+			<title>Post</title>
+			<para>Envía un evento al monitor. Junto con el evento también se envía un bloque de datos que será reenviado a los servers y clientes suscritos al evento.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Post</function></funcdef>
+				<paramdef>const char <parameter>*event</parameter></paramdef>
+				<paramdef>const char <parameter>*data</parameter></paramdef>
+				<paramdef>unsigned int <parameter>len</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<para>El parámetro <parameter>event</parameter> indica el nombre del evento posteado.</para>
+			<para>El parámetro <parameter>data</parameter> contiene el mensaje asociado al evento.</para>
+			<para>El parámetro <parameter>len</parameter> contiene el tamaño del mensaje asociado al evento.</para>
+		</section>
+		<section>
+			<title>Suscribe</title>
+			<para>Informa al monitor que el server atenderá los mensajes enviados para el evento o servicio y tipo de mensaje que se suscribe.</para>
+			<para>De esta forma la parametrización del ruteo se realiza de forma dinámica al levantarse cada servidor.</para>
+			<para>Está permitido que mas de un servidor atiendan el mismo servicio. En caso que el servicio utilice mensajes del tipo consulta/respuesta o interactivos el requerimiento se enviará al que tenga menos trabajos encolados y si el servicio utiliza mensajes de tipo eventos se enviará a todos los registrados.</para>
+			<para>No se permite que un mismo servicio se atienda con dos tipos de mensaje diferente.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Suscribe</function></funcdef>
+				<paramdef>const char <parameter>*event</parameter></paramdef>
+				<paramdef>char <parameter>tipo_mensaje</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<para>El parámetro <parameter>event</parameter> indica el nombre del servicio al que se suscribe.</para>
+			<para>El parámetro <parameter>tipo_mensaje</parameter> indica el tipo de mensaje para el sevicio (C = Consulta/Respuesta, M = Evento, G = Interactivo y Q = encolado).</para>
+		</section>
+		<section>
+			<title>UnSuscribe</title>
+			<para>Informa al monitor que el server deja de atender los requerimientos para el servicio indicado.</para>
+			<para>Deberá ser llamado al bajar el server para que el monitor deje de rutear los mensajes a este servidor.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>UnSuscribe</function></funcdef>
+				<paramdef>const char <parameter>*event</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<para>El parámetro <parameter>event</parameter> indica el nombre del servicio al que se desuscribe.</para>
+		</section>
+		<section>
+			<title>Call</title>
+			<para>Este miembro permite enviar un mensaje a la vez que espera la respuesta, de esta forma se realiza una consulta sincrónica y se cuenta un parámetro para especificar un tiempo límite para recibir la respuesta.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Call</function></funcdef>
+				<paramdef>const char <parameter>*fn</parameter></paramdef>
+				<paramdef>const char <parameter>*query</parameter></paramdef>
+				<paramdef>unsigned int <parameter>qlen</parameter></paramdef>
+				<paramdef>const char <parameter>**response</parameter></paramdef>
+				<paramdef>unsigned int <parameter>*rlen</parameter></paramdef>
+				<paramdef>int <parameter>to</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Call</function></funcdef>
+				<paramdef>string <parameter>*fn</parameter></paramdef>
+				<paramdef>CGMBuffer <parameter>&amp;query</parameter></paramdef>
+				<paramdef>CGMBuffer <parameter>&amp;response</parameter></paramdef>
+				<paramdef>int <parameter>to</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Call</function></funcdef>
+				<paramdef>string <parameter>*fn</parameter></paramdef>
+				<paramdef>CGMBuffer <parameter>*query</parameter></paramdef>
+				<paramdef>CGMBuffer <parameter>*response</parameter></paramdef>
+				<paramdef>int <parameter>to</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<para>El parámetro <parameter>fn</parameter> contiene el nombre del servicio que se convoca.</para>
+			<para>El parámetro <parameter>query</parameter> contiene el mensaje que se asocia a la consulta al servicio.</para>
+			<para>El parámetro <parameter>qlen</parameter> contiene el tamaño del mensaje de consulta.</para>
+			<para>En el parámetro <parameter>response</parameter> se devuelve el mensaje de respuesta de ejecutar el servicio.</para>
+			<para>En el parámetro <parameter>rlen</parameter> se devuelve el tamaño de la respuesta.</para>
+			<para>El parámetro <parameter>to</parameter> indica el tiempo máximo expresado en centésimas de segundo que se esperará por la respuesta luego del cual el llamado terminará con error de time-out.</para>
+			<para>Para facilitar la implementación de los buffers para la comunicación se provee la clase <classname>CGMBuffer</classname> que es utilizada por el miembro <function>Call</function> entre otros.</para>
+		</section>
+	</section>
+	<section>
+		<title>Miembros que mantienen información del entorno</title>
+		<para>Son variables globales a la clase que contienen distinto tipo de información acerca del server y del sistema Gnu-Monitor.</para>
+		<section>
+			<title>m_ClientData</title>
+			<para>Contiene información acerca del cliente que convocó el servicio. Estos datos se encuentran disponibles a partir de que el monitor hace el llamado al miembro <function>PreMain</function> de la clase <classname>CGMServer</classname> y contiene lo siguiente.</para>
+			<table><title>CGMInitData</title>
+			<tgroup cols="3">
+			<thead>
+				<row>
+					<entry>Miembro</entry>
+					<entry>Tipo</entry>
+					<entry>Descripción</entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><varname>m_host</varname></entry>
+					<entry>string</entry>
+					<entry>Nombre o dirección del host del cliente.</entry>
+				</row>
+				<row>
+					<entry><varname>m_port</varname></entry>
+					<entry>long</entry>
+					<entry>Puerto desde el cual se realizó la comunicación.</entry>
+				</row>
+				<row>
+					<entry><varname>m_user</varname></entry>
+					<entry>string</entry>
+					<entry>Corresponde al nombre de usuario o proceso que se declarará al sistema Gnu-Monitor, se utiliza para diferenciar si es necesario varias instancias del cliente corriendo en el mismo equipo asi como para la utilización de destinatarios y filtros por destinatario en los mensajes no solicitados. Esta información es accesible del lado del monitor por los servers del tipo standalone.</entry>
+				</row>
+				<row>
+					<entry><varname>m_client</varname></entry>
+					<entry>string</entry>
+					<entry>Al igual que el anterior es otra forma de identificar al cliente, este dato debería estar relacionado con el equipo donde corre la apliación cliente.</entry>
+				</row>
+				<row>
+					<entry><varname>m_group</varname></entry>
+					<entry>string</entry>
+					<entry>Al igual que los anteriores este datos se utiliza para identificar al cliente dentro de un grupo de aplicaciones.</entry>
+				</row>
+				<row>
+					<entry><varname>m_key</varname></entry>
+					<entry>string</entry>
+          <entry>Este dato puede ser utilizado para encriptación, eviando a través de él la clave pública del cliente o utlizarse conpropósitos de identificación enviando una contraseña encriptada.</entry>
+				</row>
+				<row>
+					<entry><varname>m_flags</varname></entry>
+					<entry>long</entry>
+					<entry>Aún no se utiliza.</entry>
+				</row>
+			</tbody>
+			</tgroup>
+			</table>
+		</section>
+		<section>
+			<title>m_monitor_path</title>
+			<para>Indica el path completo de donde se encuentran los binarios del sistema Gnu-Monitor.</para>
+			<para>string <varname>m_monitor_path</varname></para>
+		</section>
+		<section>
+			<title>m_config_path</title>
+			<para>Indica al path completo de donde se encuentran los archivos de configuración del sistema.</para>
+			<para>string <varname>m_config_path</varname></para>
+		</section>
+		<section>
+			<title>m_server_name</title>
+			<para>Indica el nombre lógico del server pasado a éste en el momento de levantarlo.</para>
+			<para>string <varname>m_server_name</varname></para>
+		</section>
+	</section>
+	<section>
+		<title>Miembros llamados por el sistema Gnu-Monitor</title>
+		<para>Son los que el sistema monitor convoca para pasar mensajes o eventos al server y deben ser resueltos por el programador.</para>
+		<section>
+			<title>CGMServer</title>
+			<para>El constructor de la clase es llamado cuando se crea el objeto del server.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef><function>CGMServer</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>~CGMServer</title>
+			<para>El destructor de la clase se llama al eliminar el objeto server.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef><function>~CGMServer</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>Init</title>
+			<para>Este miembro es llamado luego de la creación del objeto y de haber seteado los valores de las variables <varname>m_monitor_path</varname>, <varname>m_config_path</varname> y <varname>m_server_name</varname>.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Init</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>Exit</title>
+			<para>Este miembro es llamado justo antes de destruir el objeto del server.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Exit</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>Main</title>
+			<para>A este miembro se lo convoca al solicotarse un servicio suscripto por el server y se le pasa por parámetro el nombre del servicio y los datos asociados.</para>
+			<para>El valor de error devuelto por este miembro será el transferido al cliente en caso que este se distinto de cero.</para>
+			<para>Si el valor devuelto es cero al cliente se le responderá con los datos cargados al buffer de salida.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>Main</function></funcdef>
+				<paramdef>const char <parameter>*funcion</parameter></paramdef>
+				<paramdef>void <parameter>*in</parameter></paramdef>
+				<paramdef>unsigned long <parameter>inlen</parameter></paramdef>
+				<paramdef>void <parameter>** out</parameter></paramdef>
+				<paramdef>unsigned long <parameter>*outlen</parameter></paramdef>
+			</funcprototype>
+			</funcsynopsis>
+			<para>El parámetro <parameter>funcion</parameter> es el nombre del servcio convocado para esta sesión.</para>
+			<para>El parámetro <parameter>in</parameter> es un puntero a los datos asociados al servicio.</para>
+			<para>El parámetro <parameter>inlen</parameter> es el tamaño del bloque de datos apuntado por <parameter>in</parameter>.</para>
+			<para>El parámetro <parameter>out</parameter> es un puntero al puntero donde se alojarán los datos de salida que serán enviados al cliente.</para>
+			<para>El parámetro <parameter>outlen</parameter> es el tamaño de los datos de salida apuntados por <parameter>out</parameter>.</para>
+		</section>
+		<section>
+			<title>PreMain</title>
+			<para>Este miembro es convocado antes de la llamada al <function>Main</function> y luego de haber seteado los valores de la variable <varname>m_ClientData</varname>.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>PreMain</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>PosMain</title>
+			<para>Este miembro es llamado luego del retorno de la función <function>Main</function>, puede utilizarse para eliminar memoria asignada durante el procesamiento.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>PosMain</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>BeginTrans</title>
+			<para>Este miembro es llamado al inicio de un boqe con control transaccional.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>BeginTrans</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>CommitTrans</title>
+			<para>Este miembro es llamado para finalizar satisfactoriamente un bloque con control transaccional comenzado con <function>BeginTrans</function>.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>CommitTrans</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+		<section>
+			<title>RollbackTrans</title>
+			<para>Este miembro es llamado para cancelar el bloque de control transaccional.</para>
+			<funcsynopsis>
+			<funcprototype>
+				<funcdef>int <function>RollbackTrans</function></funcdef>
+				<void />
+			</funcprototype>
+			</funcsynopsis>
+		</section>
+	</section>
+	<section>
+		<title>Server standalone de ejemplo</title>
+		<para>Para demostrar lo sencillo que es desarrollar un server para el sistema Gnu-Monitor se muestra a continución un ejemplo de uno que resuelve la consulta al servicio ".eco", el convocado en el "Cliente de ejemplo", entre otros.</para>
+		<example>
+			<title>Server standalone de ejemplo</title>
+			<programlisting>
+&#035;include &lt;unistd.h&gt;
+&#035;include &lt;stdio.h&gt;
+&#035;include &lt;stdlib.h&gt;
+&#035;include &lt;signal.h&gt;
+&#035;include &lt;string.h&gt;
+&#035;include &lt;sys/wait.h&gt;
+&#035;include &lt;syslog.h&gt;
+&#035;include &lt;fcntl.h&gt;
+&#035;include &lt;errno.h&gt;
+
+&#035;include &lt;gmonitor/gmerror.h&gt;
+&#035;include &lt;gmonitor/gmconst.h&gt;
+&#035;include &lt;gmonitor/gmbuffer.h&gt;
+&#035;include &lt;gmonitor/cmsg.h&gt;
+&#035;include &lt;gmonitor/gmisc.h&gt;
+
+&#035;include &lt;gmonitor/gms.h&gt;
+
+/*
+  La variable 'void* m_gptr' es un puntero para uso generico por el server
+  es el unico puntero miembro de la clase que puede ser utilizado libremente
+  al realizar el programa server.
+  La variable 'CGMInitData m_ClientData' se completará con los valores del
+  cliente que solicitó el servicio antes del llamado a la función PreMain()
+  y mantendrá este valos para ser utilizado por el server si es necesario
+  hasta el final del servicio.
+*/
+
+CGMServer::CGMServer() { }
+
+CGMServer::~CGMServer() { }
+
+/* Colocar en esta funcion lo que se necesite correr al levantar el server */
+int CGMServer::Init()
+{
+  int rc;
+
+  syslog(LOG_INFO, "CGMServer::Init()");
+
+  /* Servicio de prueba de enlace */
+  if(Suscribe(".eco", 'C') != GME_OK) return -1;
+  /* Servicio para loggear mensajes en el log del sistema */
+  if(Suscribe(".log", 'M') != GME_OK) return -1;
+  /* Servicio de consulta de eventos */
+  if(Suscribe(".check_unsol", 'C') != GME_OK) return -1;
+  /* Servicios de suscripcion y dessuscripcion a eventos */
+  if(Suscribe(".suscribe_cli", 'C') != GME_OK) return -1;
+  if(Suscribe(".unsuscribe_cli", 'C') != GME_OK) return -1;
+
+  return 0;
+}
+
+/* Colocar en esta funcion lo que se necesite correr al bajar el serer */
+int CGMServer::Exit()
+{
+  UnSuscribe(".eco");
+  UnSuscribe(".log");
+  UnSuscribe(".check_unsol");
+  UnSuscribe(".suscribe_cli");
+  UnSuscribe(".unsuscribe_cli");
+
+  return 0;
+}
+
+/* Estas rutinas son llamadas para el manejo de transaccion se debe colocar en ellas el código necesario para cada uno de los procesos */
+int CGMServer::BeginTrans()
+{
+  return 0;
+}
+int CGMServer::CommitTrans()
+{
+  return 0;
+}
+int CGMServer::RollbackTrans()
+{
+  return 0;
+}
+
+/* estas rutinas se llaman antes y después de la de procesamiento de mensaje */
+int CGMServer::PreMain()
+{
+  return 0;
+}
+int CGMServer::PosMain()
+{
+  return 0;
+}
+
+/* Colocar en esta funcion el proceso que intepreta el mensaje recibido */
+int CGMServer::Main(const char *funcion, void* in, unsigned long inlen, void** out, unsigned long *outlen)
+{
+#ifdef DEBUG
+  syslog(LOG_INFO, "CGMServer::Main(%s, 0x%08X, %lu)", funcion, in, inlen);
+#endif /* DEBUG */
+  if(!strcmp(funcion, ".eco"))
+  {
+    *outlen = inlen;
+    *out = (char*)malloc(*outlen);
+    memcpy(*out, in, *outlen);
+    return GME_OK;
+  }
+  else if(!strcmp(funcion, ".log"))
+  {
+    syslog(	LOG_INFO, "[LOG_SERVER][%s][%s][%s][%s] %s",
+    m_ClientData.m_host.c_str(),
+    m_ClientData.m_user.c_str(),
+    m_ClientData.m_client.c_str(),
+    m_ClientData.m_group.c_str(),
+    (char*)in);
+    return GME_OK;
+  }
+  else if(!strcmp(funcion, ".check_unsol"))
+  {
+    return GME_OK;
+  }
+  else if(!strcmp(funcion, ".suscribe_cli"))
+  {
+    return GME_OK;
+  }
+  else if(!strcmp(funcion, ".unsuscribe_cli"))
+  {
+    return GME_OK;
+  }
+  else
+  {
+    return GME_SVC_NOTFOUND;
+  }
+}
+			</programlisting>
+		</example>
+	</section>
+</chapter>
+

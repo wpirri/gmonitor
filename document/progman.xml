@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone="no"?>
+
+<preface>
+        <title>Acerca de este manual</title>
+        <para>Este manual está destinado a orientar al programador que deba utilizar el monitor transaccional Gnu-Monitor como base para el desarrollo de aplicaciones dentro de una arquitectura cliente/servidor de tres capas.</para>
+</preface>
+
+&intro;
+&arqsyst;
+&modcomu;
+&protmsg;
+&cliente;
+&svrstio;
+&svrwait;
+&clasaux;
+&mondev;

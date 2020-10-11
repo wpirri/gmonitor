@@ -1,0 +1,65 @@
+Gnu-Monitor
+===============================================================================
+
+Configuraci�n
+=============-.
+./configure --prefix=/usr --sysconfdir=/etc/sysconfig --localstatedir=/var
+
+
+Compilaci�n e instalaci�n
+=========================-.
+make
+make install
+
+
+Compilaci�n e instalaci�n parcial
+=================================-.
+
+Para instalar solamente el monitor:
+  make build-monitor
+  make install-monitor
+
+Para instalar solamente los servers:
+  make build-server
+  make install-server
+
+Para instalar solamente el cliente:
+  make build-client
+  make install-client
+
+
+CVS
+===-.
+  Acceso an�nimo:
+    cvs -d:pserver:anonymous@gnu-monitor.cvs.sourceforge.net:/cvsroot/gnu-monitor login
+    cvs -z3 -d:pserver:anonymous@gnu-monitor.cvs.sourceforge.net:/cvsroot/gnu-monitor co modulename
+
+  Acceso para desarrolladores:
+    export CVS_RSH=ssh
+    cvs -z3 -d:ext:developername@gnu-monitor.cvs.sourceforge.net:/cvsroot/gnu-monitor co modulename
+
+
+Kernel
+======-.
+  En sistemas donde es necesario levantar cierta cantidad de servidores pueden
+llegar a no ser suficiente la cantidad m�xima de colas de mensajes permitidas
+por el sistema operativo. En el linux que us� para desarrollar el Monitor este
+valor era de 16.
+  Se calcula que la cantidad de colas necesarias para el funcionamiento del
+monitor deber�a ser por lo menos del doble de las instancias de servidores que
+se van a levantar y dos mas para el router, lo que me permitir�a con esta
+configuraci�n correr hasta siete instancias ya sean del mismo o de diferentes
+servidores.
+  De ser necesario utilizar sysctl(8) para corregir los par�metros del kernel
+modificando o agregando nuevos tokens (kernel.msgmni) en el archivo de
+configuraci�n en /etc/sysctl.conf por ejemplo:
+    # sysctl.conf
+    kernel.msgmnb = 65536
+    kernel.msgmni = 64
+    kernel.msgmax = 16384
+
+===============================================================================
+                                               Proyecto original: Walter Pirri
+===============================================================================
+
+

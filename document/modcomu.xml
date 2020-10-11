@@ -1,0 +1,83 @@
+<?xml version="1.0" standalone="no"?>
+
+<chapter lang="es" id="modcomu">
+	<title>Modos de comunicación</title>
+	<para>Cada uno de estos modos responde a una necesidad particular y los servicios que se resuelven en los servers se declaran para un modo específico. Esto significa que un mismo servicio no puede responder mensajes de dos modos diferentes, en ese caso serían dos servicios diferentes aunque tengan el mismo nombre y lo resuelva internamente la misma función.</para>
+	<section>
+		<title>Consideraciones</title>
+		<para>En adelante se utilizaran algunos términos para referirse a módulos, aplicaciones, funcionalidades, etc. que detallaremos para evitar confusiones.</para>
+		<section>
+			<title>modalidad</title>
+			<para>Para un server indica si levanta standalone o debe levantar una aplicación y comunicarse con esta a través de stdio.</para>
+		</section>
+		<section>
+			<title>aplicación</title>
+			<para>Corresponde al path completo del binario asociado al server o que este debe correr.</para>
+		</section>
+		<section>
+			<title>server</title>
+			<para>Es la representación del proceso que recibe los mensajes desde el ruteador de transacciones. Está asociado a una cola de mensajes y puede corresponder a una aplicación standalone o una ejecutada a través de su stdio.</para>
+			<para>Es solamente un nombre y puede no tener ninguna relación con el programa que realmente se ejecuta.</para>
+			<para>Dicho nombre se encuentra dado de alta en una tabla del sistema donde se indica la aplicación a la que se encuentra asociado y la modalidad en que levanta.</para>
+		</section>
+		<section>
+			<title>servicio</title>
+			<para>Es un procedimiento que se asocia a un server para que al ser convocado por el cliente el ruteador de transacciones lo dirija al server correspondiente a través de su cola.</para>
+			<para>Su nombre puede comenzar con un punto . que se reserva para los servicios internos del sistema Gnu-Monitor y puede contener hasta 32 caracteres en una combinación de letras, números y caracteres de puntuación.</para>
+			<para>En las funciones internas el punto . forma parte del nombre por lo que solamente podrá tener 31 caracteres más.</para>
+		</section>
+	</section>
+	<section>
+		<title>Modo Consulta/Respuesta</title>
+		<para>Este tipo de mensaje se utiliza en los casos donde se hace una consulta y se espera la respuesta en un único mensaje. También en los casos en que se envían datos para procesar y se espera el resultado del proceso.</para>
+		<para>Para procesar el mensaje el ruteador de transacciones arma una lista de todos los servers que responden al servicio solicitado y se la envía al que tenga menos trabajos encolados.</para>
+		<para>El mensaje devuelto por el server elegido para enviar los datos es devuelto al cliente que solicitó el servicio.</para>
+		<para>Los mensajes de este tipo se convocan por medio de la API <function>Call()</function> del cliente o los servers.</para>
+		<para>Los servers que atienden los mensajes de este tipo deben suscribirse al servicio con <constant>GM_MSG_TYPE_CR</constant> como tipo de mensaje.</para>
+		<graphic fileref="images/modo1.jpg" format="JPG" width="80%" scale="40" />
+	</section>
+	<section>
+		<title>Modo Evento</title>
+		<para>Este tipo de mensaje se utiliza en los casos que se necesita entregar datos al server sin obtener datos de respuesta. Donde la única respuesta es la confirmación de la recepción del mensaje.</para>
+		<para>Para procesar el mensaje el ruteador de transacciones arma una lista de todos los servers que responden al servicio solicitado y se la envia a todos.</para>
+		<para>Si al menos un server pudo recibir el mensaje satisfactoriamente se le devuelve una confirmación OK al cliente.</para>
+		<para>Los mensajes de este tipo se convocan por medio de la API <function>Post()</function> del cliente o los servers.</para>
+		<para>Los servers que atienden los mensajes de este tipo deben suscribirse al servicio con <constant>GM_MSG_TYPE_MSG</constant> como tipo de mensaje.</para>
+		<graphic fileref="images/modo2.jpg" format="JPG" width="80%" scale="40" />
+	</section>
+	<section>
+		<title>Modo Interactivo</title>
+		<para>Este tipo de mensaje se utiliza cuando la cantidad de datos que el server debe devolver es demasiado grande para utilizar el tipo CONSULTA / RESPUESTA.</para>
+		<para>Para procesar el mensaje el ruteador de transacciones arma una lista de todos los servers que responden al servicio solicitado y se la envía al que tenga menos trabajos encolados.</para>
+		<para>Una vez enviada la consulta el cliente envía tantas peticiones de devolver datos como sean necesarias para traerlos a todos. También se permite cancelar en cualquier momento perdiendo los datos que aún no se hayan transferido.</para>
+		<para>Los mensajes interactivos que consultan y reciben utilizando las funciones de la API como se detalla a continuación:</para>
+		<programlisting>
+	Connect(...);
+	Send(...);
+	While( Recv(...) >= 0 )
+	{
+		...
+	}
+	Discon();
+		</programlisting>
+		<para>Los servers que atienden los mensajes de este tipo deben suscribirse al servicio con <constant>GM_MSG_TYPE_INT</constant> como tipo de mensaje.</para>
+		<graphic fileref="images/modo3.jpg" format="JPG" width="80%" scale="40" />
+    <para>Este modo de comunicación no requiere ninguna programación especial del lado del server gracias a que la coordinación para el envío del mensaje en partes se realiza solamente entre los módulos de cliente y ruteador como se vé en el gráfico siguiente. De esta forma un server que atiende un servicio del tipo CONSULTA / RESPUESTA puede resolver también un servicio interactivo con solo suscribirse.</para>
+    <graphic fileref="images/servicios-interactivos.jpg" format="JPG" width="80%" scale="40" />
+	</section>
+	<section>
+		<title>Modo Aviso</title>
+		<para>Este tipo de mensaje es muy parecido al <literal>Evento</literal> en el sentido de que no se espera respuesta pero con la diferencia de que el ruteador de transacciones le envía el mensaje a uno solo de los server capaces de procesarlo, el que tenga menos trabajos encolados.</para>
+		<para>Los mensajes de este tipo se convocan por medio de la API <function>Notify()</function> del cliente o los servers.</para>
+		<para>Los servers que atienden los mensajes de este tipo deben suscribirse al servicio con <constant>GM_MSG_TYPE_NOT</constant> como tipo de mensaje.</para>
+		<graphic fileref="images/modo5.jpg" format="JPG" width="80%" scale="40" />
+	</section>
+	<section>
+		<title>Modo Encolado</title>
+		<para>Este tipo de mensaje tiene un parecido al Modo Aviso con la diferencia que los mensajes se encolan en un archivo de Store And Forward para que luego otro cliente o algún server los retiren.</para>
+		<para>Los mensajes de este tipo se convocan por medio de la API <function>Enqueue()</function> del cliente o los servers. Mientras que se utiliza <function>Dequeue()</function> para ir retirando mensajes de la cola.</para>
+		<para>Los servers que atienden los mensajes de este tipo deben suscribirse al servicio con <constant>GM_MSG_TYPE_QUE</constant> como tipo de mensaje.</para>
+		<graphic fileref="images/modo4.jpg" format="JPG" width="80%" scale="40" />
+	</section>
+</chapter>
+

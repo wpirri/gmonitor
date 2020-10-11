@@ -1,0 +1,6 @@
+# Tabla: funcion.tab
+# nombre|descripcion|server|borrar
+#sys_ps|ps|C|gm_sysps|0
+#sys_ps_eaf|ps -eaf|C|gm_sysps|0
+#sys_date|date|C|gm_sysdate|0
+#sys_date_format|date YYYYmmdd|C|gm_sysdate|0

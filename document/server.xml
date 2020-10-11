@@ -1,0 +1,234 @@
+<?xml version="1.0" standalone="no"?>
+
+<chapter lang="es" id="servers">
+  <title>Servers del sistema</title>
+  <section>
+    <title>gm_default</title>
+    <para>Este server resuelve los servicios básicos del sistema GNU-Monitor.</para>
+    <section>
+      <title>Servicios</title>
+      <section>
+        <title>.eco</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_CR</constant> y se convoca con <function>Call()</function>.</para>
+        <para>Su función es verificar el circuito básico de ruteo y resolución de transacciones así como los timers de las funciones de consulta.</para>
+        <para>Devuelve el mismo mensaje enviado en la consulta luego de un segundo.</para>
+      </section>
+      <section>
+        <title>.log</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_MSG</constant> y se convoca con <function>Post()</function>.</para>
+        <para>Su función es registrar en el log del sistema los mensajes recibidos.</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>gm_transac</title>
+    <para>Este server mantiene la lista de transacciones en curso, comunica a los servers transaccionales el inicio de cada una y se encarga de cancelarlas en forma automática al vencimiento del timer de cada una.</para>
+    <section>
+      <title>Servicios</title>
+      <section>
+        <title>.begintrans</title>
+        <para>Este servicio es del tipo Este servicio es del tipo <constant>GM_MSG_TYPE_NOT</constant> y se convoca con <function>Notify()</function>.</para>
+        <para>Se utiliza para dar de alta una transacción, devuelve dentro del header del mensaje al cliente el ID de la transacción.</para>
+        <para>Una vez creada la transacción notifica a los servers transaccionales del inicio.</para>
+      </section>
+      <section>
+        <title>.committrans</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_NOT</constant> y se convoca con <function>Notify()</function>.</para>
+        <para>Se utiliza para notificar la finalización normal de una transacción.</para>
+        <para>Una vez verificada la existencia de la transacción se notifica a los servers transaccionales de la finalización normal.</para>
+      </section>
+      <section>
+        <title>.aborttrans</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_NOT</constant> y se convoca con <function>Notify()</function>.</para>
+        <para>Se utiliza para notificar la finalización anormal de una transacción.</para>
+        <para>Una vez verificada la existencia de la transacción se notifica a los servers transaccionales de la finalización; anormal.</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>gm_timer</title>
+    <para>Este server mantiene una lista de timers asociados con eventos a ejecutar a su vencimiento.</para>
+    <para>Es un server transaccional por lo cual elimina todos los timers pendientes que esten asociados con una transacción que finaliza.</para>
+    <section>
+      <title>Servicios</title>
+      <para>Los mensajes de estos servicios contienen como parámetros de entrada y salida los datos de la estructura <constant>ST_STIMER</constant> definida en <filename>svcstru.h</filename>.</para>
+      <programlisting>
+  typedef union _ST_STIMER
+  {
+    struct
+    {
+      unsigned int id;
+      char servicio[32];
+      char modo_servicio;
+      unsigned int delay; /* Para setar un timer por tiempo */
+      char tipo_timer;     /* Repetitivo / Unico */
+      unsigned long at;    /* Para setear un timer en una hora determinada */
+      unsigned long len;
+      char data[1];
+    } set_timer;
+    struct
+    {
+      unsigned int id;
+    } kill_timer;
+  } ST_STIMER;
+      </programlisting>
+      <section>
+        <title>.set_timer</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_CR</constant> y se convoca con <function>Call()</function>.</para>
+        <para>Se utiliza para dar de alta un timer.</para>
+        <para>Una vez vencido el timer envía el mensaje solicitado con los datos presentes en el requerimiento.</para>
+      </section>
+      <section>
+        <title>.kill_timer</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_NOT</constant> y se convoca con <function>Notify()</function>.</para>
+        <para>Se utiliza para eliminar un timer previamente creado antes de su vencimiento.</para>
+        <para>Utiliza la misma estructura que .set_timer donde solo es necesario informarle el ID.</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>gm_config</title>
+    <para>Este server cumple la función de interface con la matriz de configuración del sistema Gnu-Monitor, su tabla de rutéo.</para>
+    <para>La lista de funciones o servicios que sigue no se encuentra aún desarrollada en su totalidad.</para>
+    <section>
+      <title>Servicios</title>
+      <section>
+        <title>.get_server_list</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_INT</constant> (interactivo) y se convoca con un ezquema como el que sigue:</para>
+        <programlisting>
+  Connect(...);
+  Send(...);
+  While( Recv(...) >= 0 )
+  {
+    ...
+  }
+  Discon();
+   </programlisting>
+        <para>Devuelve en formato XML la lista de servers que se estén ejecutando con sus datos asociados.</para>
+      </section>
+      <section>
+        <title>.get_service_list</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_INT</constant> (interactivo) y se convoca con un ezquema como el que sigue:</para>
+        <programlisting>
+  Connect(...);
+  Send(...);
+  While( Recv(...) >= 0 )
+  {
+    ...
+  }
+  Discon();
+        </programlisting>
+        <para>Devuelve en formato XML la lista de servicios declarados por los servers levantados junto con el tipo de mensajería de cada uno y el server que los resuelve.</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>gm_sbuffer</title>
+    <para>Este server permite almacenar buffers de memoria para ser requeridos en algún otro momento.</para>
+    <para>Su principal utilidad es en los mensajes interactivos para mantener el mensaje total hasta que se terminen se contestar todos los submensajes parciales o se cancele la transación.</para>
+    <para>Los servicios soportan el modo transaccional por lo que los buffers almacenados que estén relacionados con un atransacción se eliminan automáticamente al finalizar esta.</para>
+    <para>A los buffers creados se les puede asignar un timer para que se borren automáticamnete cierto tiempo luego de creados.</para>
+    <section>
+      <title>Servicios</title>
+      <para>Los mensajes de estos servicios contienen como parámetros de entrada y salida los datos de la estructura <constant>ST_SBUFFER</constant> definida en <filename>svcstru.h</filename>.</para>
+      <programlisting>
+  typedef union _ST_SBUFFER
+  {
+    struct
+    {
+      unsigned int id;
+      unsigned long len;
+      char data[1];
+    } new_buffer;
+    struct
+    {
+      unsigned int id;
+      unsigned long len;
+      char data[1];
+    } add_buffer;
+    struct
+    {
+      unsigned int id;
+    } del_buffer;
+    struct
+    {
+      unsigned int id;       /* IN  - identificador del buffera devolver */
+      unsigned long offset;  /* IN  - offset del inicio a devolver */
+      unsigned long maxlen;  /* IN  - tam max a devolver */
+      unsigned long len;     /* OUT - tam devuelto */
+      unsigned long totlen;  /* OUT - tam total del buffer almacenado */
+      char data[1];
+    } get_buffer;
+  } ST_SBUFFER;
+      </programlisting>
+      <section>
+        <title>.new_buffer</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_CR</constant> y se convoca con <function>Call()</function>.</para>
+        <para>Se utiliza para dar de alta un nuevo buffer.</para>
+      </section>
+      <section>
+        <title>.add_buffer</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_NOT</constant> y se convoca con <function>Notify()</function>.</para>
+        <para>Se utiliza para agregar mas datos al final de un buffer previamente creado.</para>
+      </section>
+      <section>
+        <title>.del_buffers</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_NOT</constant> y se convoca con <function>Notify()</function>.</para>
+        <para>Se utiliza para eliminar un buffer previamente creado.</para>
+      </section>
+      <section>
+        <title>.get_buffer</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_CR</constant> y se convoca con <function>Call()</function>.</para>
+        <para>Se utiliza para obtener datos de un buffer por un tamaño determinado y desde un offset dado.</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>gm_squeue</title>
+    <para>Este server se encarga de resolver los servicios de STORE and FORWARD.</para>
+    <section>
+      <title>Servicios</title>
+      <section>
+        <title>.enqueue</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_NOT</constant> y se convoca con <function>Enqueue()</function>.</para>
+        <para>Se utiliza para agregar un mensaje en una cola de STORE and FORWARD específica</para>
+      </section>
+      <section>
+        <title>.dequeue</title>
+        <para>Este servicio es del tipo <constant>GM_MSG_TYPE_INT</constant> y se convoca con <function>Dequeue()</function>.</para>
+        <para>Se utiliza para obtener un mensaje de la cola, permite ir lejendo de la cola a medida que se la vacía.</para>
+      </section>
+      <section>
+        <title>.create-queue</title>
+        <para></para>
+      </section>
+      <section>
+        <title>.drop-queue</title>
+        <para></para>
+      </section>
+      <section>
+        <title>.clear-queue</title>
+        <para></para>
+      </section>
+      <section>
+        <title>.clear-all-queue</title>
+        <para></para>
+      </section>
+      <section>
+        <title>.info-queue</title>
+        <para></para>
+      </section>
+      <section>
+        <title>.list-queue</title>
+        <para></para>
+      </section>
+    </section>
+  </section>
+
+
+</chapter>

@@ -1,0 +1,8 @@
+# Tabla: server_parametro
+# server|parametro|valor
+gm_default|-d|20
+gm_config|-d|20
+gm_buffer|-d|20
+gm_transac|-d|20
+gm_timer|-d|20
+gm_squeue|-d|20

@@ -1,0 +1,369 @@
+<?xml version="1.0" standalone="no"?>
+<chapter lang="es" id="svrwait">
+  <title>Server waited</title>
+  <para>Este tipo de server se integra al sistema a través de los miembros de la clase <classname>CGMServerWait</classname> que implementa la comunicación con el sistema Gnu-Monitor.</para>
+  <para>A diferencia del Server standalone este se implementa como un programa común con su propio main que por medio de los miembros <function>Wait</function> y <function>Resp</function> puede recibir y contestar mensajes al sistema.</para>
+  <para>La facilidad de esta clase se obtiene linkeando la aplicación que va a funcionar como server con la librería <filename>libgmsw.so</filename> que publica la clase <classname>CGMServerWait</classname>.</para>
+  <section>
+    <title>Referencia rápida</title>
+    <para>A continuación se observan los miembros de la clase <classname>CGMServerBase</classname> y <classname>CGMServerWait</classname> que implementan la interface del server waited.</para>
+    <para>En la clase <classname>CGMServerBase</classname> encontramos una serie de miembros que pueden utilizarse para intercambiar datos con el sistema Gnu-Monitor y obtener datos del cliente que convocó al servicio en el server.</para>
+    <para>En la clase <classname>CGMServerWait</classname> encontramos una serie de miembros que se utilizan para recibir y contestar mensajes al sistema.</para>
+    <table><title>Referencia rápida</title>
+    <tgroup cols="2">
+    <thead>
+      <row>
+        <entry>Miembro</entry>
+        <entry>Descripción</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><function>CGMServerWait</function></entry>
+        <entry>Constructor de la clase.</entry>
+      </row>
+      <row>
+        <entry><function>~CGMServerWait</function></entry>
+        <entry>Destructor de la clase.</entry>
+      </row>
+      <row>
+        <entry><function>Init</function></entry>
+        <entry>Inicializa los parametros del server y la conexión con el minitor.</entry>
+      </row>
+      <row>
+        <entry><function>Wait</function></entry>
+        <entry>Espera por el arribo de un mensaje proveniente del monitor. La espera puede ser nula, una cantidad determinada de centésimas de segundo o infinita.</entry>
+      </row>
+      <row>
+        <entry><function>Resp</function></entry>
+        <entry>Responde al monitor el ultimo mensaje recibido. Solo se puede procesar de un mensaje a la vez.</entry>
+      </row>
+      <row>
+        <entry><function>Notify</function></entry>
+        <entry>Envía un mensaje de tipo evento a un destinatario identificado por su IdUsuario.</entry>
+      </row>
+      <row>
+        <entry><function>Broadcast</function></entry>
+        <entry>Envía un mensaje de tipo evento a múltiples destinatarios identificados por IdUsuario, IdCliente e IdGrupo.</entry>
+      </row>
+      <row>
+        <entry><function>Post</function></entry>
+        <entry>Envía un mensaje al sistema Gnu-Monitor.</entry>
+      </row>
+      <row>
+        <entry><function>Suscribe</function></entry>
+        <entry>Informa al sistema Gnu-Monitor que el server resuelve el servicio pasado como parámetro.</entry>
+      </row>
+      <row>
+        <entry><function>UnSuscribe</function></entry>
+        <entry>Informa al sistema Gnu-Monitor que el server deja de resolver el servicio pasado como parámetro.</entry>
+      </row>
+      <row>
+        <entry><function>Call</function></entry>
+        <entry>Envía un mensaje del tipo CONSULTA/RESPUESTA al sistema Gnu-Monitor.</entry>
+      </row>
+      <row>
+        <entry><varname>m_ClientData</varname></entry>
+        <entry>Al recibir una solicitud de servicio por parte de un cliente este miembro que es un objeto de la clase <classname>CGMInitData</classname> contiene los datos de este.</entry>
+      </row>
+      <row>
+        <entry><varname>m_monitor_path</varname></entry>
+        <entry>Contiene el path completo al binario del monitor.</entry>
+      </row>
+      <row>
+        <entry><varname>m_config_path</varname></entry>
+        <entry>Contiene el path donde se encuentran los archivos de configuración del sistema Gnu-Monitor.</entry>
+      </row>
+      <row>
+        <entry><varname>m_server_name</varname></entry>
+        <entry>Contiene el nombre del server que se pasa como parámetro al arrancarlo.</entry>
+      </row>
+    </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>Miembros de la clase <classname>CGMServerWait</classname></title>
+    <section>
+      <title>CGMServerWait</title>
+      <para>Constructor de la clase.</para>
+    </section>
+    <section>
+      <title>~CGMServerWait</title>
+      <para>Destructor de la clase.</para>
+    </section>
+    <section>
+      <title>Init</title>
+      <para>Inicializa los parámetros del server y la cola de mensajes utilizada para la comunicación con el monitor.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Init</function></funcdef>
+        <paramdef>const char <parameter>*server_name</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Init</function></funcdef>
+        <paramdef>string <parameter>&amp;server_name</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>server_name</parameter> indica el nombre con el cual el server se identifica ante el sistema Gnu-Monitor.</para>
+    </section>
+    <section>
+      <title>Wait</title>
+      <para>Se pone a la espera de recibir un mensaje desde el monitor.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Wait</function></funcdef>
+        <paramdef>char <parameter>*fn</parameter></paramdef>
+        <paramdef>void <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned long <parameter>maxlen</parameter></paramdef>
+        <paramdef>unsigned long <parameter>*datalen</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>En el parámetro <parameter>fn</parameter> se devuelve el nombre del servicio o función convocada.</para>
+      <para>En el parámetro <parameter>data</parameter> se devuelven los datos asociados al servicio.</para>
+      <para>El parámetro <parameter>maxlen</parameter> indica al miembro canto espacio puede alocar como máximo en el buffer <parameter>data</parameter>.</para>
+      <para>En el parámetro <parameter>datalen</parameter> se devuelve el tamaño del mensaje recibido alojado en <parameter>data</parameter> .</para>
+      <para>El parámetro <parameter>to</parameter> indica al miembro el tiempo máximo de espera por el arribo de un mensaje, si este valor es 0 (cero) el llamado volverá inmediatamente aunque no haya mensajes, si es -1 la espera por mensajes será infinita, cualquier otro valor superior a cero indicará el tiempo de espera expresado en centésimas de segundo.</para>
+    </section>
+    <section>
+      <title>Resp</title>
+      <para>Responde al monitor el último mensaje recibido.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Resp</function></funcdef>
+        <paramdef>const void <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned long <parameter>datalen</parameter></paramdef>
+        <paramdef>int <parameter>rc</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>data</parameter> corresponde al mensaje que se le devolverá al cliente.</para>
+      <para>El parámetro <parameter>datalen</parameter> corresponde al tamaño del mensaje que se le devolverá al cliente.</para>
+      <para>El parámetro <parameter>rc</parameter> corresponde al código de error que se le devolverá al cliente.</para>
+    </section>
+    <section>
+      <title>Notify</title>
+      <para>Envía una notificación de evento a un grupo, cliente o usuario en particular.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Notify</function></funcdef>
+        <paramdef>const char <parameter>*dst</parameter></paramdef>
+        <paramdef>const char <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>len</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>dst</parameter> indica el nombre del grupo de destino para el mensaje.</para>
+      <para>El parámetro <parameter>data</parameter> es un puntero al mensaje a enviar.</para>
+      <para>El parámetro <parameter>len</parameter> es el tamaño del mensaje.</para>
+    </section>
+    <section>
+      <title>Broadcast</title>
+      <para>Notifica un evento a todos los grupos, clientes y usuarios que cumplan las condiciones de la máscara pasada como parámetro. Para este miembro se pueden utilizar los comodines * y &amp; para formar los nombres de los destinatarios.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Broadcast</function></funcdef>
+        <paramdef>const char <parameter>*user</parameter></paramdef>
+        <paramdef>const char <parameter>*client</parameter></paramdef>
+        <paramdef>const char <parameter>*group</parameter></paramdef>
+        <paramdef>const char <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>len</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>user</parameter> contiene la máscara para el usuario de destino del mensaje.</para>
+      <para>El parámetro <parameter>client</parameter> contiene la máscara para el cliente de destino del mensaje.</para>
+      <para>El parámetro <parameter>group</parameter> contiene la máscara para el grupo de destino del mensaje.</para>
+      <para>El parámetro <parameter>data</parameter> es un puntero al mensaje a enviar.</para>
+      <para>El parámetro <parameter>len</parameter> es el tamaño del mensaje.</para>
+    </section>
+    <section>
+      <title>Post</title>
+      <para>Envía un evento al monitor. Junto con el evento también se envía un bloque de datos que será reenviado a los servers y clientes suscritos al evento.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Post</function></funcdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+        <paramdef>const char <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>len</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del evento posteado.</para>
+      <para>El parámetro <parameter>data</parameter> contiene el mensaje asociado al evento.</para>
+      <para>El parámetro <parameter>len</parameter> contiene el tamaño del mensaje asociado al evento.</para>
+    </section>
+    <section>
+      <title>Suscribe</title>
+      <para>Informa al monitor que el server atenderá los mensajes enviados para el evento o servicio y tipo de mensaje que se suscribe.</para>
+      <para>De esta forma la parametrización del ruteo se realiza de forma dinámica al levantarse cada servidor.</para>
+      <para>Está permitido que mas de un servidor atiendan el mismo servicio. En caso que el servicio utilice mensajes del tipo consulta/respuesta, interactivo o aviso el requerimiento se enviará al que tenga menos trabajos encolados y si el servicio utiliza mensajes de tipo eventos se enviará a todos los registrados.</para>
+      <!--
+      <para>No se permite que un mismo servicio se atienda con dos tipos de mensaje diferente.</para>
+      -->
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Suscribe</function></funcdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+        <paramdef>char <parameter>tipo_mensaje</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del servicio al que se suscribe.</para>
+      <para>El parámetro <parameter>tipo_mensaje</parameter> indica el tipo de mensaje para el sevicio.</para>
+    </section>
+    <section>
+      <title>UnSuscribe</title>
+      <para>Informa al monitor que el server deja de atender los requerimientos para el servicio indicado.</para>
+      <para>Deberá ser llamado al bajar el server para que el monitor deje de rutear los mensajes a este servidor.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>UnSuscribe</function></funcdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del servicio al que se desuscribe.</para>
+    </section>
+    <section>
+      <title>Call</title>
+      <para>Este miembro permite enviar un mensaje a la vez que espera la respuesta, de esta forma se realiza una consulta sincrónica y se cuenta un parámetro para especificar un tiempo límite para recibir la respuesta.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Call</function></funcdef>
+        <paramdef>const char <parameter>*fn</parameter></paramdef>
+        <paramdef>const char <parameter>*query</parameter></paramdef>
+        <paramdef>unsigned int <parameter>qlen</parameter></paramdef>
+        <paramdef>const char <parameter>**response</parameter></paramdef>
+        <paramdef>unsigned int <parameter>*rlen</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Call</function></funcdef>
+        <paramdef>string <parameter>*fn</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;query</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Call</function></funcdef>
+        <paramdef>string <parameter>*fn</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*query</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>fn</parameter> contiene el nombre del servicio que se convoca.</para>
+      <para>El parámetro <parameter>query</parameter> contiene el mensaje que se asocia a la consulta al servicio.</para>
+      <para>El parámetro <parameter>qlen</parameter> contiene el tamaño del mensaje de consulta.</para>
+      <para>En el parámetro <parameter>response</parameter> se devuelve el mensaje de respuesta de ejecutar el servicio.</para>
+      <para>En el parámetro <parameter>rlen</parameter> se devuelve el tamaño de la respuesta.</para>
+      <para>El parámetro <parameter>to</parameter> indica el tiempo máximo expresado en centésimas de segundo que se esperará por la respuesta luego del cual el llamado terminará con error de time-out.</para>
+      <para>Para facilitar la implementación de los buffers para la comunicación se provee la clase <classname>CGMBuffer</classname> que es utilizada por el miembro <function>Call</function> entre otros.</para>
+    </section>
+  </section>
+  <section>
+    <title>Server waited de ejemplo</title>
+    <para>Para demostrar lo sencillo que es desarrollar un server waited para el sistema Gnu-Monitor se muestra a continución un ejemplo de uno que resuelve los timers programados del sistema.</para>
+    <example>
+      <title>Server waited de ejemplo</title>
+      <programlisting>
+&#035;include &lt;gmonitor/gmerror.h&gt;
+&#035;include &lt;gmonitor/gmconst.h&gt;
+&#035;include &lt;gmonitor/gmbuffer.h&gt;
+&#035;include &lt;gmonitor/cmsg.h&gt;
+&#035;include &lt;gmonitor/gmisc.h&gt;
+&#035;include &lt;gmonitor/gmontdb.h&gt;
+&#035;include &lt;gmonitor/gmstring.h&gt;
+
+&#035;include "gmswaited.h"
+
+&#035;include &lt;string&gt;
+&#035;include &lt;iostream&gt;
+using namespace std;
+
+&#035;include &lt;unistd.h&gt;
+&#035;include &lt;signal.h&gt;
+
+CGMServerWait *m_pServer;
+void OnClose(int sig);
+char *m_pInBuffer;
+char *m_pOutBuffer;
+
+int main(int argc, char** argv, char** env)
+{
+  int rc;
+  char fn[33];
+  unsigned long inlen;
+  unsigned long outlen;
+  int wait;
+
+  signal(SIGPIPE, SIG_IGN);
+  signal(SIGKILL, OnClose);
+  signal(SIGTERM, OnClose);
+  signal(SIGSTOP, OnClose);
+  signal(SIGABRT, OnClose);
+  signal(SIGQUIT, OnClose);
+  signal(SIGINT, OnClose);
+  signal(SIGILL, OnClose);
+  signal(SIGFPE, OnClose);
+  signal(SIGSEGV, OnClose);
+  signal(SIGBUS, OnClose);
+
+  m_pInBuffer = NULL;
+  m_pOutBuffer = NULL;
+  m_pServer = new CGMServerWait;
+  m_pServer-&gt;Init("gm_timer");
+  m_pServer-&gt;m_pLog-&gt;Add(1, "Iniciando server de TIMERS");
+
+  if(( rc =  m_pServer-&gt;Suscribe(".set_timer", 'M')) != GME_OK)
+  {
+    m_pServer-&gt;m_pLog-&gt;Add(1, "ERROR %i al suscribir servicio .set_timer", rc);
+    OnClose(0);
+  }
+  if(( rc = m_pServer-&gt;Suscribe(".kill_timer", 'M')) != GME_OK)
+  {
+    m_pServer-&gt;m_pLog-&gt;Add(1, "ERROR %i al suscribir servicio .kill_timer", rc);
+    OnClose(0);
+  }
+
+  m_pInBuffer = (char*)calloc(1024, sizeof(char));
+  m_pOutBuffer = (char*)calloc(1024, sizeof(char));
+
+  wait = 1;
+  while((rc = m_pServer-&gt;Wait(fn, m_pInBuffer, 1024, &amp;inlen, wait)) &gt; 0)
+  {
+    if(rc &gt; 0)
+    {
+      /* proceso el mensaje que llegó */
+      sprintf(m_pOutBuffer, "[%s] -&gt; ", fn);
+      outlen = inlen;
+      memcpy(m_pOutBuffer + strlen(m_pOutBuffer), m_pInBuffer, outlen);
+
+      if(m_pServer-&gt;Resp(m_pOutBuffer, outlen, rc) != GME_OK)
+      {
+        /* error al responder */
+      }
+    }
+    /* cosas que hago siempre */
+  }
+  OnClose(0);
+  return 0;
+}
+
+void OnClose(int sig)
+{
+  m_pServer-&gt;m_pLog-&gt;Add(1, "Exit on signal %i", sig);
+  if(m_pInBuffer) free(m_pInBuffer);
+  if(m_pOutBuffer) free(m_pOutBuffer);
+  m_pServer-&gt;UnSuscribe(".kill_timer");
+  m_pServer-&gt;UnSuscribe(".set_timer");
+  delete m_pServer;
+  exit(0);
+}
+      </programlisting>
+    </example>
+  </section>
+</chapter>
+

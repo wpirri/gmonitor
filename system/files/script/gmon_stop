@@ -1,0 +1,84 @@
+#!/bin/sh
+
+SU="su -s /bin/sh -c "
+SU_USER="gmonitor"
+
+if [ -f /etc/gmonitor ]; then
+  . /etc/gmonitor
+else
+  if [ -f /etc/sysconfig/gmonitor ]; then
+    . /etc/sysconfig/gmonitor
+  else
+    if [ -f /usr/etc/gmonitor ]; then
+      . /usr/etc/gmonitor
+    else
+      if [ -f /usr/etc/sysconfig/gmonitor ]; then
+        . /usr/etc/sysconfig/gmonitor
+      fi
+    fi
+  fi
+fi
+
+stop_proccess()
+{
+        for p in `${PS_EAF} | grep -v grep | grep -v gmon_stop | grep "${1}" | awk '{ print $2 }'`
+        do
+                $SU "kill ${p} >/dev/null 2>&1" $SU_USER
+        done
+	#sleep 2
+        #for p in `${PS_EAF} | grep -v grep | grep -v gmon_stop | grep "${1}" | awk '{ print $2 }'`
+        #do
+        #        kill -9 $p >/dev/null 2>&1
+        #done
+}
+
+stop_one_service()
+{
+	servicio=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $1 }'`
+	descripcion=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $2 }'`
+	modo=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $3 }'`
+	server=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $4 }'`
+
+	if [ "X${servicio}" = "X" ]
+	then
+		exit 1
+	fi
+
+        if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]
+        then
+        	echo "Deteniendo: ${descripcion}"
+        	stop_proccess "$SERVER_BIN/gmq -n $servicio"
+        else
+        	echo "Deteniendo: ${descripcion}"
+        	stop_proccess "$server -n $servicio"
+        fi
+}
+
+stop_all_services()
+{
+	service_list=""
+        server_tab=`cat $SERVER_CONF/server.tab | grep -v "^#" | awk -F'|' '{ print $1 }'`
+	for servicio in $server_tab
+        do
+		service_list="${servicio} ${service_list}"
+        done
+
+	for i in $service_list
+	do
+#		if [ "X${i}" == "Xgm_config" ]
+#		then
+#			echo "Servicio de configuracion:"
+#			echo "Esperando 10 seg. que bajen otros procesos"
+#			sleep 10
+#		fi
+		stop_one_service $i
+	done
+}
+
+if [ "X${1}" = "Xall" ] || [ "X${1}" = "XALL" ]
+then
+	stop_all_services
+else
+	stop_one_service $1
+fi
+

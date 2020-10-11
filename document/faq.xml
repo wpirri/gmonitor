@@ -1,0 +1,31 @@
+<?xml version="1.0" standalone="no"?>
+
+<preface>
+<title>Acerca de esta guía</title>
+<para>Esta guía está destinada a resolver las preguntas mas frecuentes que se pueda realizar el programador o administador que utilice o desee utilizar el sistema Gnu-Monitor.</para>
+</preface>
+<chapter>
+<title>Qué es Gnu-Monitor?</title>
+<para>Gnu-Monitor es una herramienta útil para el desarrollo de sistemas de tres capas ya que soluciona los problemas de interconexión entre client y servidor brindando además un entorno con control transaccional.</para>
+</chapter>
+<chapter>
+<title>Por qué se distribuye bajo licencia GNU?</title>
+<para>Se distribuye bajo las licecias GNU GPL, LGPL y FDL para que el usuario final sea libre de utilisarlo y modificarlo a sus necesidades y si lo deséa también colaborar con el desqarrollo, siempre protegiendo al producto por medio de estas licencias.</para>
+</chapter>
+<chapter>
+<title>Qué hace?</title>
+<para>Gnu-Monitor en sus diversos módulos se encarga de comunicar el cliente con el servidor, controlar el estado de la comunicación, rutear las convocatorias al servicio que le corresponda, mantener un balance de carga de los servidores y encapsular la comunicación en un entorno transaccional.</para>
+</chapter>
+<chapter>
+<title>A quién está dirigido?</title>
+<para>El sistema Gnu-Monitor está hecho para desarrolladores de sistemas distribuidos, para que lo utilicen como una base para el desarrollo de su aplicación cliente/servidor.</para>
+</chapter>
+<chapter>
+<title>Cuáles son los requisitos para instalarlo?</title>
+<para>Para la instalación del server es necesaria una plataforma Linux, FreeBSD o UNIX, conel compilador gcc instalado ya que el sistema se distribuye a través de los fuentes y deberá ser compilado en la plataforma donde se lo instale.</para>
+<para>El cliente por el momento solo está disponible para Linux, FreeBSD y UNIX aunque en breve también lo estará para plataformas win32.</para>
+</chapter>
+<chapter>
+<title>Cómo contacto al grupo de desarrollo?</title>
+<para>El grupo de desarrollo de Gnu-Monitor se pude contactar desde su página web principal <ulink url="http://www.gnumonitor.com.ar">http://www.gnumonitor.com.ar</ulink> o a través de la casilla de mail del proyecto <ulink url="mailto:gnumonitor@gnumonitor.com.ar">gnumonitor@gnumonitor.com.ar</ulink>.</para>
+</chapter>

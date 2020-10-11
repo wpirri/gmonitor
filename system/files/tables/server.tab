@@ -1,0 +1,4 @@
+# Tabla: server
+# nombre|descripcion|modo|servicio
+#gm_sysps|Comando ps|1|/bin/ps
+#gm_sysdate|Comando date|1|/bin/date

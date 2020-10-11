@@ -1,0 +1,16 @@
+
+ Server gm_squeue
+ ------------------------------------------------------------------------------
+
+ ------------------------------------------------------------------------------
+ -    Servicio     -       Modo       -             Convocar                  -
+ ------------------------------------------------------------------------------
+ .enqueue           GM_MSG_TYPE_NOT     Notify()
+ .dequeue           GM_MSG_TYPE_INT     Connect() Send() Recv()
+ .create-queue      GM_MSG_TYPE_NOT     Notify()
+ .drop-queue        GM_MSG_TYPE_NOT     Notify()
+ .clear-queue       GM_MSG_TYPE_NOT     Notify()
+ .clear-all-queue   GM_MSG_TYPE_NOT     Notify()
+ .info-queue        GM_MSG_TYPE_CR      Call();
+ .list-queue        GM_MSG_TYPE_INT     Connect() Send() Recv()
+

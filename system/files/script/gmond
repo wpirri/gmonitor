@@ -1,0 +1,59 @@
+#! /bin/sh
+
+if [ -f /etc/gmonitor ]; then
+  . /etc/gmonitor
+else
+  if [ -f /etc/sysconfig/gmonitor ]; then
+    . /etc/sysconfig/gmonitor
+  else
+    if [ -f /usr/etc/gmonitor ]; then
+      . /usr/etc/gmonitor
+    else
+      if [ -f /usr/etc/sysconfig/gmonitor ]; then
+        . /usr/etc/sysconfig/gmonitor
+      fi
+    fi
+  fi
+fi
+
+SU="su -s /bin/sh -c "
+SU_USER="gmonitor"
+
+#
+# Este script levanta el listener, el router de transacciones y una instancia
+# de cada servicio configurado en el monitor transaccional.
+# Si se decide utilizar inetd o xinetd se deberán comentar las lineas que
+# convocan al programa gmd.
+#
+
+case $1 in
+  start)
+    #$SU "${SERVER_BIN}/gmd -d --mode=listener" $SU_USER
+    $SU "${SERVER_BIN}/gmt -d --debug $LOG_LEVEL" $SU_USER
+    sleep 3
+    $SERVER_BIN/gmon_start all
+  ;;
+  stop)
+    $SERVER_BIN/gmon_stop all
+
+    gmt_pid=`ps -eaf | grep -v grep | grep $SERVER_BIN/gmt | awk '{ print $2; }'`
+    $SU "kill ${gmt_pid}" $SU_USER
+
+    #gmd_pid=`ps -eaf | grep -v grep | grep $SERVER_BIN/gmd | awk '{ print $2; }'`
+    #$SU "kill ${gmd_pid}" $SU_USER
+  ;;
+  status)
+    $SU "${SERVER_BIN}/gmon_status all" $SU_USER
+  ;;
+  restart)
+    $0 stop && $0 start
+  ;;
+  reload)
+    gmt_pid=`ps -eaf | grep -v grep | grep $SERVER_BIN/gmt | awk '{ print $2; }'`
+    $SU "kill -HUP ${gmt_pid}" $SU_USER
+  ;;
+  *)
+    echo "Use $0 start|stop|restart|status|reload"
+  ;;
+esac
+

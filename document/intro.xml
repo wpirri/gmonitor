@@ -1,0 +1,26 @@
+<?xml version="1.0" standalone="no"?>
+
+<chapter lang="es" id="intro">
+  <title>Introducción</title>
+  <para>En este capítulo se intentará dar una introducción a los conceptos básicos que les permitirán entender el funcionamiento de un sistema transaccional cliente servidor de tres capas.</para>
+  <section>
+    <title>Sistema cliente servidor</title>
+    <para>Es un sistema donde se separan las funcionalidades de una aplicación cliente (la que interactúa con el medio ya sea persona, dispositivo u otro software) y la parte servidora (la que interactúa con los datos o los genera). De esta forma la inteligencia del sistema se divide en dos o mas aplicaciones que pueden estar ejecutandose en diferentes computadores o no. Con esto se logra independizar el cliente del servidor permitiendo que un mismo servidor por ejemplo sirva a varios clientes de distinta naturaleza como pueden ser maquinarias de una linea de producción y terminales para la carga de datos en un laboratorio.</para>
+  </section>
+  <section>
+    <title>Sistema de tres capas</title>
+    <para>En un sistema cliente servidor básico de dos capas generalmente los datos forman parte de la capa servidora, separar en la capa servidora las aplicaciones server de los datos permitiría independizar los servers del medio utilizado para almacenar los datos, que podría ser una base de datos externa. Esto da lugar al sistema de tres capas donde una capa pertenece a las aplicaciones del cliente, otra a las aplicaciones servidoras y la tercera al medio de almacenamiento o generación de datos.</para>
+  </section>
+  <section>
+    <title>Sistema transaccional</title>
+    <para>Un sistema transaccional nos asegura la consistencia de los datos obtenidos y/o guardados al brindarnos las herramientas necesarias para el control del inicio y fin de una operación o transacción de forma de poder tomar las medidas necesarias en caso de fallo en alguno de los procesos intermedios por terminación anormal. Esto combinado con una base de datos relacional asegura una total integridad y consistencia de los datos.</para>
+  </section>
+  <section>
+    <title>Gnu-Monitor</title>
+    <para>GNU-Monitor es un monitor transaccional desarrollado en C/C++ que nos permite construir y mantener de forma muy sencilla aplicaciones de tipo cliente/servidor de tres capas a travez de una interface orientada a objetos y disponible bajo las licencias GNU GPL y LGPL.</para>
+    <figure>
+      <title>Sistema cliente servidor de tres capas con Gnu-Monitor</title>
+      <graphic fileref="images/3capas.jpg" format="JPG" width="80%" scale="40" />
+    </figure>
+  </section>
+</chapter>

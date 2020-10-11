@@ -1,0 +1,265 @@
+<?xml version="1.0" standalone="no"?>
+<chapter lang="es" id="protmsg">
+  <title>Protocolo de mensajería</title>
+  <para>La mensajería entre el cliente y el sistema Gnu-Monitor se realiza a través de un mensaje que contiene un header en texto plano (sin codificar) de 146 bytes.</para>
+  <para>El header cuenta con suficiente información para determinar el origen del mensaje, varios valores de identificación y autenticación del cliente, tipo de mensaje, servicio solicitado, etc.</para>
+  <para>A continuación detallaremos el contenido del header y el significado de cada uno de sus componentes.</para>
+  <table><title>Componentes del header</title>
+  <tgroup cols="3">
+    <thead>
+      <row>
+        <entry>Campo</entry>
+        <entry>Inicio</entry>
+        <entry>Tamaño</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry>TipoMensaje</entry>
+        <entry>0</entry>
+        <entry>1</entry>
+      </row>
+      <row>
+        <entry>VersionHeader</entry>
+        <entry>1</entry>
+        <entry>3</entry>
+      </row>
+      <row>
+        <entry>IdUsuario</entry>
+        <entry>4</entry>
+        <entry>16</entry>
+      </row>
+      <row>
+        <entry>IdCliente</entry>
+        <entry>20</entry>
+        <entry>16</entry>
+      </row>
+      <row>
+        <entry>Key</entry>
+        <entry>36</entry>
+        <entry>16</entry>
+      </row>
+      <row>
+        <entry>IdGrupo</entry>
+        <entry>52</entry>
+        <entry>16</entry>
+      </row>
+      <row>
+        <entry>Funcion</entry>
+        <entry>68</entry>
+        <entry>32</entry>
+      </row>
+
+      <row>
+        <entry>IdTrans</entry>
+        <entry>100</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>IdCola</entry>
+        <entry>105</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>IdMoreData</entry>
+        <entry>110</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>SecuenciaConsulta</entry>
+        <entry>115</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>SecuenciaRespuesta</entry>
+        <entry>120</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>OrigenConsulta</entry>
+        <entry>125</entry>
+        <entry>1</entry>
+      </row>
+      <row>
+        <entry>OrigenRespuesta</entry>
+        <entry>126</entry>
+        <entry>1</entry>
+      </row>
+      <row>
+        <entry>IdOrigen</entry>
+        <entry>127</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>IdRouter</entry>
+        <entry>132</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>IdDestino</entry>
+        <entry>137</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>TimeStamp</entry>
+        <entry>142</entry>
+        <entry>10</entry>
+      </row>
+      <row>
+        <entry>CodigoRetorno</entry>
+        <entry>152</entry>
+        <entry>5</entry>
+      </row>
+      <row>
+        <entry>Crc</entry>
+        <entry>157</entry>
+        <entry>16</entry>
+      </row>
+      <row>
+        <entry>TamMensaje</entry>
+        <entry>173</entry>
+        <entry>10</entry>
+      </row>
+      <row>
+        <entry>IndiceMensaje</entry>
+        <entry>183</entry>
+        <entry>10</entry>
+      </row>
+      <row>
+        <entry>TamMaxMensaje</entry>
+        <entry>193</entry>
+        <entry>10</entry>
+      </row>
+      <row>
+        <entry>TamTotMensaje</entry>
+        <entry>203</entry>
+        <entry>10</entry>
+      </row>
+    </tbody>
+  </tgroup>
+  </table>
+  <section>
+    <title>TipoMensaje</title>
+    <para>Este flag indica el tipo de mensaje al que corresponde entre los comentados anteriormente.</para>
+    <para>Tipo C: Mensaje de consulta en una comunicación de tipo consulta/respuesta.</para>
+    <para>Tipo R: Mensaje de respuesta a una consulta de tipo C.</para>
+    <para>Tipo M: Mensaje tipo evento.</para>
+    <para>Tipo O: Mensaje de respuesta a una consulta tipo M.</para>
+    <para>Tipo G: Mensaje de consulta y peticion de mas datos en una comunicación de tipo interactiva.</para>
+    <para>Tipo L: Mensaje de respuesta a una consulta de tipo G.</para>
+    <para>Tipo Q: Mensaje de tipo encolado.</para>
+    <para>Tipo S: Mensaje de respuesta a una consulta de tipo Q.</para>
+    <para>Tipo N: Mensaje de tipo notificación.</para>
+    <para>Tipo P: Mensaje de respuesta a uno de tipo N.</para>
+    <para>Este campo lo llenan tanto el cliente como el servidor y sirve para determinar el procesamiento que se le va a dar a un mensaje del lado del servidor asi como para determinar si una respuesta corresponde con la consulta hecha del lado del cliente.</para>
+  </section>
+  <section>
+    <title>VersionHeader</title>
+    <para>Contiene el número de versión del protocolo de mensajería, se utilizará para lograr compatibilidad hacia atrás en las versiones estables.</para>
+    <para>Este valor se mantendrá en cero (000) hasta el primer release estable donde pasará a tomar el valor 1 (001).</para>
+    <para>Cada vez que haya que cambiar el formato del header se completará en este campo el número del release en el que se implementó el cambio en el protocolo.</para>
+    <para>Los parsers guardarán compatibilidad hacia atrás con respecto al cliente, esto significa que si un cliente intenta conectarse con una versión del protocolo inferior a la del servidor éste le contestará en esa misma versión.</para>
+    <para>Por el contrario si un cliente intenta conectarse con una versión del protocolo superior a la del server la comunicación será rechazada.</para>
+    <para>Este campo se llena tanto del lado cliente como del servidor.</para>
+  </section>
+  <section>
+    <title>IdUsuario</title>
+    <para>Corresponde al la identificacion del proceso que utiliza la API del cliente para lograr comunicación con el sistema Gnu-Monitor.</para>
+    <para>Es útil en el caso de que varias aplicaciones utilicen los servicios desde el mismo cliente y séa necesario individualizarlas a los efectos de enviarles mensajes no solicitados o generar filtros de mensajes especificos, grupos de distribución, etc.</para>
+    <para>El valor de este campo se inicializa en el momento de iniciar la comunicación y se mantiene constante durante toda la transacción, en caso de variar por algún error del driver no producirá ningún efecto ya que unicamente se registra su valor en el momento de iniciar la comunicación.</para>
+  </section>
+  <section>
+    <title>IdCliente</title>
+    <para>Generalmente el cliente deberá completar este campo con el nombre de host de la terminal donde se encuentra corriendo el proceso, mientras el server lo completará con su propio nombre de host.</para>
+    <para>Tambien este campo se puede utilizar para definir grupos de distribución de mensajes.</para>
+    <para>El valor de este campo se inicializa en el momento de iniciar la comunicación y se mantiene constante durante toda la transacción, en caso de variar por algún error del driver no producirá ningún efecto ya que unicamente se registra su valor en el momento de iniciar la comunicación.</para>
+  </section>
+  <section>
+    <title>Key</title>
+    <para>Este campo es para los servicios que requieran una autenticación, en esos casos la clave o el mensaje completo deberán cifrarse</para>
+  </section>
+  <section>
+    <title>IdGrupo</title>
+    <para>Este campo se utiliza para identificar grupo de aplicaciones y es útil si se tiene la necesidad de enviar algún mensaje a todos los clientes de determinado grupo.</para>
+    <para>El valor de este campo se inicializa en el momento de iniciar la comunicación y se mantiene constante durante toda la transacción, en caso de variar por algún error del driver no producirá ningún efecto ya que unicamente se registra su valor en el momento de iniciar la comunicación.</para>
+  </section>
+  <section>
+    <title>Funcion</title>
+    <para>Este campo lo llena el cliente con el nombre del servicio que deberá ser llamado en el server para procesar los datos del mensaje.</para>
+    <para>Debe corresponder a un nombre de servicio registrado de lo contrario se devolverá un error.</para>
+    <para>Consta de hasta 32 caracteres alfanuméricos y puede comenzar con un punto . pero este caracter se reserva para los comando internos del sistema Gnu-Monitor para que no sean confundidos con otros comando de usuario que puedan contener nombres similares. Por este motivo los comando internos están limitados a 31 caracteres (32 con el punto).</para>
+  </section>
+  <section>
+    <title>IdTrans</title>
+    <para>En un mensaje transaccional luego del inicio de la transacción, viaja en este campo el indice de la transacción para que todo los servicios puedan identificar a que transacción deben asignar el mensaje.</para>
+  </section>
+  <section>
+    <title>IdCola</title>
+    <para>!COMPLETAR!.</para>
+  </section>
+  <section>
+    <title>IdMoreData</title>
+    <para>Se utiliza en mensajes interactivos para indicar el indice a la sesión interactiva que permite hacer referencia a los datos guardados cuando se pide continuación.</para>
+  </section>
+  <section>
+    <title>SecuenciaConsulta</title>
+    <para>Este valor es completado por el cliente que lo utiliza como un contador incremental para validar los mensajes de respuesta. A la vuelta del mensaje se controla que la secuencia coincida.</para>
+  </section>
+  <section>
+    <title>SecuenciaRespuesta</title>
+    <para>Este valor lo completa el servicio que responde a un mensaje del tipo interactivo, es para controlar la secuencia en la respuestas múltiples.</para>
+  </section>
+  <section>
+    <title>OrigenConsulta</title>
+    <para>Este campo indica si la consulta es iniciada en un Cliente, un Server o el Router.</para>
+  </section>
+  <section>
+    <title>OrigenRespuesta</title>
+    <para>Este campo indica si la respuesta es resuelta desde un Cliente, un Server o el Router.</para>
+  </section>
+  <section>
+    <title>IdOrigen</title>
+    <para>Este campo es completado por el originante del mensaje utilizando el valor de su propio PID.</para>
+  </section>
+  <section>
+    <title>IdRouter</title>
+    <para>Este campo es completado por el ruteador del mensaje utilizando el valor de su propio PID.</para>
+  </section>
+  <section>
+    <title>IdDestino</title>
+    <para>Este campo es completado por el interprete del mensaje utilizando el valor de su propio PID.</para>
+  </section>
+  <section>
+    <title>TimeStamp</title>
+    <para>Este dato lo completan tanto el cliente como el servidor y es útil al momento de generar logs de mensajes que deban guardar cierta cronología tanto del lado cliente como servidor.</para>
+    <para>Escaso que se requiera sincronizar ambas partes o se implemente algún mensaje de sincronización este campo conteiene los datos necesarios.</para>
+  </section>
+  <section>
+    <title>CodigoRetorno</title>
+    <para>Este campo se completa con 0 en las consultas y en las respuestas si contiene un valor distinto a 0 significa que hubo algún tipo de error, ya sea dentro del sistema monitor como dentro del server programado por el usuario. Para esto hay una serie de valores definidos.</para>
+  </section>
+  <section>
+    <title>Crc</title>
+    <para>Tanto el cliente como el servidor completan en este campo un codigo de redundancia ciclica del contenido de datos del mensaje.</para>
+    <para>Ya que su calculo incluye tambien al header, previamente se llena este campo con espacios.</para>
+    <para>Su propósito es poder verificar la integridad del mensaje.</para>
+  </section>
+  <section>
+    <title>TamMensaje</title>
+    <para>Como su nombre lo indica este campo contiene el valor numerico de la porción de datos del mensaje, sin el header.</para>
+  </section>
+  <section>
+    <title>IndiceMensaje</title>
+    <para>Se utiliza en mensajes del tipo interactivo para indicar en una petición de mas datos el offset a partir del cual se deberá hacer la devolución de la siguiente porción de datos.</para>
+    <para>En el primer mensaje correspondiente a esta modalidad (interactiva) este dato debe valer cero.</para>
+  </section>
+  <section>
+    <title>TamMaxMensaje</title>
+    <para>Se utiliza en mensajes del tipo interactivo para indicar el tamaño máximo que se devolverá en cada respuesta.</para>
+  </section>
+  <section>
+    <title>TamTotMensaje</title>
+    <para>En mensaje del tipo interactivo representa el tamaño total del bloque de datos que se entregará con los sucesivos pedidos de MAS DATOS.</para>
+  </section>
+</chapter>
+

@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="no"?>
+
+<chapter lang="es" id="monitordev">
+	<title>Desarrollo de Gnu-Monitor</title>
+	<para>Este capítulo está orientado a servir de ayuda para los miembros del grupo de desarrollo de Gnu-Monitor.</para>
+	<section>
+		<title>Uso de CVS</title>
+		<para>Para facilitar la taréa de desarrollo cooperativo los fuentes del sistema Gnu-Monitor se encuentran alojados en un server CVS provisto de forma gratuita por Source Forge.</para>
+		<section>
+			<title>Acceso anónimo</title>
+			<para>Este tipo de acceso permite crearse en forma local una imagen del CVS pero util solamente a fines de compilar la versión de desarrollo del sistema ya que por este método no será posible realizar actualizaciones a los fuentes en el CVS oficial del proyecto.</para>
+			<para>Para obtener esta imagen del CVS debe logearse de forma anónima con: <command>cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/gnu-monitor login</command> y luego traerse el árbol de fuentes con: <command>cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/gnu-monitor co <constant>module-name</constant></command>, donde <constant>module-name</constant> puede ser <constant>system</constant>, <constant>document</constant> o <constant>samples</constant> según lo que se desee obtener.</para>
+		</section>
+		<section>
+			<title>Acceso para desarrolladores</title>
+			<para>Este tipo de acceso es el que permie el desarrollo cooperativo tanto del sistema principal del monitor transaccional como de los distintos manuales que acompañan al sistema y sus programas de ejemplo.</para>
+			<para>Para utilizar este tipo de acceso al CVS de Gnu-Monitor es necesario contar con un usuario que pertenezca al grupo de desarrollo y cuente con los permisos necesarios otorgados por el administrador.</para>
+			<para>Previo a la utilización del CVS para desarrolladores debe ser definida la variable de entorno <constant>CVS_RSH</constant> con el valor <constant>ssh</constant> ejecutando <command>export CVS_RSH=ssh</command>.</para>
+			<para>El primer paso es obtener el árbol de fuentes del cvs. Al igual que para el acceso anónimo se deberá ejecutar el comando para cada uno de los módulos que componen el sistema y que se deseen obtener. Esto se logra ejecutando: <command>cvs -z3 -d:ext:<constant>developper-name</constant>@cvs.sourceforge.net:/cvsroot/gnu-monitor co <constant>module-name</constant></command> donde como ya se mencionó anteriormante <constant>module-name</constant> puede ser <constant>system</constant>, <constant>document</constant> o <constant>samples</constant> según lo que se desee obtener.</para>
+			<para>En adelante para mantener actualizado el árbol de fuentes basta con ejecutar <command>cvs update</command> y para actualizar en el CVS los cambios hechos en los fuentes en forma local se ejecuta <command>cvs commit</command> ambos comando se deberán ejecutar dentro del directorio que se quiere actualizar y son recursivos.</para>
+			<para>En caso que sea necesario agregar o quitar archivos al desarrollo, esto se indica al CVS por medio de los comandos <command>cvs add <constant>filename</constant></command> y <command>cvs remove <constant>filename</constant></command>. Luego siempre será necesario ejecutar <command>cvs commit</command> para que se impacten los cambios.</para>
+		</section>
+	</section>
+</chapter>
+

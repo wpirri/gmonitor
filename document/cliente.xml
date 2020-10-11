@@ -1,0 +1,709 @@
+<?xml version="1.0" standalone="no"?>
+
+<chapter lang="es" id="cliente">
+  <title>Cliente</title>
+  <para>Para facilitar la programación todo lo necesario para comunicarse con el sistema GNU-Monitor se encuentra en la librería libgmc.so y el objeto declarado en gmc.h.</para>
+  <section>
+    <title>Referencia rápida</title>
+    <para>A continuación se observan lo miembros de la clase <classname>CGMClient</classname> que implementa la interface del cliente.</para>
+    <table><title>Referencia rápida</title>
+    <tgroup cols="2">
+    <thead>
+      <row>
+        <entry>Miembro</entry>
+        <entry>Descripción</entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry><function>CGMClient</function></entry>
+        <entry>Constructor de la clase, recibe como parámetro un objeto con los datos del cliente y el host donde se encuentra el sistema GNU-Monitor.</entry>
+      </row>
+      <row>
+        <entry><function>~CGMClient</function></entry>
+        <entry>Destructor de la clase, libera toda la memoria alocada por la interface del cliente.</entry>
+      </row>
+      <row>
+        <entry><function>Free</function></entry>
+        <entry>Se utiliza para liberar la memoria alocada para el buffer al recibir un mensaje.</entry>
+      </row>
+      <row>
+        <entry><function>Init</function></entry>
+        <entry>Asigna los datos del cliente y el host donde se encuentra el sistema Gnu-Monitor, se utiliza cuando se quieren cargar estos datos en algún istante luego de la construcción del objeto.</entry>
+      </row>
+      <row>
+        <entry><function>Begin</function></entry>
+        <entry>Marca el inicio de una transacción dentro de una comunicación.</entry>
+      </row>
+      <row>
+        <entry><function>Commit</function></entry>
+        <entry>Marca la aceptación de una transacción.</entry>
+      </row>
+      <row>
+        <entry><function>Abort</function></entry>
+        <entry>Marca la cancelación de una transacción.</entry>
+      </row>
+      <row>
+        <entry><function>Notify</function></entry>
+        <entry>Envía un mensaje de tipo aviso a un servicio, los eventos no contienen datos en su respuesta y se entrega al servidor que resuelva el servicio ue contenga menos mensajes encolados.</entry>
+      </row>
+      <row>
+        <entry><function>Broadcast</function></entry>
+        <entry>Envía un mensaje de tipo aviso a múltiples destinatarios identificados por IdUsuario, IdCliente e IdGrupo.</entry>
+      </row>
+      <row>
+        <entry><function>SetUnsol</function></entry>
+        <entry>Especifica una función para resolver los mensajes no solicitados en modo sincrónico.</entry>
+      </row>
+      <row>
+        <entry><function>CheckService</function></entry>
+        <entry>Realiza una consulta de mensajes no solicitados en modo asincrónico.</entry>
+      </row>
+      <row>
+        <entry><function>Post</function></entry>
+        <entry>Envía un mensaje de tipo evento a todos los servers que resuelvan el servicio solicitado.</entry>
+      </row>
+      <row>
+        <entry><function>Suscribe</function></entry>
+        <entry>Envía un pedido de suscripcion para mensajes no solicitados.</entry>
+      </row>
+      <row>
+        <entry><function>UnSuscribe</function></entry>
+        <entry>Envía un pedido de baja de suscripcion para mensajes no solicitados.</entry>
+      </row>
+      <row>
+        <entry><function>Call</function></entry>
+        <entry>Envía un mensaje de tipo consulta/respuesta al servidor que responda al servicio y tenga menos mensajes encolados.</entry>
+      </row>
+      <row>
+        <entry><function>ACall</function></entry>
+        <entry>Envía un mensaje de tipo consulta/respuesta asincrónico al servidor que responda al servicio y tenga menos mensajes encolados.</entry>
+      </row>
+      <row>
+        <entry><function>GetReply</function></entry>
+        <entry>Toma la respuesta asincrónica de un mensaje de tipo consulta/respuesta.</entry>
+      </row>
+      <row>
+        <entry><function>Cancel</function></entry>
+        <entry>Finaliza de forma anticipada la recepcion del mensaje asincrónico de tipo consulta/respuesta.</entry>
+      </row>
+      <row>
+        <entry><function>Connect</function></entry>
+        <entry>Inicia una conversación interactiva.</entry>
+      </row>
+      <row>
+        <entry><function>Send</function></entry>
+        <entry>Envía un mensaje de tipo interactivo.</entry>
+      </row>
+      <row>
+        <entry><function>Recv</function></entry>
+        <entry>Recibe una respuesta de un mensaje de tipo interactivo un mensaje de tipo interactivo.</entry>
+      </row>
+      <row>
+        <entry><function>Discon</function></entry>
+        <entry>Termina una conversación interactiva</entry>
+      </row>
+      <row>
+        <entry><function>Enqueue</function></entry>
+        <entry>Envía un mensaje de tipo encolado.</entry>
+      </row>
+      <row>
+        <entry><function>Dequeue</function></entry>
+        <entry>Recibe un mensaje de tipo encolado. Con esta funcion se puede implementar en un cliente el tratamiento de mensajes encolados en lugar de hacerlo desde un server.</entry>
+      </row>
+    </tbody>
+    </tgroup>
+    </table>
+  </section>
+  <section>
+    <title>Constructor de la clase</title>
+    <section>
+      <title>CGMClient</title>
+      <para>Al contruir el objeto de la interface cliente para el sistema Gnu-Monitor uede pasarse como parámetro un puntero a un objeto de la clase <classname>CGMInitData</classname> con los datos necesarios para establecer la comunicación con el sistema.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef><function>CGMClient</function></funcdef>
+        <paramdef>CGMInitData <parameter>*init_data = NULL</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>La clase <classname>CGMInitData</classname> está definida de la siguiente forma.</para>
+      <table><title>CGMInitData</title>
+      <tgroup cols="3">
+      <thead>
+        <row>
+          <entry>Miembro</entry>
+          <entry>Tipo</entry>
+          <entry>Descripción</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry><varname>m_host</varname></entry>
+          <entry>string</entry>
+          <entry>Nombre o dirección del host donde se encuentra corriendo el sistema Gnu-Monitor.</entry>
+        </row>
+        <row>
+          <entry><varname>m_port</varname></entry>
+          <entry>long</entry>
+          <entry>Puerto donde escucha el sistema Gnu-Monitor, por defecto este valor es 5533 y no necesita ser asignado salvo que el monitor se configure para otro puerto.</entry>
+        </row>
+        <row>
+          <entry><varname>m_user</varname></entry>
+          <entry>string</entry>
+          <entry>Corresponde al nombre de usuario o proceso que se declarará al sistema Gnu-Monitor, se utiliza para diferenciar si es necesario varias instancias del cliente corriendo en el mismo equipo asi como para la utilización de destinatarios y filtros por destinatario en los mensajes no solicitados. Esta información es accesible del lado del monitor por los servers del tipo standalone.</entry>
+        </row>
+        <row>
+          <entry><varname>m_client</varname></entry>
+          <entry>string</entry>
+          <entry>Al igual que el anterior es otra forma de identificar al cliente, este dato debería estar relacionado con el equipo donde corre la apliación cliente.</entry>
+        </row>
+        <row>
+          <entry><varname>m_group</varname></entry>
+          <entry>string</entry>
+          <entry>Al igual que los anteriores este datos se utiliza para identificar al cliente dentro de un grupo de aplicaciones.</entry>
+        </row>
+        <row>
+          <entry><varname>m_key</varname></entry>
+          <entry>string</entry>
+          <entry>Este dato puede ser utilizado para encriptación, eviando a travez de él la clave pública del cliente o utlizarse conpropósitos de identificación enviando una contraseña encriptada.</entry>
+        </row>
+        <row>
+          <entry><varname>m_flags</varname></entry>
+          <entry>long</entry>
+          <entry>Aún no se utiliza.</entry>
+        </row>
+      </tbody>
+      </tgroup>
+      </table>
+    </section>
+    <section>
+      <title>Init</title>
+      <para>Si no se pueden pasar los datos necesarios en la creación del objeto se puede utilizar este miembro de la clase para inicializar estos valores.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>void <function>Init</function></funcdef>
+        <paramdef>CGMInitData <parameter>*init_data = NULL</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </section>
+    <section>
+      <title>Free</title>
+      <para>Se utliliza para liberar el buffer donde se almacenó el mensaje recibido, este es el buffer devuelto por los miembros Call, GetReply y Recv</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Free</function></funcdef>
+        <paramdef>char <parameter>*buffer</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+    </section>
+  </section>
+  <section>
+    <title>Manejo de transacciones</title>
+    <section>
+      <title>Begin</title>
+      <para>Inicia un bloque de operaciones comprendida dentro de una misma transacción.</para>
+      <para>La transacción se termina de forma normal llamando a los miembros <function>Commit</function> o <function>Abort</function>, también se temina con un <function>Abort</function> implícito si finaliza la comunicación con el cliente sin haber convocado a alguno de los miembros de finalización de transacción.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Begin</function></funcdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>to</parameter> es el tiempo máximo en centésimas de segundo que puede durar la transacción antes que se aborte en forma automática.</para>
+    </section>
+    <section>
+      <title>Commit</title>
+      <para>Se utiliza para finalizar una transacción de forma satisfactoria. Provoca que se realice un commit a la base de datos.</para>
+      <para>La tranzacción debe comenzarse con <function>Begin</function>.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Commit</function></funcdef>
+        <void />
+      </funcprototype>
+      </funcsynopsis>
+    </section>
+    <section>
+      <title>Abort</title>
+      <para>Finaliza una transacción de forma que los datos modificados desde el <function>Begin</function> no impactan en la base de datos.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Abort</function></funcdef>
+        <void />
+      </funcprototype>
+      </funcsynopsis>
+    </section>
+  </section>
+  <section>
+    <title>Mensajes tipo evento</title>
+    <section>
+      <title>Notify</title>
+      <para>Envía un mensaje de tipo aviso a un servicio, los eventos no contienen datos en su respuesta y se entrega al servidor que resuelva el servicio que contenga menos mensajes encolados.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Notify</function></funcdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+        <paramdef>const char <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>len</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Notify</function></funcdef>
+        <paramdef>string <parameter>&amp;event</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;data</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Notify</function></funcdef>
+        <paramdef>string <parameter>&amp;event</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*data</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del evento notificado.</para>
+      <para>El parámetro <parameter>data</parameter> contiene el mensaje asociado al evento.</para>
+      <para>El parámetro <parameter>len</parameter> contiene el tamaño del mensaje asociado al evento.</para>
+    </section>
+    <section>
+      <title>Broadcast</title>
+      <para>Notifica un evento a todos los grupos, clientes y usuarios que cumplan las condiciones de la máscara pasada como parámetro. Para este miembro se pueden utilizar los comodines * y &amp; para formar los nombres de los destinatarios.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Broadcast</function></funcdef>
+        <paramdef>const char <parameter>*user</parameter></paramdef>
+        <paramdef>const char <parameter>*client</parameter></paramdef>
+        <paramdef>const char <parameter>*group</parameter></paramdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+        <paramdef>const char <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>len</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>user</parameter> contiene la máscara para el usuario de destino del mensaje.</para>
+      <para>El parámetro <parameter>client</parameter> contiene la máscara para el cliente de destino del mensaje.</para>
+      <para>El parámetro <parameter>group</parameter> contiene la máscara para el grupo de destino del mensaje.</para>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del evento notificado.</para>
+      <para>El parámetro <parameter>data</parameter> es un puntero al mensaje a enviar.</para>
+      <para>El parámetro <parameter>len</parameter> es el tamaño del mensaje.</para>
+    </section>
+    <section>
+      <title>SetUnsol</title>
+      <para>Especifica la función que debe ser llamada en caso de recibir mensajes no solicitados y aún no se definió su estructura.</para>
+    </section>
+    <section>
+      <title>CheckService</title>
+      <para>Lo utiliza el cliente para consultar la existencia de mensajes no pendientes para el cliente dentro de los que hayan sido suscriptos por medio de <function>Suscribe</function>.</para>
+      <para>El miembro está sobrecargado con tres definiciones diferentes para adaptarse a la necesidad</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>CheckService</function></funcdef>
+        <paramdef>char <parameter>*ev_name</parameter></paramdef>
+        <paramdef>char <parameter>*ev_data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>*ev_datalen</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>CheckService</function></funcdef>
+        <paramdef>string <parameter>&amp;ev_name</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;ev_data</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>CheckService</function></funcdef>
+        <paramdef>string <parameter>&amp;ev_name</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*ev_data</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>En el parámetro <parameter>ev_name</parameter> se devuelve el nombre del evento que se ha detectado.</para>
+      <para>En el parámetro <parameter>ev_data</parameter> se devuelve el mensaje asociado con el evento.</para>
+      <para>En el parámetro <parameter>ev_datalen</parameter> se devuelve el tamaño del mensaje asociado con el evento.</para>
+      <para>El parámetro <parameter>to</parameter> es el tiempo máximo expresado en centésimas de segundo que puede demorar la consulta de mensajes no solicitados luego del cual el procedimiento volverá con error de time-out.</para>
+    </section>
+    <section>
+      <title>Post</title>
+      <para>Envía un mensaje de tipo evento al monitor. Junto con el evento también se envía un bloque de datos que será reenviado a los servers y clientes suscritos al evento.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Post</function></funcdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+        <paramdef>const char <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>len</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Post</function></funcdef>
+        <paramdef>string <parameter>&amp;event</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;data</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Post</function></funcdef>
+        <paramdef>string <parameter>&amp;event</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*data</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del evento posteado.</para>
+      <para>El parámetro <parameter>data</parameter> contiene el mensaje asociado al evento.</para>
+      <para>El parámetro <parameter>len</parameter> contiene el tamaño del mensaje asociado al evento.</para>
+    </section>
+    <section>
+      <title>Suscribe</title>
+      <para>Informa al monitor que el cliente debe ser notificado ante la ocurrencia del evento solicitado.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Suscribe</function></funcdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+        <paramdef>char <parameter>typ</parameter></paramdef>
+        <paramdef>SERVICE_FUNCTION <parameter>fcn</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Suscribe</function></funcdef>
+        <paramdef>string <parameter>&amp;event</parameter></paramdef>
+        <paramdef>char <parameter>typ</parameter></paramdef>
+        <paramdef>SERVICE_FUNCTION <parameter>fcn</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del evento al que el cliente deséa suscribirse.</para>
+      <para>El parámetro <parameter>typ</parameter> que es sólo un caracter corresponde al tipo de mensaje que se suscribe.</para>
+      <para>El parámetro <parameter>fcn</parameter> corresponde a un puntero a la función que se llamará ante la ocurrencia del evento.</para>
+    </section>
+    <section>
+      <title>UnSuscribe</title>
+      <para>Solicita al monitor la baja de la suscripción al evento.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>UnSuscribe</function></funcdef>
+        <paramdef>const char <parameter>*event</parameter></paramdef>
+        <paramdef>char <parameter>typ</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>UnSuscribe</function></funcdef>
+        <paramdef>string <parameter>&amp;event</parameter></paramdef>
+        <paramdef>char <parameter>typ</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>event</parameter> indica el nombre del evento al que el cliente deséa desuscribirse.</para>
+      <para>El parámetro <parameter>typ</parameter> indica el tipo de mensaje del servicio que debe desuscribirse.</para>
+    </section>
+  </section>
+  <section>
+    <title>Mensajes tipo consulta/respuesta</title>
+      <para>Para facilitar el pasaje de parámetros en los miembros de <classname>CGMClient</classname> que devuelven buffers de datos se puede utilizar una variable de la clase <classname>CGMBuffer</classname> o una con la estructura <classname>GMIOS</classname> que se detalla a continuación. Por comodidad esta estructura también se la utiliza para los parámetros de entrada.</para>
+      <table><title>Estructura <classname>GMIOS</classname></title>
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>Miembro</entry>
+              <entry>Tipo</entry>
+              <entry>Descripción</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><varname>data</varname></entry>
+              <entry>void *</entry>
+              <entry>Contiene un puntero al inicio del buffer alocado.</entry>
+              <entry><varname>len</varname></entry>
+              <entry>unsigned long</entry>
+              <entry>Contiene el tamaño del buffer alocado en data.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <section>
+      <title>Call</title>
+      <para>Este miembro permite enviar un mensaje a la vez que espera la respuesta, de esta forma se realiza una consulta sincrónica y se cuenta un parámetro para especificar un tiempo límite para recibir la respuesta.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Call</function></funcdef>
+        <paramdef>const char <parameter>*fn</parameter></paramdef>
+        <paramdef>const char <parameter>*query</parameter></paramdef>
+        <paramdef>unsigned int <parameter>qlen</parameter></paramdef>
+        <paramdef>GMIOS <parameter>*presp</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Call</function></funcdef>
+        <paramdef>string <parameter>*fn</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;query</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Call</function></funcdef>
+        <paramdef>string <parameter>*fn</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*query</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>fn</parameter> contiene el nombre del servicio que se convoca.</para>
+      <para>El parámetro <parameter>query</parameter> contiene el mensaje que se asocia a la consulta al servicio.</para>
+      <para>El parámetro <parameter>qlen</parameter> contiene el tamaño del mensaje de consulta.</para>
+      <para>En el parámetro <parameter>presp</parameter> se devuelve el mensaje de respuesta de ejecutar el servicio junto con su tamaño dentro de una estructura <classname>GMIOS</classname>.</para>
+      <para>El parámetro <parameter>to</parameter> indica el tiempo máximo expresado en centésimas de segundo que se esperará por la respuesta luego del cual el llamado terminará con error de time-out.</para>
+      <para>Para facilitar la implementación de los buffers para la comunicación se provee la clase <classname>CGMBuffer</classname> que es utilizada por el miembro <function>Call</function> entre otros.</para>
+    </section>
+    <section>
+      <title>ACall</title>
+      <para>Este miembro trabaja junto con <function>GetReply</function> para realizar una consulta asincrónica enviando solamente la consulta.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>ACall</function></funcdef>
+        <paramdef>const char <parameter>*fn</parameter></paramdef>
+        <paramdef>const char <parameter>*query</parameter></paramdef>
+        <paramdef>unsigned int <parameter>qlen</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>ACall</function></funcdef>
+        <paramdef>string <parameter>*fn</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>&amp;query</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>ACall</function></funcdef>
+        <paramdef>string <parameter>*fn</parameter></paramdef>
+        <paramdef>CGMBuffer <parameter>*query</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>fn</parameter> contiene el nombre del servicio que se convoca.</para>
+    </section>
+    <section>
+      <title>GetReply</title>
+      <para>Se utiliza para recibir la respuesta a una consulta hecha con <function>ACall</function>.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>GetReply</function></funcdef>
+        <paramdef>GMIOS <parameter>*presp</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>GetReply</function></funcdef>
+        <paramdef>CGMBuffer <parameter>&amp;response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>GetReply</function></funcdef>
+        <paramdef>CGMBuffer <parameter>*response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>En el parámetro <parameter>presp</parameter> se devuelve el mensaje de respuesta de ejecutar el servicio junto con su tamaño dentro de una estructura <classname>GMIOS</classname>.</para>
+      <para>El parámetro <parameter>to</parameter> indica el tiempo máximo expresado en centésimas de segundo que se esperará por la respuesta luego del cual el llamado terminará con error de time-out.</para>
+    </section>
+    <section>
+      <title>Cancel</title>
+      <para>Se utiliza para cancelar una consulta hecha con <function>ACall</function> cuando ya no se deséa recibir la respuesta.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Cancell</function></funcdef>
+        <void />
+      </funcprototype>
+      </funcsynopsis>
+    </section>
+  </section>
+  <section>
+    <title>Mensajes tipo interactico</title>
+    <section>
+      <title>Connect</title>
+      <para>Comienza una comunicación para un servicio interactivo.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Connect</function></funcdef>
+        <paramdef>const char <parameter>*fn</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Connect</function></funcdef>
+        <paramdef>string <parameter>&amp;fn</parameter> unsigned long <parameter>transfer_len</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>fn</parameter> contiene el nombre del servicio que se convoca para la conexión interactiva.</para>
+      <para>El parámetro <parameter>transfer_len</parameter> indica el tamaño máximo que deberán tener las respuestas.</para>
+    </section>
+    <section>
+      <title>Send</title>
+      <para>Envía la consulta de un servicio interactivo. Se debe llamar primero a <function>Connect</function>.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Send</function></funcdef>
+        <paramdef>const char <parameter>*query</parameter></paramdef>
+        <paramdef>unsigned int <parameter>qlen</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Send</function></funcdef>
+        <paramdef>CGMBuffer <parameter>&amp;query</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Send</function></funcdef>
+        <paramdef>CGMBuffer <parameter>*query</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>query</parameter> contiene el mensaje que se asocia a la consulta al servicio.</para>
+      <para>El parámetro <parameter>qlen</parameter> contiene el tamaño del mensaje de consulta.</para>
+    </section>
+    <section>
+      <title>Recv</title>
+      <para>Permite recibir los bloques de respuestas de un servicio interactivo.</para>
+      <para>En caso que seam necesarios mas mensajes para completar el bloque de datos de la respuesta esta fución devolverá un código de retorno de GME_MORE_DATA mintras falten datos por entregar.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Recv</function></funcdef>
+        <paramdef>GMIOS <parameter>*presp</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Recv</function></funcdef>
+        <paramdef>CGMBuffer <parameter>&amp;response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Recv</function></funcdef>
+        <paramdef>CGMBuffer <parameter>*response</parameter></paramdef>
+        <paramdef>int <parameter>to</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>En el parámetro <parameter>presp</parameter> se devuelve el mensaje de respuesta de ejecutar el servicio junto con su tamaño dentro de una estructura <classname>GMIOS</classname>.</para>
+      <para>El parámetro <parameter>to</parameter> indica el tiempo máximo expresado en centésimas de segundo que se esperará por la respuesta luego del cual el llamado terminará con error de time-out.</para>
+    </section>
+    <section>
+      <title>Discon</title>
+      <para>Finaliza la comunicación de un servicio interactivo.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Discon</function></funcdef>
+        <void />
+      </funcprototype>
+      </funcsynopsis>
+    </section>
+  </section>
+  <section>
+    <title>Mensajes tipo encolado</title>
+    <section>
+      <title>Enqueue</title>
+      <para>Envía un mensaje para que sea encolado y enviado cuando el servicio esté disponible.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Enqueue</function></funcdef>
+        <paramdef>const char <parameter>*queue</parameter></paramdef>
+        <paramdef>const char <parameter>*data</parameter></paramdef>
+        <paramdef>unsigned int <parameter>datalen</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>El parámetro <parameter>queue</parameter> indica el nombre de la cola donde se encolará el mensaje asociado.</para>
+      <para>El parámetro <parameter>data</parameter> corresponde al mensaje.</para>
+      <para>El parámetro <parameter>datalen</parameter> corresponde al tamaño del mensaje.</para>
+    </section>
+    <section>
+      <title>Dequeue</title>
+      <para>Permite a un cliente recibir los mensajes encolados de los servicios a los que esté suscripto.</para>
+      <funcsynopsis>
+      <funcprototype>
+        <funcdef>int <function>Dequeue</function></funcdef>
+        <paramdef>const char <parameter>*queue</parameter></paramdef>
+        <paramdef>GMIOS <parameter>*presp</parameter></paramdef>
+      </funcprototype>
+      </funcsynopsis>
+      <para>En el parámetro <parameter>queue</parameter> es de entrada salida, si se le asigna un valor se buscarán mensajes unicamente en la cola correspondiente. Si no se le asigna valor se devuelve el nombre de la cola de la cual se extrajo el mensaje de entre las colas del mismo cliente.</para>
+      <para>En el parámetro <parameter>presp</parameter> se devuelve el mensaje de respuesta de ejecutar el servicio junto con su tamaño dentro de una estructura <classname>GMIOS</classname>.</para>
+    </section>
+  </section>
+  <section>
+    <title>Cliente de ejemplo</title>
+    <para>Para demostrar lo sencillo que es desarrollar un cliente para el sistema Gnu-Monitor se muestra a continución un ejemplo de uno que realiza una consulta de un servicio del tipo CONSULTA / RESPUESTA básico.</para>
+    <example>
+      <title>Cliente de ejemplo</title>
+      <programlisting>
+&#035;include &lt;gmonitor/gmc.h&gt;
+&#035;include &lt;iostream&gt;
+
+int main(int argc, char** argv)
+{
+  int rc;
+  int i;
+  CGMInitData gminit;
+  CGMClient *pClient;
+  CGMError gmerror;
+  string servicio;
+  CGMBuffer query;
+  CGMBuffer response;
+
+  gminit.m_user = "USER";
+  gminit.m_client = "CLIENT";
+  gminit.m_key = "KEY";
+  gminit.m_group = "GROUP";
+  servicio = ".eco";
+  query = "la verdad de la milanesa";
+  for(i = 1; i &lt; argc; i++)
+  {
+    if( ! strcmp("-h", argv[i]))
+    {
+      i++;
+      gminit.m_host = argv[i];
+    }
+    else if( ! strcmp("-s", argv[i]))
+    {
+      i++;
+      servicio = argv[i];
+      query.Clear();
+    }
+    else if( ! strcmp("-d", argv[i]))
+    {
+      i++;
+      query = argv[i];
+    }
+    else
+    {
+      cerr &lt;&lt; "Use: " &lt;&lt; argv[0] &lt;&lt; " " &lt;&lt; "[-h host] [-s servicio] [-d dato]" &lt;&lt; endl;
+      exit(1);
+    }
+  }
+  pClient = new CGMClient(&amp;gminit);
+  rc = pClient->Call(servicio, query, response, 30000);
+  if(rc != 0)
+  {
+    cout &lt;&lt; "&lt;!&gt; Error -&gt; " &lt;&lt;  rc &lt;&lt; endl;
+    cout &lt;&lt; "    ERROR: " &lt;&lt; gmerror.Message(rc) &lt;&lt; endl;
+  }
+  else
+  {
+    cout &lt;&lt; "&lt;i&gt; Ok [" &lt;&lt; response.Length() &lt;&lt; "] " &lt;&lt; response.C_Str() &lt;&lt; endl;
+  }
+  delete pClient;
+  return 0;
+}
+      </programlisting>
+    </example>
+  </section>
+</chapter>
+

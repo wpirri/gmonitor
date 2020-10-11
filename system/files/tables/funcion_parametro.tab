@@ -1,0 +1,6 @@
+# Tabla: funcion_parametro
+# funcion|parametro|valor
+#sys_ps_eaf|-e| 
+#sys_ps_eaf|-a| 
+#sys_ps_eaf|-f| 
+#sys_date_format|+YYYYmmdd| 

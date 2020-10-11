@@ -1,0 +1,29 @@
+
+ Server gm_default
+ ------------------------------------------------------------------------------
+
+ ------------------------------------------------------------------------------
+ -    Servicio     -       Modo       -             Convocar                  -
+ ------------------------------------------------------------------------------
+ .new_buffer         GM_MSG_TYPE_CR     Call()
+ .add_buffer         GM_MSG_TYPE_NOT    Notify()
+ .del_buffer         GM_MSG_TYPE_NOT    Notify()
+ .get_buffer         GM_MSG_TYPE_CR 	Call()
+
+
+Este server cumple la función de almacenar buffers que podrán ser utilizados
+por un cliente y/o un server para almacenar información o intercambiar datos
+entre ellos.
+
+Responde a los servicios:
+=========================
+
+.new_buffer
+	Recibe: new_buffer.data, new_buffer.len
+	Devuelve: new_buffer.id
+.add_buffer
+	Recibe: add_buffer.data
+.del_buffer
+
+.get_buffer
+

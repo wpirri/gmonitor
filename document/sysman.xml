@@ -1,0 +1,92 @@
+<?xml version="1.0" standalone="no"?>
+<preface>
+        <title>Acerca de este manual</title>
+        <para>Este manual detalla el funcionamiento del Sistema Monitor transaccional Gnu-Monitor detallando las herramientas necesarias para su funcionamiento y los principios del ruteador de transacciones, los servers básicos del sistema y su interrelación.</para>
+</preface>
+<chapter id="admin">
+  <title>Administracion del sistema</title>
+  <para>En este capítulo se enumeran y describen los scripts y programas que acompañan al proyecto Gnu-Monitor y permiten administrarlo, configurarlo, arrancarlo, detenerlo, etc.</para>
+  <section>
+    <title>Arranque y parada</title>
+    <para>Para el arranque y la parada del sistema se utiliza el script <application>gmond</application> (<application>/etc/init.d/gmond</application>) que admite los parámetros <parameter>start</parameter>, <parameter>stop</parameter>, <parameter>restart</parameter>, <parameter>status</parameter>, <parameter>reload</parameter>.</para>
+    <para>Este script se encuentra instalado en <constant>SBINDIR</constant>, por defecto en <filename>/usr/local/sbin</filename> y tiene un link simbólico desde <filename>/etc/init.d</filename> o <filename>/etc/rc.d</filename> según corresponda en el sistema donde se instale el monitor.</para>
+    <section>
+      <title>Parámetro <parameter>start</parameter></title>
+      <para>Este parámetro provoca el arranque del sistema Gnu-Monitor levantando primero el listener, luego el ruteador de transacciones  y a continuación todos los servers configurados.</para>
+      <para>La línea dentro del script <application>gmond</application> que arranca el listener viene comentada por defecto y solo será necesario descomentarla si el sistema no se está utilizando con <application>inetd</application> o <application>xinetd</application>.</para>
+      <para>El orden de aranque de los servidores es muy importante, sobretodo el de los que resuelven los servicios básicos de suscripción, timers y buffer ya que de estos servicios depende el funcionamiento del resto de los servidores.</para>
+    </section>
+    <section>
+      <title>Parámetro <parameter>stop</parameter></title>
+      <para>Este parámetro provoca la detención del sitema en el orden inverso al que arrancó.</para>
+    </section>
+    <section>
+      <title>Parámetro <parameter>restart</parameter></title>
+      <para>Este parámetro llama primero al <parameter>stop</parameter> y luego de una pausa al <parameter>start</parameter>.</para>
+    </section>
+    <section>
+      <title>Parámetro <parameter>status</parameter></title>
+      <para>Este parámetro permite obtener una lista de los servers configurados y el estado "started" o "stopped" de cada uno.</para>
+    </section>
+    <section>
+      <title>Parámetro <parameter>reload</parameter></title>
+      <para>Este comando provoca que se envíe una señal 1 <constant>SIGHUP</constant> al proceso ruteador <application>gmt</application> que provoca la actualización de la tabla de servidores, es de principal utilidad cuando se agrega un nuevo server a la configuracón del sistema.</para>
+    </section>
+  </section>
+  <section>
+    <title>Configuración</title>
+          <para>Para facilitar las tareas de configuración del monitor y parametrización de los servers acompaña al sistema un script <application>gmon_config</application> que a travez de un menú interactivo permite desarrollar estas facilidades y algunas otras mas por medio de los comandos que se detallan a continuación.</para>
+    <graphic fileref="images/gmon-config-help.jpg" format="JPG" width="80%" scale="40" />
+          <table><title>Comandos de <application>gmon_config</application></title>
+          <tgroup cols="2">
+               <thead>
+                    <row>
+                         <entry>Comando</entry>
+                         <entry>Descripcion</entry>
+                    </row>
+               </thead>
+               <tbody>
+                    <row>
+                         <entry>help</entry>
+                         <entry>Muestra una ayuda en pantalla con los comando permitidos y una breve descripción de ellos, se muestra al iniciar el script y cada vez que se solicita un comando inválido.</entry>
+                    </row>
+                    <row>
+                         <entry>list</entry>
+                         <entry>Muestra un listado de los servers configurados y los detalles de loá parámetros de los mismos.</entry>
+                    </row>
+                    <row>
+                         <entry>add</entry>
+                         <entry>Se utiliza para agregar un nuevo server al la configuración del sistema Gnu-Monitor. Una vez invocado este comando se solicitan los datos necesarios para el alta del nuevo server que son: nombre, path al binario y una descóipción. Una vez ingresados los datos se guardan en la tabla de parametrización y se envía una señal <constant>SIGHUP</constant> al ruteador para que lea la nueva configóración.</entry>
+                    </row>
+                    <row>
+                         <entry>remove</entry>
+                         <entry>Se utiliza para borrar un server de la configuración del sistema Gnu-Monitor. Antes de eliminar el regisro correspondiente a este server de la configuración lo detiene para evitar inconvenientes de integridad.</entry>
+                    </row>
+                    <row>
+                         <entry>edit</entry>
+                         <entry>Se utiliza para modificar la configuración de un server del sistema Gnu-Monitor. Antes de modificar el regisro correspondiente a este server de la configóración lo detiene para evitar inconvenientes de integridad y luego se lo vuelve a levantar.</entry>
+                    </row>
+                    <row>
+                         <entry>status</entry>
+                         <entry>Muestra un listado de los servidores configurados en el sistema Gnu-Monitor y el estado "started" o "stopped" de cada uno.</entry>
+                    </row>
+                    <row>
+                         <entry>start</entry>
+                         <entry>Permite arrancar un server en particular o todos si se lo convoca con <parameter>all</parameter>. Si el server ya se encontraba levantado se inicia una nueva instancia de este ya que el sistema permite la ocurrencia de varias instancias actuando en cada casú según el tipo de servicio que atienden.</entry>
+                    </row>
+                    <row>
+                         <entry>stop</entry>
+                         <entry>Permite detener un server en particular o todos si se lo convoca con <parameter>all</parameter>. En caso que haya varias instancia de cada server al cual se convoca la deóencióá serán detenidas todas ellas. Se debe tener especial cuidado de no detener los servicáos básicos del sistema Gnu-Monitor y si se lo hace respetar el orden.</entry>
+                    </row>
+               </tbody>
+          </tgroup>
+          </table>
+  </section>
+  <section>
+    <title>Monitoreo</title>
+          <para>Para poder monitorear el funcionamiento del sistema Gnu-Monitor se proveen logs de cada aplicación (listener, router, servers) y una herramienta que permite visualizar el contenido de la tabla de parametrización del ruteador que se encuentra en memoria compartida.</para>
+          <para>Los logs del sistema Gnu-Monitor se encuentran en <filename>/var/log/gmonitor/</filename> con un nombre bastante descriptivo para cada módulo, salvo el lístener <application>gmd</application> que logea al log del sistema.</para>
+          <para>La aplicación <application>gm_cfgview</application> accede al bloque de memoria compartida utilizado por el ruteador de transacciones y permite visualizar un listado de los servers configurados, los servicios y la relación entre ellos.</para>
+    <graphic fileref="images/gm-cfgview.jpg" format="JPG" width="80%" scale="40" />
+  </section>
+</chapter>

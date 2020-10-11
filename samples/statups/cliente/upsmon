@@ -1,0 +1,23 @@
+#! /bin/sh
+
+#
+# Este script se encaga de leantar el demonio que interroga sobre el
+# estado de la ups a un server que corre dentro del sistema
+# GNU-Monitor.
+#
+
+case $1 in
+	start)
+		/sbin/startproc /usr/local/sbin/upsd -h homero
+	;;
+	stop)
+		/sbin/killproc /usr/local/sbin/upsd
+	;;
+	restart)
+		$0 stop && $0 start
+	;;
+	*)
+		echo "Use: $0 start|stop|restart"
+	;;
+esac
+

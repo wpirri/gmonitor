@@ -1,0 +1,43 @@
+Protocolo de mensajeria - Sistema orientado a RPC
+-----------------------   -----------------------
+
+ -------- ---------------
+| Header | Mensaje Libre ...
+ -------- ---------------
+ 146 bytes
+
+Header
+------
+El header contiene ls campos que definen el origen y destino del mensaje,
+tamaño, datos de seguridad, controles secuenciales.
+
+Inicio	Tam	Descripcion
+ 0      1       Marca de inicio del mensaje, tambien indica el tipo de mensaje
+		C / R - Modo consulta / respuesta. Mensajes con una consulta
+			simple que esperan una respuesta simple. Cada consulta
+			obtiene una respuesta.
+		M     - Evento. Mensaje que señala la ocurrencia de un evento.
+			No espera respuesta.
+		G / L - Modo interactivo. ensajes con una consulta simple cuya
+			respuesta está formada por varios mensajes.
+		Q     - Mensajes para encolar. Estos mensajes se almacenen en
+			una cola SAF.
+ 1	3	Version del protocolo utilizado. Este numero se mantendra en 0
+		hasta la primer version estable.
+ 4	16	Usuario. Este espacio es reservado para identificar el usuario
+		que origina el mensaje, es para el caso de varios sistemas
+		cliente corriendo el cliente fisico.
+ 20	16	Cliente. Identifica la maquina o uesto fisico que origina el
+		mensaje.
+ 36	16	Clave. Para el caso de ensajes que requieran autenticacion.
+ 52	16	Grupo. Identifica un grupo de clientes.
+ 68	32	Funcion. Identificar el procedimiento que debe ser llamado.
+ 100	5	Secuencia de consulta
+ 105	5	Secuencia de respuesta
+ 110	10	Timestamp (fecha/hora en formato unix)
+ 120	5	Codigo de retorno. Para utilizar n los mensajes de respuesta.
+		Hay codigos definidos reservados para el monitor, el resto es
+		utilizable por el usuario.
+ 125	16	CRC
+ 141	5	Tamaño del mensaje
+ 

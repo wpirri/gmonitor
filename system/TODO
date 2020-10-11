@@ -1,0 +1,117 @@
+Pendientes para futuras versiones
+---------------------------------
+- Agregar que cada proceso loguee su PID al forkear para poder hacer un
+  seguimiento de los mensajes en el log.
+- Cambiar la implementación de sockets por C++ Sockets de
+  http://www.alhem.net/Sockets/
+- Server gm_conector para interconectar dos o mas GNU-Monitor.
+- Implementar en SAF Server función preview que devuelva una lista de los
+  registros de SAF (mostrando solo una parte del campo data y sin sacarlo
+  de la cola.
+- Agregar a la documentacion parametros de los servers.
+- Se debe dejar información en el archivo de configuración de los paths de las
+  bases, binarios, logs, etc  para que los módulos externos se puedan compilar
+  e instalar correctamente
+- Portar a FreeBSD.
+- Implementar suscripcion a eventos desde cliente.
+- Implementar suscripcion a avisos desde cliente.
+- Implementar transacciones distribuidas.
+- Implementar controles de seguridad para acceso en el listener.
+- Corregir mensaje C/R que cuando el mensaje devuelto es de mas de 4k no da
+  error y llega truncado a un cliente remoto. Con un cliente local no pasa.
+- Revisar el server de transacciones para ver que es necesario hacer si se
+  quiere levantar varias instancias de este (Ej. poner la tabla de
+  transacciones en memoria compartida) La otra es que se manejen independientes
+  y cada instancia tenga un rango de ids diferentes (con una letra por ejemplo)
+- Modificar el server de timers para que reconozca la instancia de si mismo
+  que le corresponde y adopte en función de eso una base para los ID de timers
+  esto permitirá levantar varias instancias del mismo y que funcionen sin
+  interferirse. Tambien hay que implementar el mensaje de borrado de timers
+  como Evento [Post()] para que le llegue a todas las instancias.
+- Modificar el server de buffers de la misma forma que el de timers para poder
+  levantar varias instancias.
+- El servicio Dequeue() debe permitir que si se lo llama sin indicarle un
+  nombre de cola elija una para devolver datos de entre las colas suscriptas
+  por el cliente.
+
+Pendientes para la version 0.0.13
+---------------------------------
+x Actualizar la documentación de la API del cliente para incluir la estructura
+  GMIOS
+x Agregar el server de SAF a la documentacion.
+x Agregar el servicio .log-level runtime el nivel de logueo
+x Suscripcion remota
+  + Cliente (Suscribe, UnSuscribe, CheckService)
+    El suscribe deberá armar una lista en el cliente de los servicios
+    suscriptos para evitar llamar a CheckService de un servicio no propio.
+  + Server (gm_config) Se encargará de la suscripción local de los servicios
+    pedidos en forma remota, de la creación de las colas SAF necesarias para
+    cada servicio y del mantenimiento de una lista que relaciones cada
+    suscripción con el SAF  correspondiente para resolver .check_service.
+
+Pendientes para la version 0.0.12
+---------------------------------
+x Completar server de timers (gm_timer).
+  x Modo At en server de timers.
+x Funcionalidad de reload en router para que no sea necesario stop/start
+  al agregar un server
+x Agregar a la documentacion del sistema el script de arranque gmond, la
+  interface de configuracion gmon_config y los programas auxiliares.
+
+Pendientes a la version 0.0.11
+------------------------------
+x Hay que hacer que los servers puedan poner transacciones en sus llamados
+  para que se traspacen a todos los servicios llamados para una misma
+- Server de transacciones.
+  - Programar time-out de transacciones a travez del server de timers.
+x Server de buffers.
+  - Programar time-out de los buffers a travez del server de timers.
+- Pendientes de versiones anteriores.
+  - Completar server de timers (gm_timer).
+    - Modo At en server de timers.
+  - Portar a FreeBSD.
+  x Implementar mensaje conversacional (interactivo).
+  - Implementar mensaje no solicitado y suscripcion.
+  x Implementar mensajes encolados.
+  - Implementar transacciones distribuidas.
+  x Ver que hago si falta HAVE_SYS_SOCKET_H, HAVE_ALARM, HAVE_FORK,
+    HAVE_UNISTD_H, HAVE_SYSLOG_H
+
+Pendientes a la versión 0.0.10
+------------------------------
+- Ver que hago si falta HAVE_SYS_SOCKET_H, HAVE_ALARM, HAVE_FORK,
+  HAVE_UNISTD_H, HAVE_SYSLOG_H
+x Agregar mensaje tipo aviso, seria como el tipo evento pero se notifica a un solo server.
+x Hacer que la suscripcion de servicios desde un server se haga directamente a memoria, sin el mensaje de suscripcion.
+- Pendientes de versiones anteriores.
+  - Completar server de timers (gm_timer).
+  - Portar a FreeBSD.
+  x Implementar mensaje conversacional (interactivo).
+  - Implementar mensaje no solicitado y suscripcion.
+  x Implementar mensajes encolados.
+  - Implementar transacciones distribuidas.
+
+Pendientes a la versión 0.0.9
+-----------------------------
+x Pasar configuracion a memoria comprtida
+- Pendientes de la version anterior.
+  x Completar server de timers (gm_timer).
+  - Portar a FreeBSD.
+  x Implementar mensaje conversacional (interactivo).
+  - Implementar mensaje no solicitado y suscripcion.
+  x Implementar mensajes encolados.
+  - Implementar transacciones distribuidas.
+
+Pendientes a la versión 0.0.8
+-----------------------------
+- Completar server de timers (gm_timer).
+x Implementar balance de carga para servicios con colas multiples.
+x Incorporar funcionalidad configure.
+- Portar a FreeBSD.
+x Implementar mensaje conversacional (interactivo).
+- Implementar mensaje no solicitado y suscripcion.
+x Implementar mensajes encolados.
+x Implementar control transaccional.
+    Se debe implementar la apertura de la base de datos a travez del server
+    y de esta forma poder tener un descriptor a la base.
+- Implementar transacciones distribuidas.
