@@ -316,7 +316,7 @@ int CGMServerBase::Run(const char* exe, char* const params[])
   char *p[256];
   int i;
 
-  memset(p, 0, 256);
+  memset(p, 0, 256*sizeof(char*));
   p[0] = (char*)malloc(strlen(exe)+1);
   strcpy(p[0], exe);
   if(params)

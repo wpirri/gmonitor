@@ -42,8 +42,7 @@ CGMBuffer::CGMBuffer(const char* str)
 	{
 		m_len = strlen(str);
 		m_buffer = (char*)calloc(m_len + 1, sizeof(char));
-		strncpy(m_buffer, str, m_len);
-		m_buffer[m_len] = '\0';
+		strcpy(m_buffer, str);
 	}
 	else
 	{

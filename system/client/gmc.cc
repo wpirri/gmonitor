@@ -32,6 +32,8 @@
 #include <csignal>
 using namespace std;
 
+#include <sys/types.h>
+#include <unistd.h>
 #include <sys/wait.h>
 #include <syslog.h>
 
