@@ -63,6 +63,7 @@ int main(int argc, char** argv)
   int mode_inetd = 0;
   int mode_xinetd = 0;
   int listen_port = 5533;
+  int wait_to_listen = 1;
   CTcp* pClientSocket;
   CMsg* pMsg;
   FILE* f_pid;
@@ -198,16 +199,23 @@ int main(int argc, char** argv)
   {
     if(verbose) syslog(LOG_DEBUG, "Iniciando listener");
     pListenSocket = new CTcp();
-    while((pClientSocket = pListenSocket->Listen(NULL, listen_port)) != NULL)
+    do
     {
-      if(verbose) syslog(LOG_DEBUG, "Forkeando para procesar mensaje recibido");
-      if(fork() == 0)
+      while((pClientSocket = pListenSocket->Listen(NULL, listen_port)) != NULL)
       {
-        MessageProc(pClientSocket, pMsg);
-        /* Al terminar el loop se va el hijo */
-        exit(0);
+        wait_to_listen = 1;
+        if(verbose) syslog(LOG_DEBUG, "Forkeando para procesar mensaje recibido");
+        if(fork() == 0)
+        {
+          MessageProc(pClientSocket, pMsg);
+          /* Al terminar el loop se va el hijo */
+          exit(0);
+        }
       }
-    }
+      if(wait_to_listen < 60) wait_to_listen++;
+      syslog(LOG_ERR, "ERROR: Red no disponible, reintentando en %i segundos", wait_to_listen);
+      sleep(wait_to_listen);
+    } while(1);
     delete pListenSocket;
     pListenSocket = NULL;
   }
