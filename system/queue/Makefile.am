@@ -17,6 +17,7 @@ pkginclude_HEADERS =   \
  gms.h                 \
  gmswaited.h           \
  gmsbase.h   \
+ ../shared/gmshared.h  \
  ../shared/gmidat.h    \
  ../shared/gmbuffer.h  \
  ../shared/gmconst.h   \

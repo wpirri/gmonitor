@@ -5,6 +5,7 @@ libgmc_la_CPPFLAGS = -I../shared
 
 pkginclude_HEADERS =  \
  gmc.h                \
+ ../shared/gmshared.h \
  ../shared/ctcp.h     \
  ../shared/gmidat.h   \
  ../shared/gmerror.h  \
