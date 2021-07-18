@@ -138,12 +138,19 @@ int main(int argc, char** argv)
     delete pLog;
     return -1;
   }
-  si.log_level = loglevel;
+  
+  pConfig->GetSysInfo(&si);
+  if(si.log_level == 0)
+  {
+  	si.log_level = loglevel;
+  }
   si.start_time = time(&si.start_time);
   si.load_tps = 0;
   si.max_tps = 0;
   pConfig->SetSysInfo(si);
+
   MsgRouter();
+
   return 0;
 }
 
@@ -239,7 +246,6 @@ void OnChildExit(int sig)
   if(tsi.log_level != si.log_level)
   {
     si.log_level = tsi.log_level;
-    pLog->Add(1, "Cambiando nivel de logeo a %i", si.log_level);
     pLog->LogLevel(si.log_level);
   }
 
@@ -427,10 +433,10 @@ int MsgRouter()
       {
         if( !strcmp(pinmsg->Funcion(), ".log-level"))
         {
-          pLog->LogLevel(subint(pinmsg->GetData(), 0, pinmsg->GetDataLen()));
           pConfig->GetSysInfo(&tsi);
           tsi.log_level = subint(pinmsg->GetData(), 0, pinmsg->GetDataLen());
           pConfig->SetSysInfo(tsi);
+          pLog->LogLevel(tsi.log_level);
         }
         MsgQuery(pinmsg, poutmsg);
       }

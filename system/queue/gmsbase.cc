@@ -379,7 +379,7 @@ int CGMServerBase::Main(void* in, unsigned long inlen, void** out, unsigned long
   }
   else
   {
-    /* Me fijo si tiró algo por error */
+    /* Me fijo si tirï¿½ algo por error */
     WaitRead(m_stderr_pipe, appBuffer, sizeof(appBuffer), 1);
   }
   *out = calloc(buffer.Length(), sizeof(char));
@@ -389,7 +389,7 @@ int CGMServerBase::Main(void* in, unsigned long inlen, void** out, unsigned long
 }
 /* Esta ya no se usa, ahora los mensajes se mandan a la cola del router
    la dejo porque me da lastima borrarla */
-/* el time-out to_cs es en centésimas de segundo */
+/* el time-out to_cs es en centï¿½simas de segundo */
 int CGMServerBase::WaitRead(int fd, void* buff, int count, long to_cs)
 {
   int rc = 0;

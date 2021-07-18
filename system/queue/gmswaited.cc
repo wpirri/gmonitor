@@ -39,7 +39,7 @@ CGLog* pLog;
 
 CGMServerWait::CGMServerWait()
 {
-	m_log_level = 20;
+	//m_log_level = 20;
 	m_srcMessage = -1;
 	m_pMsg = NULL;
 	m_pLog = NULL;
@@ -56,12 +56,13 @@ int CGMServerWait::Init(const char *server_name)
 {
 	m_server_name = server_name;
 
-  m_IdUsuario = "Gnu-Monitor";
-  m_IdCliente = m_server_name;
-  m_Key = "****************";
-  m_IdGrupo = "Server";
+	m_IdUsuario = "Gnu-Monitor";
+	m_IdCliente = m_server_name;
+	m_Key = "****************";
+	m_IdGrupo = "Server";
+	CGMTdb::CSystemInfo si;
 
-	m_pLog = new CGLog(server_name, LOG_FILES, m_log_level);
+	m_pLog = new CGLog(server_name, LOG_FILES, 100);
 	pLog = m_pLog; /* asigno la variable de log para los que la agarran de extern  */
 	/* traigo el path de la aplicacion que debo levantar */
 	m_server_params.nombre = m_server_name;
@@ -94,7 +95,12 @@ int CGMServerWait::Init(const char *server_name)
 		delete m_pLog;
 		return -1;
 	}
-  Suscribe(".log-level", GM_MSG_TYPE_MSG);
+	Suscribe(".log-level", GM_MSG_TYPE_MSG);
+
+	/* Luego de la inicializaciÃ³n tomo el nivel de logueo del sistema */
+	m_pConfig->GetSysInfo(&si);
+	m_pLog->LogLevel(si.log_level);
+
 	return GME_OK;
 }
 
@@ -122,8 +128,6 @@ int CGMServerWait::Wait(char *fn, char *typ, void *data, unsigned long maxlen, u
         MBuffer.Set(m_outMessage.GetMsg(), m_outMessage.GetMsgLen());
         m_pMsg->Send(m_srcMessage, &MBuffer);
         MBuffer.Clear();
-        m_pLog->Add(1, "Cambiando nivel de logueo a %i",
-                     subint(inMessage.GetData(), 0, inMessage.GetDataLen()));
         m_pLog->LogLevel(subint(inMessage.GetData(), 0, inMessage.GetDataLen()));
         continue;
       }
@@ -164,7 +168,7 @@ int CGMServerWait::Wait(char *fn, char *typ, void *data, unsigned long maxlen, u
 		}
 		else
 		{
-			return GME_WAIT_TIMEOUT; /* se recibió un buffer vacío */
+			return GME_WAIT_TIMEOUT; /* se recibiï¿½ un buffer vacï¿½o */
 		}
 	}
 	if(m_srcMessage == 0) return GME_WAIT_TIMEOUT;  /* time-out */

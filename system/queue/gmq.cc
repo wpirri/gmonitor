@@ -60,12 +60,13 @@ int main(int argc, char** argv)
   int help;
   int rc;
   char* param_list[256];
+  CGMTdb::CSystemInfo si;
 
   /* Cargo los defaults */
   pServer = NULL;
   /* inicio la conexion con el log del sistema */
   help = 0;
-  loglevel = 20; /* Default log level */
+  loglevel = -1; /* Default log level */
   /* recorro los parametros */
   for(i = 1; i < argc; i++)
   {
@@ -105,7 +106,8 @@ int main(int argc, char** argv)
     exit(1);
   }
 
-  pLog = new CGLog(server_name, LOG_FILES, loglevel);
+  pLog = new CGLog(server_name, LOG_FILES, 100);
+
   if(!strlen(server_name))
   {
     pLog->Add(1, "Parametro esperado '-name' no recibido");
@@ -235,6 +237,15 @@ int main(int argc, char** argv)
     }
     pServer->Suscribe(".log-level", GM_MSG_TYPE_MSG);
   }
+
+  /* Luego de la inicializacion tomo el nivel de logueo del sistema o el pasado por parametro */
+  if(loglevel < 0)
+  {
+    pServer->m_pConfig->GetSysInfo(&si);
+    loglevel = si.log_level;
+  }
+  pLog->LogLevel(loglevel);
+
   /* Arranco el loop de mensajes*/
   ServerLoop();
   OnClose(0);
@@ -397,8 +408,6 @@ void ServerLoop()
       }
       else if( !strcmp(inMessage.Funcion(), ".log-level"))
       {
-        pLog->Add(1, "Cambiando nivel de logueo a %i",
-                     subint(inMessage.GetData(), 0, inMessage.GetDataLen()));
         pLog->LogLevel(subint(inMessage.GetData(), 0, inMessage.GetDataLen()));
       }
       else /* si no es comando lo paso al main */

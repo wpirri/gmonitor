@@ -51,7 +51,7 @@ public:
 	CGLog*	m_pLog;
 protected:
 	CGMTdb::CSrvTab	m_server_params;
-	int	m_log_level;
+	//int	m_log_level;
 private:
 	CMsg*	m_pMsg;
 	/*CGMTdb*	m_pConfig; lo paso a CGMServerBase*/

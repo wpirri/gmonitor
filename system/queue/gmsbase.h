@@ -62,7 +62,7 @@ public:
   int Call(string& fn, CGMBuffer* query, CGMBuffer* response, int to);
   /* Inicia y finaliza el modo transaccional */
   int SetTransMode(bool on_off);
-  /* Suscripción a servicios */
+  /* Suscripciï¿½n a servicios */
   int Suscribe(const char *event, char tipo_mensaje);
   int UnSuscribe(const char *event, char tipo_mensaje);
   /* Para servers ON-LINE y OFF-LINE */
@@ -121,5 +121,6 @@ protected:
 
 private:
   int WaitRead(int fd, void *buff, int count, long to_cs);
+
 };
 #endif /* _GMS_H_ */
