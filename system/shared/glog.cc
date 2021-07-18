@@ -45,6 +45,8 @@ CGLog::CGLog(const char *appname, const char *logpath, unsigned int level)
 	else { m_appname = "general"; }
 	m_prefijo = getpid();
 	m_log_level = level;
+
+	Add(1, "********** Log Start Level [%i] **********", m_log_level);
 }
 
 CGLog::~CGLog()
@@ -64,15 +66,17 @@ void CGLog::Add(unsigned int level, const char *msg, ...)
 
 	t = time(&t);
 	local = localtime(&t);
-	sprintf(filename, "%s/%s.log", m_logpath.c_str(), m_appname.c_str());
+	sprintf(filename, "%s/%s-%04i%02i%02i.log", 
+			m_logpath.c_str(), 
+			m_appname.c_str(),
+			(local->tm_year + 1900),
+			local->tm_mon + 1,
+			local->tm_mday);
 	if((arch = fopen(filename, "ab")) != NULL)
 	{
 		// guardo fecha y hora
-		fprintf(arch, "%06i|%04i%02i%02i%02i%02i%02i|",
+		fprintf(arch, "%06i|%02i%02i%02i|",
 				/*m_prefijo*/getpid(),/*ver si se usa para algo prefijo, sino sacarlo*/
-				(local->tm_year + 1900),
-				local->tm_mon + 1,
-				local->tm_mday,
 				local->tm_hour,
 				local->tm_min,
 				local->tm_sec);
@@ -95,7 +99,12 @@ void CGLog::AddBin(unsigned int level, const char *id, const void *buffer, unsig
 
         t = time(&t);
         local = localtime(&t);
-	sprintf(filename, "%s/%s.log", m_logpath.c_str(), m_appname.c_str());
+	sprintf(filename, "%s/%s-%04i%02i%02i.log", 
+			m_logpath.c_str(), 
+			m_appname.c_str(),
+			(local->tm_year + 1900),
+			local->tm_mon + 1,
+			local->tm_mday);
 	if((arch = fopen(filename, "ab")) != NULL)
         {
                 // guardo la hora
@@ -123,6 +132,7 @@ unsigned int CGLog::LogLevel()
 
 void CGLog::LogLevel(unsigned int level)
 {
+	Add(1, "LogLevel [%i] -> [%i]", m_log_level, level);
 	m_log_level = level;
 }
 
