@@ -56,8 +56,9 @@ CGMBuffer::CGMBuffer(const void* ptr, unsigned long len)
 	if(ptr && len)
 	{
 		m_len = len;
-		m_buffer = (char*)calloc(m_len, sizeof(char));
+		m_buffer = (char*)calloc(m_len+1, sizeof(char));
 		memcpy(m_buffer, ptr, m_len);
+    m_buffer[m_len] = '\0';
 	}
 	else
 	{
@@ -156,7 +157,7 @@ const char* CGMBuffer::Add(const void *ptr, unsigned long len)
 	{
 		if(m_buffer)
 		{
-			b = (char*)realloc(m_buffer, m_len + len);
+			b = (char*)realloc(m_buffer, m_len + len + 1);
 			m_buffer = b;
 			memcpy((char*)(m_buffer + m_len), ptr, len);
 			m_len += len;
@@ -164,9 +165,10 @@ const char* CGMBuffer::Add(const void *ptr, unsigned long len)
 		else
 		{
 			m_len = len;
-			m_buffer = (char*)calloc(m_len, sizeof(char));
+			m_buffer = (char*)calloc(m_len + 1, sizeof(char));
 			memcpy(m_buffer, ptr, m_len);
 		}
+    m_buffer[m_len] = '\0';
 	}
 	return (const char*)m_buffer;
 }
