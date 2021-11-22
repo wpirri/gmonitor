@@ -1,6 +1,6 @@
 sbin_PROGRAMS = gmd
 gmd_SOURCES = gmd.cc
-gmd_LDADD = -L../shared -lgmshared
+gmd_LDADD = -L../shared -lgmshared -lssl -lcrypto
 gmd_CPPFLAGS = -I../shared
 
 AM_CXXFLAGS = \

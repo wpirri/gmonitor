@@ -1,7 +1,7 @@
 bin_PROGRAMS = gm_viewcfg
 
 gm_viewcfg_SOURCES = gm_viewcfg.cc
-gm_viewcfg_LDADD = -L../../shared -lgmshared -L../../client -lgmc
+gm_viewcfg_LDADD = -L../../shared -lgmshared -L../../client -lgmc -lssl -lcrypto
 gm_viewcfg_CPPFLAGS = -I../../shared -I../../client
 
 AM_CXXFLAGS = \

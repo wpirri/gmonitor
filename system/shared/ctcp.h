@@ -53,6 +53,7 @@ public:
     CTcp(int sock);
 #ifdef SOPORTE_SSL_TLS
     CTcp(int ssl_tls, int ssl_tls_v);
+    CTcp(int sock, SSL *ssl_sock, int ver);
 #endif
     virtual ~CTcp();
     /* Abre un socket SERVER y hace un Listen, cuando se establece la conexion devuelve u objeto conectado */
@@ -79,6 +80,9 @@ public:
     int GetFD();
 #ifdef SOPORTE_SSL_TLS
     SSL* GetSSL();
+
+    string m_cert_pem;
+    string m_key_pem;
 #endif
 
 protected:

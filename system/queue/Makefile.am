@@ -2,15 +2,15 @@ sbin_PROGRAMS = gmq
 lib_LTLIBRARIES = libgmq.la libgmqw.la
 
 gmq_SOURCES = gmsbase.cc gmq.cc gms.cc
-gmq_LDADD = -L../shared -lgmshared
+gmq_LDADD = -L../shared -lgmshared -lssl -lcrypto
 gmq_CPPFLAGS = -I../shared
 
 libgmq_la_SOURCES = gmsbase.cc gmq.cc
-libgmq_la_LIBADD = -L../shared -lgmshared
+libgmq_la_LIBADD = -L../shared -lgmshared -lssl -lcrypto
 libgmq_la_CPPFLAGS = -I../shared
 
 libgmqw_la_SOURCES = gmsbase.cc gmswaited.cc
-libgmqw_la_LIBADD = -L../shared -lgmshared
+libgmqw_la_LIBADD = -L../shared -lgmshared -lssl -lcrypto
 libgmqw_la_CPPFLAGS = -I../shared
 
 pkginclude_HEADERS =   \

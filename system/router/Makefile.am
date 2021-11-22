@@ -1,6 +1,6 @@
 sbin_PROGRAMS = gmt
 gmt_SOURCES = gmt.cc
-gmt_LDADD = -L../shared -lgmshared
+gmt_LDADD = -L../shared -lgmshared -lssl -lcrypto
 gmt_CPPFLAGS = -I../shared
 
 AM_CXXFLAGS = \

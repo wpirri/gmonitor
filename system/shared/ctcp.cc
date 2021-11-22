@@ -22,6 +22,9 @@
 /*
     Implementacion de comunicacion a travez de TCP
     Soporte SSL/TLS
+      Fuente:
+        https://fm4dd.com/openssl/sslconnect.shtm 
+        https://wiki.openssl.org/index.php/Simple_TLS_Server
       Instalar:
         apt install libssl-dev
       Incluir:
@@ -33,6 +36,8 @@
         #include <openssl/x509_vfy.h>
       Linkear:
         -lssl -lcrypto
+        IMPORTANTE: En la compilación final el parámetro -O debe preceder a -lssl y -lcrypto
+
 */
 
 #include "ctcp.h"
@@ -66,13 +71,15 @@ CTcp::CTcp()
 #ifdef SOPORTE_SSL_TLS
   m_p_ssl = NULL;
   m_p_ctx = NULL;
+  m_ssl_tls = 0;
+  m_ssl_tls_ver = 0;
+  m_cert_pem = "";
+  m_key_pem = "";
 #endif
   m_iLastError = 0;
   strcpy(m_strLastError, "");
   strcpy(m_strLocalAddress, "");
   strcpy(m_strRemoteAddress, "");
-  m_ssl_tls = 0;
-  m_ssl_tls_ver = 0;
 }
 
 CTcp::CTcp(int sock)
@@ -81,6 +88,10 @@ CTcp::CTcp(int sock)
 #ifdef SOPORTE_SSL_TLS
   m_p_ssl = NULL;
   m_p_ctx = NULL;
+  m_ssl_tls = 0;
+  m_ssl_tls_ver = 0;
+  m_cert_pem = "";
+  m_key_pem = "";
 #endif
   m_iLastError = 0;
   strcpy(m_strLastError, "");
@@ -89,15 +100,19 @@ CTcp::CTcp(int sock)
 #ifdef SOPORTE_SSL_TLS
 CTcp::CTcp(int ssl_tls, int ssl_tls_v)
 {
-  m_sock = (-1);
   m_p_ssl = NULL;
   m_p_ctx = NULL;
+  m_ssl_tls = ssl_tls;
+  m_ssl_tls_ver = ssl_tls_v;
+  m_cert_pem = "";
+  m_key_pem = "";
+
+  m_sock = (-1);
   m_iLastError = 0;
   strcpy(m_strLastError, "");
   strcpy(m_strLocalAddress, "");
   strcpy(m_strRemoteAddress, "");
-  m_ssl_tls = ssl_tls;
-  m_ssl_tls_ver = ssl_tls_v;
+
   if(m_ssl_tls != 0)
   {
     OpenSSL_add_all_algorithms();
@@ -107,6 +122,21 @@ CTcp::CTcp(int ssl_tls, int ssl_tls_v)
       m_ssl_tls = (-1);
     }
   }
+}
+
+CTcp::CTcp(int sock, SSL *ssl_sock, int ver)
+{
+
+  m_p_ssl = ssl_sock;
+  m_p_ctx = NULL;
+  m_ssl_tls = 1;
+  m_ssl_tls_ver = ver;
+  m_cert_pem = "";
+  m_key_pem = "";
+
+  m_sock = sock;
+  m_iLastError = 0;
+  strcpy(m_strLastError, "");
 }
 #endif
 
@@ -206,7 +236,7 @@ int CTcp::RemoteConn(const char *addr, int port)
   }
   if(m_ssl_tls > 0)
   {
-    m_p_method = SSLv23_client_method();
+    m_p_method = TLS_client_method();
     if ( (m_p_ctx = SSL_CTX_new(m_p_method)) == NULL)
     {
       GetErr("[SSL/TLS] Unable to create a new SSL context structure..");
@@ -255,6 +285,9 @@ int CTcp::RemoteConn(const char *addr, int port)
 CTcp* CTcp::Listen(const char *addr, int port)
 {
   int newsock;
+#ifdef SOPORTE_SSL_TLS
+  SSL *newssl;
+#endif
 
   if(m_sock < 0)
   {
@@ -264,6 +297,43 @@ CTcp* CTcp::Listen(const char *addr, int port)
           return NULL;
     }
   }
+
+#ifdef SOPORTE_SSL_TLS
+  if(m_ssl_tls < 0)
+  {
+    GetErr("[SSL/TLS] Library Error.");
+    return NULL;
+  }
+  if(m_ssl_tls > 0)
+  {
+    m_p_method = TLS_server_method();
+    if ( (m_p_ctx = SSL_CTX_new(m_p_method)) == NULL)
+    {
+      GetErr("[SSL/TLS] Unable to create a new SSL context structure..");
+      return NULL;
+    }
+    if(m_ssl_tls_ver >= 3)
+    {
+      SSL_CTX_set_options(m_p_ctx, SSL_OP_NO_SSLv2);
+    }
+  }
+
+  if(m_cert_pem.length() && m_key_pem.length())
+  {
+    if(SSL_CTX_use_certificate_file(m_p_ctx, m_cert_pem.c_str(), SSL_FILETYPE_PEM) <= 0)
+    {
+      GetErr("[SSL/TLS] Unable to load cert PEM.");
+      return NULL;
+    }
+    if(SSL_CTX_use_PrivateKey_file(m_p_ctx, m_key_pem.c_str(), SSL_FILETYPE_PEM) <= 0)
+    {
+      GetErr("[SSL/TLS] Unable to load key PEM.");
+      return NULL;
+    }
+  }
+
+#endif /* SOPORTE_SSL_TLS */
+
   if(listen(m_sock, SOMAXCONN) < 0)
   {
     GetErr("[CTCP] ERROR Listen()->listen() (%s:%i)", (addr)?addr:"", port);
@@ -276,7 +346,29 @@ CTcp* CTcp::Listen(const char *addr, int port)
   }
   /* el nuevo socket no es bloqueante */
   fcntl(newsock, F_SETFL, O_NONBLOCK);
-  return new CTcp(newsock);
+
+#ifdef SOPORTE_SSL_TLS
+  if(m_ssl_tls > 0)
+  {
+    newssl = SSL_new(m_p_ctx);
+    SSL_set_fd(newssl, newsock);
+    if(SSL_accept(newssl) <= 0)
+    {
+      SSL_shutdown(newssl);
+      SSL_free(newssl);
+      GetErr("[SSL/TLS] ERROR Listen()->accept() (%s:%i)", (addr)?addr:"", port);
+      return NULL;
+    }
+    return new CTcp(newsock, newssl, m_ssl_tls_ver);
+  }
+  else
+  {
+#endif /* SOPORTE_SSL_TLS */
+    return new CTcp(newsock);
+#ifdef SOPORTE_SSL_TLS
+  }
+#endif /* SOPORTE_SSL_TLS */
+
 }
 
 CTcp* CTcp::Listen(string saddr, int port)
@@ -496,25 +588,20 @@ int CTcp::Receive(void *msg, unsigned int msglen, int to_ms)
   {
     recvlen = 0;
     rc = 0;
+
     do
     {
-      recvlen += rc;
-      rc = SSL_read(m_p_ssl, (char*)(msg+recvlen), (msglen-recvlen) );
+      rc = SSL_read(m_p_ssl, (char*)((char*)msg+recvlen), (msglen-recvlen) );
       if(rc == 0)
       {
         usleep(1000);
         to_ms--;
       }
-    } while(recvlen < msglen && rc != (-1) && (rc > 0 || recvlen == 0) && to_ms)
-    if(rc < 0)
-    {
-      GetErr("[SSL/TLS] ERROR Receive()->recv()");
-      if((m_iLastError) && (m_iLastError != 11))
+      else if(rc > 0)
       {
-        /* error de recepcion */
-        return CTCP_READ_ERROR;
+        recvlen += rc;
       }
-    }
+    } while(recvlen < (int)msglen && (rc > 0 || recvlen == 0) && to_ms);
   }
   else
   {
