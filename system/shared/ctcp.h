@@ -25,6 +25,13 @@ using namespace std;
 #define WAIT_INFINITE	-1
 #endif
 
+#define SOPORTE_SSL_TLS
+
+#ifdef SOPORTE_SSL_TLS
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#endif
+
 /* Valores de errores */
 
 #define CTCP_OK                   0
@@ -35,12 +42,18 @@ using namespace std;
 #define CTCP_WRITE_ERROR          -5
 #define CTCP_INVALID_ADDRESS      -6
 #define CTCP_NOT_CONNECTED        -7
-
+#ifdef SOPORTE_SSL_TLS
+#define CTCP_SSL_LIB_ERROR        -8
+#define CTCP_SSL_SESSION_ERROR    -9
+#endif
 class CTcp
 {
 public:
     CTcp();
     CTcp(int sock);
+#ifdef SOPORTE_SSL_TLS
+    CTcp(int ssl_tls, int ssl_tls_v);
+#endif
     virtual ~CTcp();
     /* Abre un socket SERVER y hace un Listen, cuando se establece la conexion devuelve u objeto conectado */
     CTcp* Listen(const char *addr, int port);
@@ -50,7 +63,7 @@ public:
     int Connect(string sadrrloc, string saddrrem, int port); /* Conexion cliente */
     /* cierra una conexion */
     int Close();
-    /* cierra la conexíon sun hacer el shutdown del socket */
+    /* cierra la conexï¿½on sun hacer el shutdown del socket */
     int Kill();
     /* devuelve el port que esta usando el socket */
     int LocalPort();
@@ -59,10 +72,14 @@ public:
     char* RemoteAddress();
     int Send(const void *msg, unsigned int msglen);
     int Receive(void *msg, unsigned int msglen, int to_ms);
+    int Query(const char* raddr, int rport, const char* snd, char* rcv, int rcv_max_len, int to_ms);
 
     char* GetErrorText();
     int GetErrorNumber();
     int GetFD();
+#ifdef SOPORTE_SSL_TLS
+    SSL* GetSSL();
+#endif
 
 protected:
     void GetErr(const char *msg, ...);
@@ -78,6 +95,13 @@ private:
     int m_port;
     char m_strLocalAddress[21];
     char m_strRemoteAddress[21];
+#ifdef SOPORTE_SSL_TLS
+    int m_ssl_tls;
+    int m_ssl_tls_ver;
+    const SSL_METHOD *m_p_method;
+    SSL_CTX *m_p_ctx;
+    SSL *m_p_ssl;
+#endif
 
 };
 #endif /*_CTCP_H_*/
