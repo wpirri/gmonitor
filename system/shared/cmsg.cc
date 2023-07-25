@@ -23,7 +23,7 @@
     Funciones para la creacion y utilizacion de colas de mensajes
 */
 
-#include "cmsg.h"
+#include <cmsg.h>
 
 #include <string>
 #include <iostream>

@@ -68,3 +68,8 @@ libgmc
 
 Para mayor información acerca del sistema debe buscarse en los manuales que se
 distribuyen junto con los fuentes.
+
+Instalación desde los fuentes:
+-------------------------------------------------------------------------------
+  Dentro del directorio system ejecutar make y luego sudo make install
+

@@ -1,7 +1,6 @@
 #!/usr/bin/make -f
 
-CP=cp -a
-RM=rm -f
+include ../configure.mk
 
 STOP_SCRIPT=gmonitor-stop.sh
 START_SCRIPT=gmonitor-start.sh

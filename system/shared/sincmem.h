@@ -18,8 +18,8 @@
 #ifndef _SINCMEM_H_
 #define _SINCMEM_H_
 
-#include "sincro.h"
-#include "shmem.h"
+#include <sincro.h>
+#include <shmem.h>
 
 class CSincMem : public CSincro,CShMem
 {

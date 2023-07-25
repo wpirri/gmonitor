@@ -22,7 +22,7 @@
 /*
     Esta clase implementa el objeto necesario para inicializar al cliente
 */
-#include "gmidat.h"
+#include <gmidat.h>
 
 #include <string>
 #include <iostream>

@@ -19,7 +19,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include "gmbuffer.h"
+#include <gmbuffer.h>
 
 #include <iostream>
 #include <string>

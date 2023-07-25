@@ -18,8 +18,8 @@
 #ifndef _GMCOMM_H_
 #define _GMCOMM_H_
 
-#include "ctcp.h"
-#include "gmbuffer.h"
+#include <ctcp.h>
+#include <gmbuffer.h>
 
 #include <unistd.h>
 using namespace std;

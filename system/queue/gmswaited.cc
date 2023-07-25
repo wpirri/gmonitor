@@ -22,7 +22,7 @@
 
 #include "gmswaited.h"
 
-#include "gmstring.h"
+#include <gmstring.h>
 
 #include <cstdio>
 #include <cstdlib>

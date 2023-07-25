@@ -19,7 +19,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include "gmerror.h"
+#include <gmerror.h>
 
 CGMError::CGMError()
 {

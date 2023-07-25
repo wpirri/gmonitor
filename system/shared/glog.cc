@@ -22,7 +22,7 @@
 /*
     Logger
 */
-#include "glog.h"
+#include <glog.h>
 
 #include <iostream>
 #include <cstdlib>

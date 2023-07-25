@@ -18,8 +18,8 @@
 #ifndef _GMONTDB_H_
 #define _GMONTDB_H_
 
-#include "sincmem.h"
-#include "glog.h"
+#include <sincmem.h>
+#include <glog.h>
 
 #include <fstream>
 #include <string>

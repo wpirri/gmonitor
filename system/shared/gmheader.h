@@ -18,7 +18,7 @@
 #ifndef _GMHEADER_H_
 #define _GMHEADER_H_
 
-#include "gmbuffer.h"
+#include <gmbuffer.h>
 
 #include <string>
 using namespace std;

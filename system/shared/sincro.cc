@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 
-#include "sincro.h"
+#include <sincro.h>
 
 #ifndef HAVE_UNION_SEMUN
 union semun

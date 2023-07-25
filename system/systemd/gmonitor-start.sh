@@ -3,14 +3,14 @@
 if [ -f /etc/gmonitor ]; then
   . /etc/gmonitor
 else
-  if [ -f /etc/sysconfig/gmonitor ]; then
-    . /etc/sysconfig/gmonitor
+  if [ -f /etc/gmonitor/gmonitor ]; then
+    . /etc/gmonitor/gmonitor
   else
     if [ -f /usr/etc/gmonitor ]; then
       . /usr/etc/gmonitor
     else
-      if [ -f /usr/etc/sysconfig/gmonitor ]; then
-        . /usr/etc/sysconfig/gmonitor
+      if [ -f /usr/etc/gmonitor/gmonitor ]; then
+        . /usr/etc/gmonitor/gmonitor
       fi
     fi
   fi

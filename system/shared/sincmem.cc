@@ -21,7 +21,7 @@
 
 #include <unistd.h>
 
-#include "sincmem.h"
+#include <sincmem.h>
 
 #define SSHMEM_READ_SEM		0
 #define SSHMEM_WRITE_SEM	1

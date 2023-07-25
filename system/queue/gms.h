@@ -35,12 +35,12 @@ public:
 	/* Colocar en esta funcion el proceso que intepreta el
 	mensaje recibido */
 	int Main(const char *funcion, char typ, void* in, unsigned long inlen, void** out, unsigned long *outlen);
-	/* estas rutinas se llaman antes y después de la de
+	/* estas rutinas se llaman antes y despuï¿½s de la de
 	procesamiento de mensaje */
 	int PreMain();
 	int PosMain();
 	/* Estas rutinas son llamadas para el manejo de transaccion
-	se debe colocar en ellas el código necesario para cada uno
+	se debe colocar en ellas el cï¿½digo necesario para cada uno
 	de los procesos */
 	int BeginTrans(unsigned int trans);
 	int CommitTrans(unsigned int trans);

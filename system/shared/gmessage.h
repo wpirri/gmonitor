@@ -18,8 +18,8 @@
 #ifndef _GMESSAGE_H_
 #define _GMESSAGE_H_
 
-#include "gmheader.h"
-#include "gmbuffer.h"
+#include <gmheader.h>
+#include <gmbuffer.h>
 
 class CGMessage : public CGMHeader
 {

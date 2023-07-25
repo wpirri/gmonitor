@@ -1,1 +1,0 @@
-SUBDIRS = script sysconfig tables

@@ -19,16 +19,17 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include "gmconst.h"
-#include "gmontdb.h"
-#include "gmbuffer.h"
-#include "cmsg.h"
-#include "gmisc.h"
-#include "gmstring.h"
-#include "gmerror.h"
-#include "gmessage.h"
-#include "glog.h"
-#include "gms.h"
+#include <gms.h>
+
+#include <gmconst.h>
+#include <gmontdb.h>
+#include <gmbuffer.h>
+#include <cmsg.h>
+#include <gmisc.h>
+#include <gmstring.h>
+#include <gmerror.h>
+#include <gmessage.h>
+#include <glog.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -254,7 +255,7 @@ int main(int argc, char** argv)
 
 void InitSignals()
 {
-  /* Capturo las señales que necesito */
+  /* Capturo las seï¿½ales que necesito */
   signal(SIGALRM,   SIG_IGN);
   signal(SIGPIPE,   SIG_IGN);
   signal(SIGKILL,   OnClose);

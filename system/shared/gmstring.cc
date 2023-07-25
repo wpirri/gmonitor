@@ -22,7 +22,7 @@
 /*
     Funciones para el manejo de cadenas de caracteres
 */
-#include "gmstring.h"
+#include <gmstring.h>
 
 #include <cstdarg>
 #include <cstdlib>

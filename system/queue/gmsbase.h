@@ -18,11 +18,11 @@
 #ifndef _GMSBASE_H_
 #define _GMSBASE_H_
 
-#include "gmidat.h"
-#include "gmbuffer.h"
-#include "msgtype.h"
-#include "cmsg.h"
-#include "gmontdb.h"
+#include <gmidat.h>
+#include <gmbuffer.h>
+#include <msgtype.h>
+#include <cmsg.h>
+#include <gmontdb.h>
 
 #include <iostream>
 #include <string>

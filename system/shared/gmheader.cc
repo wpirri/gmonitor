@@ -22,9 +22,9 @@
 /*
     Iplementacion del header para la mensajeria entre cliente y servidor
 */
-#include "gmstring.h"
-#include "gmheader.h"
-#include "msgtype.h"
+#include <gmstring.h>
+#include <gmheader.h>
+#include <msgtype.h>
 
 #include <iostream>
 #include <string>

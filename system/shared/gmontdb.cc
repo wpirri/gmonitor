@@ -24,8 +24,8 @@
     Datos de las colas
     Procedimientos
 */
-#include "gmontdb.h"
-#include "gmstring.h"
+#include <gmontdb.h>
+#include <gmstring.h>
 
 #include <iostream>
 #include <cstdio>
@@ -67,7 +67,7 @@ CGMTdb::~CGMTdb()
 
 /*
   Crea e inicializa el area de memoria global para mantener la configuracion.
-  Lo debería llamar solamente el proceso server de configuración.
+  Lo deberï¿½a llamar solamente el proceso server de configuraciï¿½n.
 */
 int CGMTdb::Create(CGLog* plog)
 {
@@ -391,9 +391,10 @@ int CGMTdb::LoadSrv()
     if(s.length() > 0 && s[0] != '#') /* salteo comentarios y lineas vacias */
     {
       vs = split(s, '|');
-      if(vs.size() != 4)
+      if(vs.size() < 4)
       {
         in.close();
+        m_pLog->Add(1, "ERROR al parsear configuracion de server");
         return -1;
       }
       t.nombre = vs[0];
@@ -651,7 +652,7 @@ int CGMTdb::SaveFcnPar()
 */
 
 /* Carga de la tabla de servers */
-/* Carga en memoria los datos a medida que los levanta del archivo de configuración */
+/* Carga en memoria los datos a medida que los levanta del archivo de configuraciï¿½n */
 int CGMTdb::Add(CSrvTab t)
 {
   int i;
@@ -678,7 +679,7 @@ int CGMTdb::Add(CSrvTab t)
     }
     else if( idx == m_max_servers)
     {
-      /* encontré un lugar y todavía no habia encontrado ninguno */
+      /* encontrï¿½ un lugar y todavï¿½a no habia encontrado ninguno */
       idx = i;
     }
   }
@@ -718,22 +719,22 @@ int CGMTdb::Add(CSrvTab t)
   return -1;
 }
 
-/* Carga en memoria los datos a medida que los levanta del archivo de configuración */
+/* Carga en memoria los datos a medida que los levanta del archivo de configuraciï¿½n */
 int CGMTdb::Add(CSrvParTab t)
 {
   return -1;
 }
 
 /* Carga de l tabla de servicios */
-/* Carga en memoria los datos a medida que los levanta del archivo de configuración */
+/* Carga en memoria los datos a medida que los levanta del archivo de configuraciï¿½n */
 int CGMTdb::Add(CFcnTab t)
 {
   int i;
   SH_FUNCION funcion;
   int idx = m_max_services;
 
-  /* busco si el servicio ya está dado de alta con el mismo nombre, tipo de mensaje y server */
-  /* si es así listo,  */
+  /* busco si el servicio ya estï¿½ dado de alta con el mismo nombre, tipo de mensaje y server */
+  /* si es asï¿½ listo,  */
   for(i = 0; i < m_max_services; i++)
   {
     if(m_pShMem->GetAt(INDEX_FUNCTION(i), &funcion, sizeof(SH_FUNCION)) != 0)
@@ -801,7 +802,7 @@ int CGMTdb::Add(CFcnTab t)
   return -1;
 }
 
-/* Carga en memoria los datos a medida que los levanta del archivo de configuración */
+/* Carga en memoria los datos a medida que los levanta del archivo de configuraciï¿½n */
 int CGMTdb::Add(CFcnParTab t)
 {
   return -1;
@@ -912,7 +913,7 @@ void CGMTdb::Dump()
 
 int CGMTdb::Dump(ostream& std, ostream& err)
 {
-  /* ... alguien lo va a hace en algún momento */
+  /* ... alguien lo va a hace en algï¿½n momento */
   return -1;
 }
 
@@ -1042,7 +1043,7 @@ vector <CGMTdb::CFcnTab> CGMTdb::ServicioList(string& server)
   return ServicioList(server.c_str());
 }
 
-/* FALTA: que le dé bola al parámetro server */
+/* FALTA: que le dï¿½ bola al parï¿½metro server */
 vector <CGMTdb::CFcnTab> CGMTdb::ServicioList(const char* server)
 {
   int i;

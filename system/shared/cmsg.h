@@ -18,7 +18,7 @@
 #ifndef _CMSG_H_
 #define _CMSG_H_
 
-#include "gmbuffer.h"
+#include <gmbuffer.h>
 
 #define MSG_DEFAULT_PRIORITY	5
 

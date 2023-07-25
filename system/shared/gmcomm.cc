@@ -19,7 +19,7 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include "gmcomm.h"
+#include <gmcomm.h>
 
 #include <iostream>
 #include <cstdio>

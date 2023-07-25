@@ -21,15 +21,15 @@
 
 #include "gmsbase.h"
 
-#include "gmconst.h"
-#include "gmontdb.h"
-#include "gmbuffer.h"
-#include "cmsg.h"
-#include "gmisc.h"
-#include "gmerror.h"
-#include "gmessage.h"
-#include "glog.h"
-#include "svcstru.h"
+#include <gmconst.h>
+#include <gmontdb.h>
+#include <gmbuffer.h>
+#include <cmsg.h>
+#include <gmisc.h>
+#include <gmerror.h>
+#include <gmessage.h>
+#include <glog.h>
+#include <svcstru.h>
 
 #include <cstdio>
 #include <cstdlib>

@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 
-#include "shmem.h"
+#include <shmem.h>
 
 CShMem::CShMem()
 {

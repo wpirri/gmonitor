@@ -30,12 +30,12 @@ int CGMServer::Init() { return 0; }
 /* Colocar en esta funcion lo que se necesite correr al bajar el serer */
 int CGMServer::Exit() { return 0; }
 
-/* Estas rutinas son llamadas para el manejo de transaccion se debe colocar en ellas el código necesario para cada uno de los procesos */
+/* Estas rutinas son llamadas para el manejo de transaccion se debe colocar en ellas el cï¿½digo necesario para cada uno de los procesos */
 int CGMServer::BeginTrans(unsigned int trans) { return 0; }
 int CGMServer::CommitTrans(unsigned int trans) { return 0; }
 int CGMServer::RollbackTrans(unsigned int trans) { return 0; }
 
-/* estas rutinas se llaman antes y después de la de procesamiento de mensaje */
+/* estas rutinas se llaman antes y despuï¿½s de la de procesamiento de mensaje */
 int CGMServer::PreMain() { return 0; }
 int CGMServer::PosMain() { return 0; }
 

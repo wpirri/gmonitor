@@ -23,8 +23,8 @@
     Implementacion del protocolo de mensajeria, esta clase junto con
     GMHeader forman el mensaje que comunica al cliente con el server
 */
-#include "gmstring.h"
-#include "gmessage.h"
+#include <gmstring.h>
+#include <gmessage.h>
 
 #include <iostream>
 #include <string>

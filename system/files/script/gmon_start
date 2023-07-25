@@ -1,23 +1,22 @@
 #!/bin/sh
 
-SU="su -s /bin/sh -c "
-SU_USER="gmonitor"
-
 if [ -f /etc/gmonitor ]; then
   . /etc/gmonitor
 else
-  if [ -f /etc/sysconfig/gmonitor ]; then
-    . /etc/sysconfig/gmonitor
+  if [ -f /etc/gmonitor/gmonitor ]; then
+    . /etc/gmonitor/gmonitor
   else
     if [ -f /usr/etc/gmonitor ]; then
       . /usr/etc/gmonitor
     else
-      if [ -f /usr/etc/sysconfig/gmonitor ]; then
-        . /usr/etc/sysconfig/gmonitor
+      if [ -f /usr/etc/gmonitor/gmonitor ]; then
+        . /usr/etc/gmonitor/gmonitor
       fi
     fi
   fi
 fi
+
+SU="su -s /bin/sh -c "
 
 get_params()
 {
@@ -37,19 +36,30 @@ start_one_service()
 	descripcion=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $2 }'`
 	modo=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $3 }'`
 	server=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $4 }'`
+	instancias=`grep "^${1}|" $SERVER_CONF/server.tab | awk -F'|' '{ print $5 }'`
 	params=`get_params $servicio`
 
 	if [ "X${servicio}" = "X" ]; then
 		exit 1
 	fi
 
-        if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
-        	echo "Arrancando: ${descripcion}"
-        	$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}&" $SU_USER
-        else
-        	echo "Arrancando: ${descripcion}"
-        	$SU "${server} -n ${servicio} ${params}&" $SU_USER
-        fi
+	if [ "X${instancias}" = "X" ]; then
+		instancias=1
+	fi
+
+	while [ $instancias -gt 0 ]; do 
+
+        	if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
+        		echo "Arrancando: ${descripcion}"
+        		$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}&" $SU_USER
+        	else
+        		echo "Arrancando: ${descripcion}"
+			echo "$SU ${server} -n ${servicio} ${params}& $SU_USER"
+        		$SU "${server} -n ${servicio} ${params}&" $SU_USER
+        	fi
+
+		instancias=`expr $instancias - 1`
+	done
 }
 
 start_all_services()
@@ -61,15 +71,25 @@ start_all_services()
                         descripcion=`echo $line | awk -F'|' '{ print $2 }'`
                         modo=`echo $line | awk -F'|' '{ print $3 }'`
                         server=`echo $line | awk -F'|' '{ print $4 }'`
+                        instancias=`echo $line | awk -F'|' '{ print $5 }'`
 			params=`get_params $servicio`
 
-                        if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
-        			echo "Arrancando: ${descripcion}"
-				$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}&" $SU_USER
-                        else
-        			echo "Arrancando: ${descripcion}"
-				$SU "${server} -n ${servicio} ${params}&" $SU_USER
-                        fi
+			if [ "X${instancias}" = "X" ]; then
+				instancias=1
+			fi
+
+			while [ $instancias -gt 0 ]; do 
+
+                        	if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
+        				echo "Arrancando: ${descripcion}"
+					$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}&" $SU_USER
+                        	else
+        				echo "Arrancando: ${descripcion}"
+					$SU "${server} -n ${servicio} ${params}&" $SU_USER
+                        	fi
+
+				instancias=`expr $instancias - 1`
+			done
 			sleep 1
                 fi
         done
