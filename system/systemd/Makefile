@@ -4,7 +4,7 @@ include ../configure.mk
 
 STOP_SCRIPT=gmonitor-stop.sh
 START_SCRIPT=gmonitor-start.sh
-SCRIPT_PATH=/usr/sbin
+SCRIPT_PATH=/usr/local/sbin
 SYSTEMD_SCRIPT=gmonitor.service
 #SYSTEMD_PATH=/etc/systemd/system
 SYSTEMD_PATH=/lib/systemd/system

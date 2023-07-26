@@ -20,6 +20,7 @@ clean:
 
 install:
 	make -C files install
+	make -C systemd install
 	make -C shared install
 	make -C listener install
 	make -C router install
@@ -31,6 +32,7 @@ install:
 
 uninstall:
 	make -C files uninstall
+	make -C systemd uninstall
 	make -C shared uninstall
 	make -C listener uninstall
 	make -C router uninstall
