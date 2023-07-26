@@ -29,6 +29,8 @@ install:
 	$(CP) $(OUTPUT) $(INST_LIBDIR)/
 	chown $(INST_USER): $(INST_LIBDIR)/$(OUTPUT)
 	chmod 0755 $(INST_LIBDIR)/$(OUTPUT)
+	$(CP) gmc.h $(INST_INCDIR)/
 
 uninstall:
 	$(RM) $(INST_LIBDIR)/$(OUTPUT)
+	$(RM) $(INST_INCDIR)/gmc.h

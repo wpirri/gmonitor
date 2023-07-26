@@ -56,8 +56,14 @@ install:
 	$(CP) $(OUTPUT_LGMQW) $(INST_LIBDIR)/
 	chown $(INST_USER): $(INST_LIBDIR)/$(OUTPUT_LGMQW)
 	chmod 0755 $(INST_LIBDIR)/$(OUTPUT_LGMQW)
+	$(CP) gmsbase.h $(INST_INCDIR)/
+	$(CP) gms.h $(INST_INCDIR)/
+	$(CP) gmswaited.h $(INST_INCDIR)/
 
 uninstall:
 	$(RM) $(INST_SBINDIR)/$(OUTPUT_GMQ)
 	$(RM) $(INST_LIBDIR)/$(OUTPUT_LGMQ)
 	$(RM) $(INST_LIBDIR)/$(OUTPUT_LGMQW)
+	$(RM) $(INST_INCDIR)/gmsbase.h
+	$(RM) $(INST_INCDIR)/gms.h
+	$(RM) $(INST_INCDIR)/gmswaited.h

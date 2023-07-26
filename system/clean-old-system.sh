@@ -55,10 +55,12 @@ rm /usr/local/bin/domcli
 rm /usr/local/sbin/dompi_amazon_server
 rm /usr/local/sbin/dompi_cloud_server
 rm /usr/local/sbin/dompi_cloud_abm
+rm /usr/local/sbin/dompi_gpio
 
 rm /etc/sysconfig/gmonitor
 rm /etc/xinetd.d/gmonitor
 rm /etc/cron.daily/clean-gmonitor-logs
+rm /usr/local/sbin/clean-old-logs.sh
 rm /usr/local/sbin/clean-gmonitor-old-logs.sh
 rm /usr/local/sbin/drop_ipc.sh
 
