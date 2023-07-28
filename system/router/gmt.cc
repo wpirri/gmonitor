@@ -102,7 +102,7 @@ int main(int argc, char** argv)
         sleep(3);
       }
     }
-    /* si era solamente matar salgo acá */
+    /* si era solamente matar salgo acï¿½ */
     if(tokill)
     {
       return 0;
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 
 void InitSignals()
 {
-  /* Capturo las señales que necesito */
+  /* Capturo las seï¿½ales que necesito */
   signal(SIGPIPE, OnClose);
   signal(SIGILL,  OnClose);
   signal(SIGQUIT, OnClose);
@@ -180,52 +180,52 @@ void OnClose(int sig)
   switch(sig)
   {
   case SIGINT:
-    pLog->Add(1, "Señal SIGINT - Interrupción procedente del teclado");
+    pLog->Add(1, "Seï¿½al SIGINT - Interrupciï¿½n procedente del teclado");
     break;
   case SIGQUIT:
-    pLog->Add(1, "Señal SIGQUIT - Terminación procedente del teclado");
+    pLog->Add(1, "Seï¿½al SIGQUIT - Terminaciï¿½n procedente del teclado");
     break;
   case SIGILL:
-    pLog->Add(1, "Señal SIGILL - Instrucción ilegal");
+    pLog->Add(1, "Seï¿½al SIGILL - Instrucciï¿½n ilegal");
     break;
   case SIGABRT:
-    pLog->Add(1, "Señal SIGABRT - Señal de aborto procedente de abort(3)");
+    pLog->Add(1, "Seï¿½al SIGABRT - Seï¿½al de aborto procedente de abort(3)");
     break;
   case SIGFPE:
-    pLog->Add(1, "Señal SIGFPE - Excepción de coma flotante");
+    pLog->Add(1, "Seï¿½al SIGFPE - Excepciï¿½n de coma flotante");
     break;
   case SIGKILL:
-    pLog->Add(1, "Señal SIGKILL - Señal de matar");
+    pLog->Add(1, "Seï¿½al SIGKILL - Seï¿½al de matar");
     break;
   case SIGSEGV:
-    pLog->Add(1, "Señal SIGSEGV - Referencia inválida a memoria");
+    pLog->Add(1, "Seï¿½al SIGSEGV - Referencia invï¿½lida a memoria");
     break;
   case SIGPIPE:
-    pLog->Add(1, "Señal SIGPIPE - Tubería rota: escritura sin lectores");
+    pLog->Add(1, "Seï¿½al SIGPIPE - Tuberï¿½a rota: escritura sin lectores");
     break;
   case SIGALRM:
-    pLog->Add(1, "Señal SIGALRM - Señal de alarma de alarm(2)");
+    pLog->Add(1, "Seï¿½al SIGALRM - Seï¿½al de alarma de alarm(2)");
     break;
   case SIGTERM:
-    pLog->Add(1, "Señal SIGTERM - Señal de terminación");
+    pLog->Add(1, "Seï¿½al SIGTERM - Seï¿½al de terminaciï¿½n");
     break;
   case SIGUSR1:
-    pLog->Add(1, "Señal SIGUSR1 - Señal definida por usuario 1");
+    pLog->Add(1, "Seï¿½al SIGUSR1 - Seï¿½al definida por usuario 1");
     break;
   case SIGUSR2:
-    pLog->Add(1, "Señal SIGUSR2 - Señal definida por usuario 2");
+    pLog->Add(1, "Seï¿½al SIGUSR2 - Seï¿½al definida por usuario 2");
     break;
   case SIGTSTP:
-    pLog->Add(1, "Señal SIGTSTP - Parada escrita en la tty");
+    pLog->Add(1, "Seï¿½al SIGTSTP - Parada escrita en la tty");
     break;
   case SIGTTIN:
-    pLog->Add(1, "Señal SIGTTIN - E. de la tty para un proc. de fondo");
+    pLog->Add(1, "Seï¿½al SIGTTIN - E. de la tty para un proc. de fondo");
     break;
   case SIGTTOU:
-    pLog->Add(1, "Señal SIGTTOU - S. a la tty para un proc. de fondo");
+    pLog->Add(1, "Seï¿½al SIGTTOU - S. a la tty para un proc. de fondo");
     break;
   default:
-    pLog->Add(1, "Señal (%i)", sig);
+    pLog->Add(1, "Seï¿½al (%i)", sig);
     break;
   }
   if(pMsg) delete pMsg;
@@ -272,7 +272,7 @@ int MsgRouter()
 
   pMsg->Open();
 
-  /* Este loop es para que el router esté permanentemente en escucha */
+  /* Este loop es para que el router estï¿½ permanentemente en escucha */
   do
   {
     pbuffer->Clear();
@@ -302,15 +302,15 @@ int MsgRouter()
         if( !pinmsg->IdMoreData())
         {
           pLog->Add(100, "Inicio de mensaje interactivo");
-          /* Si es el primero tiro la consulta y después trato la respuesta */
+          /* Si es el primero tiro la consulta y despuï¿½s trato la respuesta */
           MsgQuery(pinmsg, poutmsg);
-          /* No me importa si salió OK o no, igual me fijo los datos
+          /* No me importa si saliï¿½ OK o no, igual me fijo los datos
           a ver si tengo que recortar */
           if(poutmsg->GetDataLen() > pinmsg->TamMaxMensaje())
           {
             /* Hay que recortar */
             pLog->Add(100, "El mensaje necesita continuacion");
-            /* Anoto el tamaño del mensaje completo antes de recortarlo */
+            /* Anoto el tamaï¿½o del mensaje completo antes de recortarlo */
             poutmsg->TamTotMensaje(poutmsg->GetDataLen());
             /* para el mensaje el servicio de buffer necesito dos contenedores nuevos */
             pin2msg = new CGMessage;
@@ -321,7 +321,7 @@ int MsgRouter()
             psbuffer->new_buffer.len = poutmsg->GetDataLen();
             memcpy(&psbuffer->new_buffer.data[0], poutmsg->GetData(),
               psbuffer->new_buffer.len);
-            /* recorto el mensaje que voy a devolver al tamaño maximo */
+            /* recorto el mensaje que voy a devolver al tamaï¿½o maximo */
             poutmsg->SetData(&psbuffer->new_buffer.data[0], pinmsg->TamMaxMensaje());
             /*la vuelta del query la uso para armar el mensaje del servicio de buffers*/
             pin2msg->SetMsg(poutmsg->GetMsg(), poutmsg->GetHeaderLen());
@@ -342,7 +342,7 @@ int MsgRouter()
               psbuffer = (ST_SBUFFER*)pout2msg->GetData();
               /* paso el ID del buffer a la respuesta */
               poutmsg->IdMoreData(psbuffer->new_buffer.id);
-              /* Retorno indicación de mas datos */
+              /* Retorno indicaciï¿½n de mas datos */
               poutmsg->CodigoRetorno(GME_MORE_DATA);
             }
             else
@@ -392,7 +392,7 @@ int MsgRouter()
             poutmsg->SetData(&psbuffer->get_buffer.data[0], psbuffer->get_buffer.len);
             /* seteo los valores necesarios para pedir el resto de los pedacitos */
             poutmsg->TamTotMensaje(psbuffer->get_buffer.totlen);
-            /*comparando los tamaños  me doy cuenta de que ya no necesito mas el buffer*/
+            /*comparando los tamaï¿½os  me doy cuenta de que ya no necesito mas el buffer*/
             if(psbuffer->get_buffer.len < pinmsg->TamMaxMensaje())
             {
               /* si es el ultimo mensaje borro el buffer */
@@ -454,9 +454,9 @@ int MsgRouter()
 
 
       }
-      /* Una vez terminada su taréa el hijo se va */
+      /* Una vez terminada su tarï¿½a el hijo se va */
       exit(0);
-    } /* Acá termina el fork */
+    } /* Acï¿½ termina el fork */
   } while(1);
   delete poutmsg;
   delete pinmsg;
@@ -526,7 +526,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       }
       else
       {
-        /*pLog->Add(50, "Envío OK, Completando respuesta");*/
+        /*pLog->Add(50, "Envï¿½o OK, Completando respuesta");*/
         if(out->SetMsg(buff_out.Data(), buff_out.Length()) != 0)
         {
           out->CodigoRetorno(GME_MSGQ_ERROR);
@@ -551,7 +551,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       if(vlen > 0)
       {
         /* si encuentra al menos un destinatario devuelve Ok */
-        /* y después se pone a enviar */
+        /* y despuï¿½s se pone a enviar */
         out->CodigoRetorno(GME_OK);
 
         if((ppid = fork()) <= 0)
@@ -591,26 +591,27 @@ int SelectQueue(const char* funcion, char tipo_mensaje)
   int candidate;
   int candidate_qlen;
   CMsg msg;
+  int qi;
 
   pLog->Add(50, "SelectQueue - Buscando server mas libre para %s en modo %c", funcion, tipo_mensaje);
   lista_colas = pConfig->Cola(funcion, tipo_mensaje);
   if((vlen = lista_colas.size()) == 0) return -1;
   if(vlen > 1)
   {
-    /* busco la menos cargada */
-    candidate = lista_colas[0];
+    /* voy rotando y busco la cola menos cargada */
+    qi = getpid() % vlen;
+    candidate = lista_colas[qi];
     candidate_qlen = msg.GetRemoteCount(candidate);
-    pLog->Add(100, "SelectQueue - Cola candidata 0x%08X con %i msgs",
-          lista_colas[0], candidate_qlen);
+    pLog->Add(100, "SelectQueue - Cola candidata 0x%08X con %i msgs", lista_colas[qi], candidate_qlen);
     for(i = 1; i < vlen; i++)
     {
       /* miro la cola una sola vez */
-      qlen = msg.GetRemoteCount(lista_colas[i]);
-      pLog->Add(100, "SelectQueue - Cola candidata 0x%08X con %i msgs",
-          lista_colas[i], qlen);
+      if(++qi >= vlen) qi = 0;
+      qlen = msg.GetRemoteCount(lista_colas[qi]);
+      pLog->Add(100, "SelectQueue - Cola candidata 0x%08X con %i msgs", lista_colas[qi], qlen);
       if(qlen >= 0 && qlen < candidate_qlen)
       {
-        candidate = lista_colas[i];
+        candidate = lista_colas[qi];
         candidate_qlen = qlen;
       }
     }
