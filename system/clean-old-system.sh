@@ -9,8 +9,8 @@ rm /home/gmonitor/funcion_parametro.tab
 rm /home/gmonitor/server.tab
 rm /home/gmonitor/server_parametro.tab
 rm /home/gmonitor/gmond
-rm /home/gmonitor/html
-rm /home/gmonitor/cgi
+rm -r /home/gmonitor/html
+rm -r /home/gmonitor/cgi
 
 rm /usr/sbin/gmd
 rm /usr/sbin/gmt

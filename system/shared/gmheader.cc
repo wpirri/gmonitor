@@ -79,9 +79,14 @@ unsigned int CGMHeader::GetHeaderLen()
 
 int CGMHeader::SetHeader(const char* msg)
 {
-	if(!msg) return -1;
+	int i;
+	if(!msg) return (-1);
+	
 	memcpy(&m_header, msg, GetHeaderLen());
-	if( memcmp(m_header.VersionHeader, VERSION_HEADER, 3)) return -1;
+
+	/* Controles */
+	if( memcmp(m_header.VersionHeader, VERSION_HEADER, 3)) return (-1);
+
 	if(	m_header.TipoMensaje[0] != GM_MSG_TYPE_CR     &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_MSG    &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_INT    &&
@@ -91,7 +96,80 @@ int CGMHeader::SetHeader(const char* msg)
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_MSG  &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_INT  &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_QUE  &&
-		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_NOT   ) return -1;
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_NOT   ) return (-1);
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdTrans[i] < '0' || m_header.IdTrans[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdCola[i] < '0' || m_header.IdCola[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdMoreData[i] < '0' || m_header.IdMoreData[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.SecuenciaConsulta[i] < '0' || m_header.SecuenciaConsulta[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.SecuenciaRespuesta[i] < '0' || m_header.SecuenciaRespuesta[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdOrigen[i] < '0' || m_header.IdOrigen[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdRouter[i] < '0' || m_header.IdRouter[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdDestino[i] < '0' || m_header.IdDestino[i] > '9') return (-1);
+	}
+
+	/*
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.TimeStamp[i] < '0' || m_header.TimeStamp[i] > '9') return (-1);
+	}
+	*/
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.CodigoRetorno[i] < '0' || m_header.CodigoRetorno[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.TamMensaje[i] < '0' || m_header.TamMensaje[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.IndiceMensaje[i] < '0' || m_header.IndiceMensaje[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.TamMaxMensaje[i] < '0' || m_header.TamMaxMensaje[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.TamTotMensaje[i] < '0' || m_header.TamTotMensaje[i] > '9') return (-1);
+	}
+
 	return 0;
 }
 
@@ -103,9 +181,98 @@ int CGMHeader::SetHeader(CGMBuffer& buffer)
 
 int CGMHeader::SetHeader(CGMBuffer* buffer)
 {
+	int i;
+
 	if(!buffer) return -1;
 	if(buffer->Length() < GetHeaderLen()) return -1;
 	memcpy(&m_header, buffer->Data(), GetHeaderLen());
+
+	/* Controles */
+	if( memcmp(m_header.VersionHeader, VERSION_HEADER, 3)) return (-1);
+
+	if(	m_header.TipoMensaje[0] != GM_MSG_TYPE_CR     &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_MSG    &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_INT    &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_QUE    &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_NOT    &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_CR   &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_MSG  &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_INT  &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_QUE  &&
+		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_NOT   ) return (-1);
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdTrans[i] < '0' || m_header.IdTrans[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdCola[i] < '0' || m_header.IdCola[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdMoreData[i] < '0' || m_header.IdMoreData[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.SecuenciaConsulta[i] < '0' || m_header.SecuenciaConsulta[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.SecuenciaRespuesta[i] < '0' || m_header.SecuenciaRespuesta[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdOrigen[i] < '0' || m_header.IdOrigen[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdRouter[i] < '0' || m_header.IdRouter[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.IdDestino[i] < '0' || m_header.IdDestino[i] > '9') return (-1);
+	}
+
+	/*
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.TimeStamp[i] < '0' || m_header.TimeStamp[i] > '9') return (-1);
+	}
+	*/
+
+	for(i = 0; i < 5; i++)
+	{
+		if(m_header.CodigoRetorno[i] < '0' || m_header.CodigoRetorno[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.TamMensaje[i] < '0' || m_header.TamMensaje[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.IndiceMensaje[i] < '0' || m_header.IndiceMensaje[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.TamMaxMensaje[i] < '0' || m_header.TamMaxMensaje[i] > '9') return (-1);
+	}
+
+	for(i = 0; i < 10; i++)
+	{
+		if(m_header.TamTotMensaje[i] < '0' || m_header.TamTotMensaje[i] > '9') return (-1);
+	}
+
 	return 0;
 }
 
@@ -343,7 +510,7 @@ char CGMHeader::OrigenConsulta()
 int CGMHeader::OrigenConsulta(char o)
 {
 	m_header.OrigenConsulta[0] = o;
-	/* Dejamos un valor de retorno para cuando se valide el parámetro */
+	/* Dejamos un valor de retorno para cuando se valide el parï¿½metro */
 	return 0;
 }
 
@@ -355,7 +522,7 @@ char CGMHeader::OrigenRespuesta()
 int CGMHeader::OrigenRespuesta(char o)
 {
 	m_header.OrigenRespuesta[0] = o;
-	/* Dejamos un valor de retorno para cuando se valide el parámetro */
+	/* Dejamos un valor de retorno para cuando se valide el parï¿½metro */
 	return 0;
 }
 
@@ -367,7 +534,7 @@ unsigned int CGMHeader::IdOrigen()
 int CGMHeader::IdOrigen(unsigned int id)
 {
 	memprint(m_header.IdOrigen, "%05u", id);
-	/* Dejamos un valor de retorno para cuando se valide el parámetro */
+	/* Dejamos un valor de retorno para cuando se valide el parï¿½metro */
 	return 0;
 }
 
@@ -379,7 +546,7 @@ unsigned int CGMHeader::IdRouter()
 int CGMHeader::IdRouter(unsigned int id)
 {
 	memprint(m_header.IdRouter, "%05u", id);
-	/* Dejamos un valor de retorno para cuando se valide el parámetro */
+	/* Dejamos un valor de retorno para cuando se valide el parï¿½metro */
 	return 0;
 }
 
@@ -391,7 +558,7 @@ unsigned int CGMHeader::IdDestino()
 int CGMHeader::IdDestino(unsigned int id)
 {
 	memprint(m_header.IdDestino, "%05u", id);
-	/* Dejamos un valor de retorno para cuando se valide el parámetro */
+	/* Dejamos un valor de retorno para cuando se valide el parï¿½metro */
 	return 0;
 }
 
@@ -443,7 +610,7 @@ unsigned long CGMHeader::TamMensaje()
 
 void CGMHeader::TamMensaje(unsigned long t)
 {
-	memprint(m_header.TamMensaje, "%10lu", t);
+	memprint(m_header.TamMensaje, "%010lu", t);
 }
 
 unsigned long CGMHeader::IndiceMensaje()
@@ -453,7 +620,7 @@ unsigned long CGMHeader::IndiceMensaje()
 
 void CGMHeader::IndiceMensaje(unsigned long i)
 {
-	memprint(m_header.IndiceMensaje, "%10lu", i);
+	memprint(m_header.IndiceMensaje, "%010lu", i);
 }
 
 unsigned long CGMHeader::TamMaxMensaje()
@@ -463,7 +630,7 @@ unsigned long CGMHeader::TamMaxMensaje()
 
 void CGMHeader::TamMaxMensaje(unsigned long t)
 {
-	memprint(m_header.TamMaxMensaje, "%10lu", t);
+	memprint(m_header.TamMaxMensaje, "%010lu", t);
 }
 
 unsigned long CGMHeader::TamTotMensaje()
@@ -473,7 +640,7 @@ unsigned long CGMHeader::TamTotMensaje()
 
 void CGMHeader::TamTotMensaje(unsigned long t)
 {
-	memprint(m_header.TamTotMensaje, "%10lu", t);
+	memprint(m_header.TamTotMensaje, "%010lu", t);
 }
 
 char CGMHeader::TipoRespuesta(char tc)
