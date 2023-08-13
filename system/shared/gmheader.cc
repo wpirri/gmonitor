@@ -50,9 +50,9 @@ CGMHeader::CGMHeader()
 	memset(m_header.SecuenciaRespuesta, '0', 5);
 	memset(m_header.OrigenConsulta, '0', 1);
 	memset(m_header.OrigenRespuesta, '0', 1);
-	memset(m_header.IdOrigen, '0', 5);
-	memset(m_header.IdRouter, '0', 5);
-	memset(m_header.IdDestino, '0', 5);
+	memset(m_header.IdOrigen, '0', 10);
+	memset(m_header.IdRouter, '0', 10);
+	memset(m_header.IdDestino, '0', 10);
 	memset(m_header.TimeStamp, '0', 10);
 	memset(m_header.CodigoRetorno, '0', 5);
 	memset(m_header.Crc, ' ', 16);
@@ -123,17 +123,17 @@ int CGMHeader::SetHeader(const char* msg)
 		if(m_header.SecuenciaRespuesta[i] < '0' || m_header.SecuenciaRespuesta[i] > '9') return (-1);
 	}
 
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < 10; i++)
 	{
 		if(m_header.IdOrigen[i] < '0' || m_header.IdOrigen[i] > '9') return (-1);
 	}
 
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < 10; i++)
 	{
 		if(m_header.IdRouter[i] < '0' || m_header.IdRouter[i] > '9') return (-1);
 	}
 
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < 10; i++)
 	{
 		if(m_header.IdDestino[i] < '0' || m_header.IdDestino[i] > '9') return (-1);
 	}
@@ -226,17 +226,17 @@ int CGMHeader::SetHeader(CGMBuffer* buffer)
 		if(m_header.SecuenciaRespuesta[i] < '0' || m_header.SecuenciaRespuesta[i] > '9') return (-1);
 	}
 
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < 10; i++)
 	{
 		if(m_header.IdOrigen[i] < '0' || m_header.IdOrigen[i] > '9') return (-1);
 	}
 
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < 10; i++)
 	{
 		if(m_header.IdRouter[i] < '0' || m_header.IdRouter[i] > '9') return (-1);
 	}
 
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < 10; i++)
 	{
 		if(m_header.IdDestino[i] < '0' || m_header.IdDestino[i] > '9') return (-1);
 	}
@@ -510,7 +510,7 @@ char CGMHeader::OrigenConsulta()
 int CGMHeader::OrigenConsulta(char o)
 {
 	m_header.OrigenConsulta[0] = o;
-	/* Dejamos un valor de retorno para cuando se valide el par�metro */
+	/* Dejamos un valor de retorno para cuando se valide el parametro */
 	return 0;
 }
 
@@ -522,43 +522,43 @@ char CGMHeader::OrigenRespuesta()
 int CGMHeader::OrigenRespuesta(char o)
 {
 	m_header.OrigenRespuesta[0] = o;
-	/* Dejamos un valor de retorno para cuando se valide el par�metro */
+	/* Dejamos un valor de retorno para cuando se valide el parametro */
 	return 0;
 }
 
 unsigned int CGMHeader::IdOrigen()
 {
-	return (unsigned int)subint(m_header.IdOrigen, 0, 5);
+	return (unsigned int)subint(m_header.IdOrigen, 0, 10);
 }
 
 int CGMHeader::IdOrigen(unsigned int id)
 {
-	memprint(m_header.IdOrigen, "%05u", id);
-	/* Dejamos un valor de retorno para cuando se valide el par�metro */
+	memprint(m_header.IdOrigen, "%010u", id);
+	/* Dejamos un valor de retorno para cuando se valide el parametro */
 	return 0;
 }
 
 unsigned int CGMHeader::IdRouter()
 {
-	return (unsigned int)subint(m_header.IdRouter, 0, 5);
+	return (unsigned int)subint(m_header.IdRouter, 0, 10);
 }
 
 int CGMHeader::IdRouter(unsigned int id)
 {
-	memprint(m_header.IdRouter, "%05u", id);
-	/* Dejamos un valor de retorno para cuando se valide el par�metro */
+	memprint(m_header.IdRouter, "%010u", id);
+	/* Dejamos un valor de retorno para cuando se valide el parametro */
 	return 0;
 }
 
 unsigned int CGMHeader::IdDestino()
 {
-	return (unsigned int)subint(m_header.IdDestino, 0, 5);
+	return (unsigned int)subint(m_header.IdDestino, 0, 10);
 }
 
 int CGMHeader::IdDestino(unsigned int id)
 {
-	memprint(m_header.IdDestino, "%05u", id);
-	/* Dejamos un valor de retorno para cuando se valide el par�metro */
+	memprint(m_header.IdDestino, "%010u", id);
+	/* Dejamos un valor de retorno para cuando se valide el parametro */
 	return 0;
 }
 

@@ -81,17 +81,17 @@ public:
 	unsigned int CodigoRetorno();
 	void CodigoRetorno(unsigned int c);
 	const char* Crc();
-	/* Tamaño del bloque de datos contenido en este mensaje */
+	/* Tamaï¿½o del bloque de datos contenido en este mensaje */
 	unsigned long TamMensaje();
 	void TamMensaje(unsigned long i);
 	/* Indice del inicio del mensaje, salvo para interacticos debe ser 0 */
 	unsigned long IndiceMensaje();
 	void IndiceMensaje(unsigned long i);
-	/* Tamaño maximo del mensaje a transferir dterminado por el cliente
+	/* Tamaï¿½o maximo del mensaje a transferir dterminado por el cliente
 	debe ser 0 para todos salvo para los interactivos (0 es sin limite) */
 	unsigned long TamMaxMensaje();
 	void TamMaxMensaje(unsigned long t);
-	/* Tamaño total del mensaje, salvo para los interactivos debe ser
+	/* Tamaï¿½o total del mensaje, salvo para los interactivos debe ser
 	igual a TamMensaje */
 	unsigned long TamTotMensaje();
 	void TamTotMensaje(unsigned long t);
@@ -115,9 +115,9 @@ protected:
 		char	SecuenciaRespuesta[5];
 		char	OrigenConsulta[1];
 		char	OrigenRespuesta[1];
-		char	IdOrigen[5];
-		char	IdRouter[5];
-		char	IdDestino[5];
+		char	IdOrigen[10];
+		char	IdRouter[10];
+		char	IdDestino[10];
 		char	TimeStamp[10];
 		char	CodigoRetorno[5];
 		char	Crc[16];

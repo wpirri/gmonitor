@@ -631,7 +631,7 @@ void LogMessage(const char* label, CGMessage* msg)
   int i;
 
   pLog->Add(100, "== %-3.3s ==============================================================", label);
-  pLog->Add(20, "(%c)%-28.28s %05lu Id: Tr/%05u Md/%05u Or/%05u Ds/%05u Orig: Co/%c Re/%c Rc: %03u",
+  pLog->Add(20, "(%c)%-28.28s %05lu Id: Tr/%05u Md/%05u Or/%010u Ds/%010u Orig: Co/%c Re/%c Rc: %03u",
               msg->TipoMensaje(),
               msg->Funcion(),
               msg->GetDataLen(),
