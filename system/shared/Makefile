@@ -4,7 +4,7 @@ include ../configure.mk
 
 INCLUDE=-I./
 CFLAGS=-fPIC
-CXXFLAGS=-g -Wall -Wextra -MMD -O2 
+CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LIBS=
 LFLAGS=-shared
 OBJECTS=cmsg.o glog.o gmcomm.o gmessage.o gmidat.o gmontdb.o shmem.o sincro.o \

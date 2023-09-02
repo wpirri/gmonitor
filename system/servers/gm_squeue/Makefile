@@ -6,7 +6,7 @@ CC=g++
 INCLUDE=-I./ -I../../shared  -I../../queue
 DEFINE=-D __NO__DEBUG__ -DLOG_FILES=$(LOG_FILES) -DMAX_SERVERS=$(MAX_SERVERS) -DMAX_SERVICES=$(MAX_SERVICES) -DSAF_FILES=$(SAF_FILES)
 CFLAGS=
-CXXFLAGS=-g -Wall -Wextra -MMD -O2 
+CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../../shared -L../../queue 
 LIBS=-lgmshared -lgmq
 
@@ -33,6 +33,7 @@ clean:
 install:
 	mkdir -p $(INST_LOGDIR)
 	mkdir -p $(INST_VARDIR)/saf
+	chmod 0777 $(INST_VARDIR)/saf
 	$(CP) $(OUTPUT) $(INST_SBINDIR)/
 	chown $(INST_USER): $(INST_SBINDIR)/$(OUTPUT)
 	chmod 0755 $(INST_SBINDIR)/$(OUTPUT)

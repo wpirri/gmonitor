@@ -6,7 +6,7 @@ CC=g++
 INCLUDE=-I./ -I../shared
 DEFINE=-D __NO__DEBUG__ -DBIN_MONITOR=$(BIN_MONITOR) -DGM_COMM_MSG_LEN=$(GM_COMM_MSG_LEN) 
 CFLAGS=
-CXXFLAGS=-g -Wall -Wextra -MMD -O2 
+CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../shared
 LIBS=-lgmshared -lssl -lcrypto
 

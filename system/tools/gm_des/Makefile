@@ -1,12 +1,12 @@
 #!/usr/bin/make -f
 
 .c.o:
-	cc -c $?
+	cc $(PROCESSOR-PARAMS) -c $?
 
 all: gmcrypt
 
 gmcrypt: des.o sec.o
-	cc -O des.o sec.o -o gmcrypt 
+	cc $(PROCESSOR-PARAMS) -O des.o sec.o -o gmcrypt 
 
 clean:
 	rm -f des.o sec.o gmcrypt

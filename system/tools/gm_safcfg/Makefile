@@ -6,7 +6,7 @@ CC=g++
 INCLUDE=-I./ -I../../shared -I../../client
 DEFINE=-D __NO__DEBUG__
 CFLAGS=
-CXXFLAGS=-g -Wall -Wextra -MMD -O2 
+CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../../client -L../../shared
 LIBS=-lgmshared -lgmc -lssl -lcrypto
 

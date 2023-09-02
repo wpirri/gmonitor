@@ -7,7 +7,7 @@ INCLUDE=-I./ -I../../shared -I../../client
 DEFINE=-D __NO__DEBUG__ -DBIN_MONITOR=$(BIN_MONITOR) -DMONITOR_CONFIG_PATH=$(MONITOR_CONFIG_PATH) \
 	-DLOG_FILES=$(LOG_FILES) -DMAX_SERVERS=$(MAX_SERVERS) -DMAX_SERVICES=$(MAX_SERVICES)
 CFLAGS=
-CXXFLAGS=-g -Wall -Wextra -MMD -O2 
+CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../../client -L../../shared
 LIBS=-lgmshared -lgmc -lssl -lcrypto
 
