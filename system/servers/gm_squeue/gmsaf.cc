@@ -236,7 +236,7 @@ unsigned int CGMSaf::Get(const char* saf_name,
     }
   }
   pLog->Add(100, "  SAF NO Encontrado");
-  return 0;
+  return (-1);
 }
 
 int CGMSaf::CommitGet(const char* saf_name, unsigned int id, unsigned int trans)
@@ -260,7 +260,7 @@ int CGMSaf::AbortGet(const char* saf_name, unsigned int id, unsigned int trans)
 {
   int i, vlen;
 
-  pLog->Add(100, "CGMSaf::CommitGet( %s, Id: %li )", (saf_name)?saf_name:"NULL", id);
+  pLog->Add(100, "CGMSaf::AbortGet( %s, Id: %li )", (saf_name)?saf_name:"NULL", id);
   vlen = m_saf_list.size();
   for(i = 0; i < vlen; i++)
   {

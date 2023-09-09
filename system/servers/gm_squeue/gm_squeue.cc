@@ -129,7 +129,7 @@ int CGMServer::Exit()
 }
 
 /* Estas rutinas son llamadas para el manejo de transaccion se debe colocar
-  en ellas el cóigo necesario para cada uno de los procesos */
+  en ellas el cï¿½igo necesario para cada uno de los procesos */
 int CGMServer::BeginTrans(unsigned int trans)
 {
   int i, vlen;
@@ -160,7 +160,7 @@ int CGMServer::CommitTrans(unsigned int trans)
 
   pLog->Add(100, "COMMIT DE TRANSACCION %u", trans);
 
-  /* busco la transacción en el vector */
+  /* busco la transacciï¿½n en el vector */
   vlen1 = vtrans.size();
   for(i1 = 0; i1 < vlen1; i1++)
   {
@@ -173,7 +173,7 @@ int CGMServer::CommitTrans(unsigned int trans)
       }
       /* limpio el vector de nombre */
       vtrans[i1].vsaf.clear();
-      /* limpio el item de la transacción */
+      /* limpio el item de la transacciï¿½n */
       vtrans.erase(vtrans.begin() + i1);
       break;
     }
@@ -188,7 +188,7 @@ int CGMServer::RollbackTrans(unsigned int trans)
 
   pLog->Add(100, "ROLLBACK DE TRANSACCION %u", trans);
 
-  /* busco la transacción en el vector */
+  /* busco la transacciï¿½n en el vector */
   vlen1 = vtrans.size();
   for(i1 = 0; i1 < vlen1; i1++)
   {
@@ -201,7 +201,7 @@ int CGMServer::RollbackTrans(unsigned int trans)
       }
       /* limpio el vector de nombre */
       vtrans[i1].vsaf.clear();
-      /* limpio el item de la transacción */
+      /* limpio el item de la transacciï¿½n */
       vtrans.erase(vtrans.begin() + i1);
       break;
     }
@@ -209,7 +209,7 @@ int CGMServer::RollbackTrans(unsigned int trans)
   return 0;
 }
 
-/* estas rutinas se llaman antes y después de la de procesamiento de mensaje */
+/* estas rutinas se llaman antes y despuï¿½s de la de procesamiento de mensaje */
 int CGMServer::PreMain()
 {
   return 0;
@@ -251,7 +251,7 @@ int CGMServer::Main(const char *funcion, char typ,
   }
   else if( !strcmp(funcion, ".dequeue")) /* GM_MSG_TYPE_CR */
   {
-    /* hay que alocar espacio para el retorno máximo */
+    /* hay que alocar espacio para el retorno mï¿½ximo */
     if(st->len)
     {
       max_len = st->len;
@@ -263,7 +263,7 @@ int CGMServer::Main(const char *funcion, char typ,
     *out = calloc(sizeof(char), max_len);
     saf_id = pSaf->Get(st->saf_name, *out, max_len,
                        outlen, m_ClientData.m_trans);
-    if(saf_id)
+    if(saf_id > 0)
     {
       /* si no hay una transa de por medio ya le mando el commit */
       if(!m_ClientData.m_trans)
@@ -287,9 +287,14 @@ int CGMServer::Main(const char *funcion, char typ,
       }
       return GME_OK;
     }
-    else
+    else if(saf_id < 0)
     {
       return GME_SAF_NOT_FOUND;
+    }
+    else
+    {
+      /* SAF vacÃ­o */
+      return GME_OK;
     }
   }
   else if(!strcmp(funcion, ".create-queue"))
