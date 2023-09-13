@@ -226,7 +226,7 @@ int CGMServer::Main(const char *funcion, char typ,
 {
   ST_SQUEUE *st;
   CGMSafFile::saf_info *pinfo;
-  unsigned int saf_id;
+  int saf_id;
   int i, vlen;
   int max_len;
   CGMBuffer buff;
@@ -294,7 +294,7 @@ int CGMServer::Main(const char *funcion, char typ,
     else
     {
       /* SAF vacío */
-      return GME_OK;
+      return GME_NO_DATA;
     }
   }
   else if(!strcmp(funcion, ".create-queue"))

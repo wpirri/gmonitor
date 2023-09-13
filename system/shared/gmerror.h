@@ -23,7 +23,7 @@ using namespace std;
 
 #define GME_OK                0
 #define GME_NO_ERROR          GME_OK
-#define GME_UNDEFINED         1   /* Error aún no definido */
+#define GME_UNDEFINED         1   /* Error aï¿½n no definido */
 #define GME_FILE_NOTFOUND     2   /* No se encontro archivo */
 #define GME_FILE_NOTOPEN      3   /* No se pudo abrir archivo */
 #define GME_FILE_DUPLICATED   4   /* Archivo ya existe */
@@ -46,8 +46,9 @@ using namespace std;
 #define GME_INVALID_TRAN     21   /* no se pudo iniciar transaccion */
 #define GME_TRAN_NOT_INIT    22   /* transaccopn no iniciada */
 #define GME_SAF_NOT_FOUND    23   /* no se encontro SAF */
-#define GME_MSGTYP_INV       24   /* tipo de mensaje inválido */
-#define GME_SVCTYP_INV       24   /* tipo de servicio inválido */
+#define GME_MSGTYP_INV       24   /* tipo de mensaje invï¿½lido */
+#define GME_SVCTYP_INV       24   /* tipo de servicio invï¿½lido */
+#define GME_NO_DATA          25   /* Indica que no hay datos para devolver */
 
 #define GME_MORE_DATA        99   /* Indica mas datos en una comunicacion interactiva */
 /* ============================ */

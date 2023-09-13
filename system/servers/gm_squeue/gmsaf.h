@@ -16,7 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  ***************************************************************************/
 /*
-  Implementación de Store & Forward
+  Implementaciï¿½n de Store & Forward
 */
 #ifndef _GMSAF_H_
 #define _GMSAF_H_
@@ -30,8 +30,8 @@ public:
   virtual ~CGMSaf();
 
   /*
-    Open: Inicializa la abstracción de store & forward
-    parametro path: directorio base para la creación de los archivos de SAF
+    Open: Inicializa la abstracciï¿½n de store & forward
+    parametro path: directorio base para la creaciï¿½n de los archivos de SAF
   */
   int Open(const char *path = NULL);
   int Close(bool drop = false);
@@ -49,7 +49,7 @@ public:
   int Info(const char* saf_name, CGMSafFile::saf_info *st);
   int Add(const char* saf_name, const void* data,
           unsigned long len, unsigned int trans = 0);
-  unsigned int Get(const char* saf_name,
+  int Get(const char* saf_name,
         void* data, unsigned long max_len,
         unsigned long *len, unsigned int trans = 0);
   int CommitGet(const char* saf_name, unsigned int id, unsigned int trans = 0);

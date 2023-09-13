@@ -48,8 +48,8 @@ CGMError::CGMError()
 	m_strerror[GME_TRAN_NOT_INIT   ] = "Transaccion no iniciada";
 	m_strerror[GME_SAF_NOT_FOUND   ] = "SAF no encontrado";
 	m_strerror[GME_MSGTYP_INV      ] = "Tipo de mensaje invalido";
-  m_strerror[GME_SVCTYP_INV      ] = "Tipo de servicio invalido";
-
+ 	m_strerror[GME_SVCTYP_INV      ] = "Tipo de servicio invalido";
+ 	m_strerror[GME_NO_DATA         ] = "Ok, pero sin datos";
 	m_strerror[ GME_MORE_DATA      ] = "Existen mas datos para el mensaje";
 
 	m_strerror[GME_ERROR_MAX] = "Indice de error fuera de rango";

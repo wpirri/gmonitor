@@ -216,7 +216,7 @@ int CGMSaf::Add(const char* saf_name, const void* data,
   return GME_SAF_NOT_FOUND;
 }
 
-unsigned int CGMSaf::Get(const char* saf_name,
+int CGMSaf::Get(const char* saf_name,
       void* data, unsigned long max_len,
       unsigned long *len, unsigned int trans)
 {

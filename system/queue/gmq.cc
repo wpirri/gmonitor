@@ -429,7 +429,7 @@ void ServerLoop()
         }
         if((rc = pServer->PreMain()) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::PreMain", rc);
+          pLog->Add(50, "Error %i al ejecutar CGMServer::PreMain", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -439,7 +439,7 @@ void ServerLoop()
             (void*)inMessage.GetData(),inMessage.GetDataLen(),
             (void**)&msg, &msglen)) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::Main", rc);
+          pLog->Add(50, "Error %i al ejecutar CGMServer::Main", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -447,7 +447,7 @@ void ServerLoop()
         }
         if((rc = pServer->PosMain()) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::PosMain", rc);
+          pLog->Add(50, "Error %i al ejecutar CGMServer::PosMain", rc);
           /* genero un mensaje de error para devolver */
 
 

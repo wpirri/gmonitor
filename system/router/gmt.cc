@@ -496,7 +496,6 @@ void MsgQuery(CGMessage* in, CGMessage* out)
     switch(in->TipoMensaje())
     {
     case GM_MSG_TYPE_CR: /* consulta / respuesta */
-    case GM_MSG_TYPE_NOT: /* notificacion */
     case GM_MSG_TYPE_INT: /* interactivo */
       /* Hay que buscar la cola menos cargada */
       if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
@@ -526,7 +525,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       }
       else
       {
-        /*pLog->Add(50, "Env�o OK, Completando respuesta");*/
+        /*pLog->Add(50, "Envio OK, Completando respuesta");*/
         if(out->SetMsg(buff_out.Data(), buff_out.Length()) != 0)
         {
           out->CodigoRetorno(GME_MSGQ_ERROR);
@@ -536,7 +535,54 @@ void MsgQuery(CGMessage* in, CGMessage* out)
         }
       }
       break;
-    case GM_MSG_TYPE_MSG: /* Evento */
+    case GM_MSG_TYPE_NOT:
+      /*  notificacion
+          Se envía a la cola mas libre sin esperar respuesta
+      */
+      /* Hay que buscar la cola menos cargada */
+      if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
+      {
+        pLog->Add(10, "MsgQuery - Error al buscar funcion %s tipo '%c'",
+            in->Funcion(), in->TipoMensaje());
+        out->CodigoRetorno(GME_SVC_NOTFOUND);
+        out->OrigenRespuesta(GM_ORIG_ROUTER);
+        break;
+      }
+      /* Forkeo:
+          El padre vuelve con el Ok de mensaje procesado
+          El hijo se encarga de enviarlo y exit
+      */
+      pLog->Add(100, "MsgQuery - Fork para desacoplar respuesta");
+      if(fork() == 0)
+      {
+        out->CodigoRetorno(GME_OK);
+        out->OrigenRespuesta(GM_ORIG_ROUTER);
+        out->IdDestino(getpid());
+      }
+      else
+      {
+        pLog->Add(100, "MsgQuery - Enviando %s por cola 0x%X", in->Funcion(), cola);
+        pMsg->Query(cola, &buff_in, &buff_out, 3000);
+        /*
+        if(( rc = pMsg->Query(cola, &buff_in, &buff_out, 3000)) <= 0)
+        {
+          if(rc < 0)
+          {
+            pLog->Add(1, "MsgQuery - ERROR Enviando %s por cola 0x%X", in->Funcion(), cola);
+          }
+          else
+          {
+            pLog->Add(1, "MsgQuery - Time-Out Enviando %s por cola 0x%X", in->Funcion(), cola);
+          }
+        }
+        */
+        exit(0);
+      }
+      break;
+    case GM_MSG_TYPE_MSG:
+      /*  Evento 
+          Se envía a todos los suscriptores sin esperar respuesta
+      */
       /* Se envia a todas */
       /*pLog->Add(50, "Buscando %s en modo %c", in->Funcion(), in->TipoMensaje());*/
       lista_colas = pConfig->Cola(in->Funcion(), in->TipoMensaje());
@@ -548,23 +594,39 @@ void MsgQuery(CGMessage* in, CGMessage* out)
         out->OrigenRespuesta(GM_ORIG_ROUTER);
         break;
       }
-      if(vlen > 0)
+      /* Forkeo:
+          El padre vuelve con el Ok de mensaje procesado
+          El hijo se encarga de enviarlo y exit
+      */
+      pLog->Add(100, "MsgQuery - Fork para desacoplar respuesta");
+      if(fork() == 0)
       {
-        /* si encuentra al menos un destinatario devuelve Ok */
-        /* y despu�s se pone a enviar */
         out->CodigoRetorno(GME_OK);
-
-        if((ppid = fork()) <= 0)
-        {
-          return;
-        }
-
+        out->OrigenRespuesta(GM_ORIG_ROUTER);
+        out->IdDestino(getpid());
       }
-      /*pLog->Add(50, "Enviando %s por %i  colas", in->Funcion(), vlen);*/
-      for(cola = 0; cola < vlen; cola++)
+      else
       {
-        pLog->Add(100, "MsgQuery - Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
-        pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 100);
+        /*pLog->Add(50, "Enviando %s por %i  colas", in->Funcion(), vlen);*/
+        for(cola = 0; cola < vlen; cola++)
+        {
+          pLog->Add(100, "MsgQuery - Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
+          pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000);
+          /*
+          if(( rc = pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000)) <= 0)
+          {
+            if(rc < 0)
+            {
+              pLog->Add(1, "MsgQuery - ERROR Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
+            }
+            else
+            {
+              pLog->Add(1, "MsgQuery - Time-Out Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
+            }
+          }
+          */
+        }
+        exit(0);
       }
       break;
     default:
