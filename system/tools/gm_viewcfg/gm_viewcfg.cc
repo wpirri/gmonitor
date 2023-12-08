@@ -38,13 +38,17 @@ using namespace std;
 #include <fcntl.h>
 #include <stdio.h>
 
-int RemoteInfo(CGMInitData* pGmInit);
-int LocalInfo(void);
+int RemoteSrv(CGMInitData* pGmInit);
+int LocalSrv(void);
+int RemoteSvc(CGMInitData* pGmInit);
+int LocalSvc(void);
 
 int main(int argc, char** argv)
 {
   int i;
   int help, remote;
+  int get_srv = 0;
+  int get_svc = 0;
   CGMInitData gminit;
 
   help = 0;
@@ -73,6 +77,14 @@ int main(int argc, char** argv)
     {
       remote = 1;
     }
+    else if(!strcmp("--srv", argv[i]))
+    {
+      get_srv = 1;
+    }
+    else if(!strcmp("--svc", argv[i]))
+    {
+      get_svc = 1;
+    }
     else help = 1;
   }
   if(help)
@@ -82,97 +94,80 @@ int main(int argc, char** argv)
     fprintf(stderr, "Use: %s [-h][-m|-r]\n", argv[0]);
     fprintf(stderr, "     -m|--monitor: nombre de host donde corre Gnu-Monitor(*).\n");
     fprintf(stderr, "     -r|--remote:  evita consultar en forma local.\n");
+    fprintf(stderr, "     --srv:        trae informacion de los servers.\n");
+    fprintf(stderr, "     --svc:        trae informacion de los servicios.\n");
     fprintf(stderr, "     -h|--help:    muestra esta ayuda.\n");
     fprintf(stderr, "  (*) Si no se espesifica el parametro -m la herramienta intentara"
                     " acceder al area de memoria compartida local para obtener los datos"
                     " salvo que se especifique el parametro -r.\n");
+    fprintf(stderr, "      Si no se espesifica --srv o --svc trae ambos.\n");
     exit(1);
   }
-  if(remote) return RemoteInfo(&gminit);
-  else return LocalInfo();
+  if(get_srv == 0 && get_svc == 0)
+  {
+    get_srv = 1;
+    get_svc = 1;
+  }
+  if(remote)
+  {
+    if(get_srv) RemoteSrv(&gminit);
+    if(get_svc) RemoteSvc(&gminit);
+  }
+  else
+  {
+    if(get_srv) LocalSrv();
+    if(get_svc) LocalSvc();
+  }
+  return 0;
 }
 
-int RemoteInfo(CGMInitData* pGmInit)
+int RemoteSrv(CGMInitData* pGmInit)
 {
   int rc;
   CGMClient *pClient;
   CGMError gmerror;
-  CGMClient::_GMIOS gmio;
+  CGMBuffer response;
 
   pClient = new CGMClient(pGmInit);
 
-  fprintf(stdout, "<?xml version=\"1.0\" standalone=\"yes\"?>\n");
-  fprintf(stdout, "<gm_viewcfg>\n");
-  if((rc = pClient->Connect(".get_server_list", 1024)) != GME_OK)
-  {
-    fprintf(stderr, "ERROR: Connect() - %s\n", gmerror.Message(rc).c_str());
-    fprintf(stdout, "</gm_viewcfg>\n");
-    delete pClient;
-    return rc;
-  }
-  if((rc = pClient->Send(NULL, 0)) != GME_OK)
-  {
-    fprintf(stderr, "ERROR: Send() - %s\n", gmerror.Message(rc).c_str());
-    fprintf(stdout, "</gm_viewcfg>\n");
-    pClient->Discon();
-    delete pClient;
-    return rc;
-  }
-  while((rc = pClient->Recv(&gmio, 300)) == GME_MORE_DATA)
-  {
-    fprintf(stdout, "%*.*s", (int)gmio.len, (int)gmio.len, (char*)gmio.data);
-    pClient->Free(gmio);
-  }
+  response.Clear();
+  rc = pClient->Call(".get_server_list", response, response, 300);
   if(rc == GME_OK)
   {
-    fprintf(stdout, "%*.*s", (int)gmio.len, (int)gmio.len, (char*)gmio.data);
-    pClient->Free(gmio);
-  }
-  else
-  {
-    fprintf(stderr, "ERROR: Recv() - %s\n", gmerror.Message(rc).c_str());
-    fprintf(stdout, "</gm_viewcfg>\n");
-    pClient->Discon();
-    delete pClient;
-    return rc;
-  }
-  pClient->Discon();
-  if((rc = pClient->Connect(".get_service_list", 1024)) != GME_OK)
-  {
-    fprintf(stderr, "ERROR: Connect() - %s\n", gmerror.Message(rc).c_str());
-    fprintf(stdout, "</gm_viewcfg>\n");
-    delete pClient;
-    return rc;
-  }
-  if((rc = pClient->Send(NULL, 0)) != GME_OK)
-  {
-    fprintf(stderr, "ERROR: Send() - %s\n", gmerror.Message(rc).c_str());
-    fprintf(stdout, "</gm_viewcfg>\n");
-    pClient->Discon();
-    delete pClient;
-    return rc;
-  }
-  while((rc = pClient->Recv(&gmio, 300)) == GME_MORE_DATA)
-  {
-    fprintf(stdout, "%*.*s", (int)gmio.len, (int)gmio.len, (char*)gmio.data);
-    pClient->Free(gmio);
-  }
-  if(rc == GME_OK)
-  {
-    fprintf(stdout, "%*.*s", (int)gmio.len, (int)gmio.len, (char*)gmio.data);
-    pClient->Free(gmio);
+    fprintf(stdout, "%s", response.C_Str());
   }
   else
   {
     fprintf(stderr, "ERROR: Recv() - %s\n", gmerror.Message(rc).c_str());
   }
-  pClient->Discon();
-  fprintf(stdout, "</gm_viewcfg>\n");
   delete pClient;
   return rc;
 }
 
-int LocalInfo(void)
+int RemoteSvc(CGMInitData* pGmInit)
+{
+  int rc;
+  CGMClient *pClient;
+  CGMError gmerror;
+  CGMBuffer response;
+
+  pClient = new CGMClient(pGmInit);
+
+  response.Clear();
+  rc = pClient->Call(".get_service_list", response, response, 300);
+  if(rc == GME_OK)
+  {
+    fprintf(stdout, "%s", response.C_Str());
+  }
+  else
+  {
+    fprintf(stderr, "ERROR: Recv() - %s\n", gmerror.Message(rc).c_str());
+  }
+  delete pClient;
+  return rc;
+}
+
+int LocalSrv(void)
 {
   CGMTdb config(MONITOR_CONFIG_PATH, MAX_SERVERS, MAX_SERVICES/*, pLog*/);
 
@@ -181,6 +176,17 @@ int LocalInfo(void)
     fprintf(stderr, "ERROR: area de memoria de configuracion no existe\n");
     return 1;
   }
-  fprintf(stdout, "<?xml version=\"1.0\" standalone=\"yes\"?>\n");
-  return config.Dump(stdout, stderr);
+  return config.DumpSrv(stdout, stderr);
+}
+
+int LocalSvc(void)
+{
+  CGMTdb config(MONITOR_CONFIG_PATH, MAX_SERVERS, MAX_SERVICES/*, pLog*/);
+
+  if(config.Open() != 0)
+  {
+    fprintf(stderr, "ERROR: area de memoria de configuracion no existe\n");
+    return 1;
+  }
+  return config.DumpSvc(stdout, stderr);
 }

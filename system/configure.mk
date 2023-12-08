@@ -25,7 +25,7 @@ MAX_SERVICES=256
 
 CP=cp
 CPUVA=cp -uva
-RM=rm -f
+RM=rm  -f
 RMR=rm -rf
 MKDIR=mkdir -p
 CHMOD=chmod
@@ -33,4 +33,6 @@ CHMOD=chmod
 # RBPi2 - -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
 # RBPi3 - -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits
 # RBPi4 - -mcpu=cortex-a72 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits
+#ifneq ( $(shell uname -a), x86_64 )
 PROCESSOR-PARAMS=-mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
+#endif

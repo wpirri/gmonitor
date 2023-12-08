@@ -79,6 +79,7 @@ int CGMTdb::Create(CGLog* plog)
                         (sizeof(SH_FUNCION)*m_max_services)
                       ) != 0) return -1;
   if(plog && !m_pLog) m_pLog = plog;
+  if(m_pLog) m_pLog->Add(1, "Area de configuración creada para %i Servers y %i Servicios", m_max_servers, m_max_services);
   return Load();
 }
 
@@ -313,6 +314,7 @@ int CGMTdb::AddSrv(const char* nombre_server, int cola, int indice)
       }
     }
   }
+  if(m_pLog) m_pLog->Add(1, "ERROR se alcanzo el limite de servidores en CGMTdb::AddSrv");
   return -1;
 }
 
@@ -411,6 +413,10 @@ int CGMTdb::LoadSrv()
       if(Add(t) != 0 && m_pLog)
       {
         m_pLog->Add(1, "ERROR al cargar servers en memoria");
+        m_pLog->Add(1, "ERROR Nombre:      %s", t.nombre.c_str());
+        m_pLog->Add(1, "ERROR Descripcion: %s", t.descripcion.c_str());
+        m_pLog->Add(1, "ERROR Modo:        %i", t.modo);
+        m_pLog->Add(1, "ERROR Path:        %s", t.path.c_str());
       }
       if(m_pLog)
       {
@@ -460,6 +466,9 @@ int CGMTdb::LoadSrvPar()
       if(Add(t) != 0 && m_pLog)
       {
         m_pLog->Add(1, "ERROR al cargar parametros de servers en memoria");
+        m_pLog->Add(1, "ERROR Server:    %s", t.server.c_str());
+        m_pLog->Add(1, "ERROR Parametro: %s", t.parametro.c_str());
+        m_pLog->Add(1, "ERROR Valor:     %s", t.valor.c_str());
       }
       if(m_pLog)
       {
@@ -512,6 +521,10 @@ int CGMTdb::LoadFcn()
       if(Add(t) != 0 && m_pLog)
       {
         m_pLog->Add(1, "ERROR al cargar servicios en memoria");
+        m_pLog->Add(1, "ERROR Nombre:      %s", t.nombre.c_str());
+        m_pLog->Add(1, "ERROR Descripcion: %s", t.descripcion.c_str());
+        m_pLog->Add(1, "ERROR T Mensaje:   %c", t.tipo_mensaje);
+        m_pLog->Add(1, "ERROR Server:      %s", t.server.c_str());
       }
       if(m_pLog)
       {
@@ -560,6 +573,9 @@ int CGMTdb::LoadFcnPar()
       if(Add(t) != 0 && m_pLog)
       {
         m_pLog->Add(1, "ERROR al cargar parametros de servicios en memoria");
+        m_pLog->Add(1, "ERROR Server:    %s", t.funcion.c_str());
+        m_pLog->Add(1, "ERROR Parametro: %s", t.parametro.c_str());
+        m_pLog->Add(1, "ERROR Valor:     %s", t.valor.c_str());
       }
       if(m_pLog)
       {
@@ -722,6 +738,10 @@ int CGMTdb::Add(CSrvTab t)
 /* Carga en memoria los datos a medida que los levanta del archivo de configuraci�n */
 int CGMTdb::Add(CSrvParTab t)
 {
+  if(m_pLog)
+  {
+    m_pLog->Add(1, "WARNING Funcionalidad no implementada CGMTdb::Add(CSrvParTab t)");
+  }
   return -1;
 }
 
@@ -762,7 +782,7 @@ int CGMTdb::Add(CFcnTab t)
           if(m_pLog)
           {
             m_pLog->Add(1, "ERROR en acceso de escritura a memoria compartida "
-              "en CGMTdb::AddSrv CFcnTab");
+              "en CGMTdb::Add CFcnTab");
           }
           return -1;
         }
@@ -790,7 +810,7 @@ int CGMTdb::Add(CFcnTab t)
     {
       if(m_pLog)
       {
-        m_pLog->Add(1, "ERROR en acceso de escritura a memoria compartida en CGMTdb::AddSrv CFcnTab");
+        m_pLog->Add(1, "ERROR en acceso de escritura a memoria compartida en CGMTdb::Add CFcnTab");
       }
       return -1;
     }
@@ -799,12 +819,17 @@ int CGMTdb::Add(CFcnTab t)
       return 0 ;
     }
   }
+  if(m_pLog) m_pLog->Add(1, "ERROR se alcanzo la maxima cantidad de servicios en CGMTdb::Add CFcnTab");
   return -1;
 }
 
 /* Carga en memoria los datos a medida que los levanta del archivo de configuraci�n */
 int CGMTdb::Add(CFcnParTab t)
 {
+  if(m_pLog)
+  {
+    m_pLog->Add(1, "WARNING Funcionalidad no implementada CGMTdb::Add(CFcnParTab t)");
+  }
   return -1;
 }
 
@@ -861,13 +886,15 @@ int CGMTdb::Remove(CFcnTab t)
 void CGMTdb::Dump()
 {
   int i, j;
+  int tot_svr = 0;
+  int tot_svc = 0;
   SH_SERVER server;
   SH_FUNCION funcion;
 
   if(!m_pLog) return; /* Si no puedo acceder al log no tiene sentido seguir */
 
-  m_pLog->Add(50, "Dump de configuracion");
-  m_pLog->Add(50, "Servers:");
+  m_pLog->Add(1, "Dump de configuracion");
+  m_pLog->Add(1, "Servers:");
   for(i = 0; i < m_max_servers; i++)
   {
     if(m_pShMem->GetAt(INDEX_SERVER(i), &server, sizeof(SH_SERVER)) != 0)
@@ -877,22 +904,23 @@ void CGMTdb::Dump()
     }
     if(strlen(server.nombre))
     {
-      m_pLog->Add(50, "  Nombre:      %s", server.nombre);
-      m_pLog->Add(50, "  Descripcion: %s", server.descripcion);
-      m_pLog->Add(50, "  Modo:        %i", server.modo);
-      m_pLog->Add(50, "  Path:        %s", server.path);
-      m_pLog->Add(50, "  Colas:");
+      m_pLog->Add(1, "  Nombre:      %s", server.nombre);
+      m_pLog->Add(1, "  Descripcion: %s", server.descripcion);
+      m_pLog->Add(1, "  Modo:        %i", server.modo);
+      m_pLog->Add(1, "  Path:        %s", server.path);
+      m_pLog->Add(1, "  Colas:");
       for(j = 0; j < MAX_SERVER_INSTANCES; j++)
       {
         if(server.cola[j] > 0)
         {
-          m_pLog->Add(50, "         Key 0x%08X", server.cola[j]);
+          m_pLog->Add(1, "         Key 0x%08X", server.cola[j]);
         }
+        tot_svr++;
       }
     }
   }
-  m_pLog->Add(50, "---------------------------------------------------------");
-  m_pLog->Add(50, "Servicios:");
+  m_pLog->Add(1, "---------------------------------------------------------");
+  m_pLog->Add(1, "Servicios:");
   for(i = 0; i < m_max_services; i++)
   {
     if(m_pShMem->GetAt(INDEX_FUNCTION(i), &funcion, sizeof(SH_FUNCION)) != 0)
@@ -902,30 +930,38 @@ void CGMTdb::Dump()
     }
     if(strlen(funcion.nombre))
     {
-      m_pLog->Add(50, "  Nombre:       %s", funcion.nombre);
-      m_pLog->Add(50, "  Descripcion:  %s", funcion.descripcion);
-      m_pLog->Add(50, "  Tipo-Mensaje: %c", funcion.tipo_mensaje);
-      m_pLog->Add(50, "  Server        %s", funcion.server);
+      m_pLog->Add(1, "  Nombre:       %s", funcion.nombre);
+      m_pLog->Add(1, "  Descripcion:  %s", funcion.descripcion);
+      m_pLog->Add(1, "  Tipo-Mensaje: %c", funcion.tipo_mensaje);
+      m_pLog->Add(1, "  Server        %s", funcion.server);
     }
+    tot_svc++;
   }
-  m_pLog->Add(50, "---------------------------------------------------------");
+  m_pLog->Add(1, "---------------------------------------------------------");
+  m_pLog->Add(1, "  Servers:   %i (max %i)", tot_svr, m_max_servers);
+  m_pLog->Add(1, "  Servicios: %i (max %i)", tot_svc, m_max_services);
+  m_pLog->Add(1, "---------------------------------------------------------");
 }
 
-int CGMTdb::Dump(ostream& std, ostream& err)
+int CGMTdb::DumpSrv(ostream& std, ostream& err)
 {
   /* ... alguien lo va a hace en alg�n momento */
   return -1;
 }
 
-int CGMTdb::Dump(FILE* std, FILE* err)
+int CGMTdb::DumpSvc(ostream& std, ostream& err)
+{
+  /* ... alguien lo va a hace en alg�n momento */
+  return -1;
+}
+
+int CGMTdb::DumpSrv(FILE* std, FILE* err)
 {
   int i, j;
+  int srv_count = 0;
   SH_SERVER server;
-  SH_FUNCION funcion;
-  /* hago un vuelco de o que hay en memoria */
-  /*fprintf(std, "<?xml version=\"1.0\" standalone=\"yes\"?>\n");*/
-  fprintf(std, "<cgmtdb_dump>\n");
-  fprintf(std, "<servers>\n");
+
+  fprintf(std, "- Servers ----------------------------------------------------------------------\n");
   for(i = 0; i < m_max_servers; i++)
   {
     if(m_pShMem->GetAt(INDEX_SERVER(i), &server, sizeof(SH_SERVER)) != 0)
@@ -935,25 +971,32 @@ int CGMTdb::Dump(FILE* std, FILE* err)
     }
     if(strlen(server.nombre))
     {
-      fprintf(std, "<server>\n");
-      fprintf(std, "<nombre>%s</nombre>\n", server.nombre);
-      fprintf(std, "<modo>%i</modo>\n", server.modo);
-      fprintf(std, "<descripcion>%s</descripcion>\n", server.descripcion);
-      fprintf(std, "<path>%s</path>\n", server.path);
-      fprintf(std, "<colas>\n");
+      fprintf(std, " %-32.32s %i ", server.nombre, server.modo);
       for(j = 0; j < MAX_SERVER_INSTANCES; j++)
       {
         if(server.cola[j])
         {
-          fprintf(std, "<cola>0x%08X</cola> ", server.cola[j]);
+          fprintf(std, "0x%08X ", server.cola[j]);
         }
       }
-      fprintf(std, "\n</colas>\n");
-      fprintf(std, "</server>\n");
+      fprintf(std, "\n");
+      srv_count++;
     }
   }
-  fprintf(std, "</servers>\n");
-  fprintf(std, "<servicios>\n");
+  fprintf(std, "--------------------------------------------------------------------------------\n");
+  fprintf(std, "  Servers: %i / %i\n", srv_count, m_max_servers);
+  fprintf(std, "--------------------------------------------------------------------------------\n");
+
+  return 0;
+}
+
+int CGMTdb::DumpSvc(FILE* std, FILE* err)
+{
+  int i;
+  int svc_count = 0;
+  SH_FUNCION funcion;
+
+  fprintf(std, "- Servicios --------------------------------------------------------------------\n");
   for(i = 0; i < m_max_services; i++)
   {
     if(m_pShMem->GetAt(INDEX_FUNCTION(i), &funcion, sizeof(SH_FUNCION)) != 0)
@@ -963,16 +1006,14 @@ int CGMTdb::Dump(FILE* std, FILE* err)
     }
     if(strlen(funcion.nombre))
     {
-      fprintf(std, "<servicio>\n");
-      fprintf(std, "<nombre>%s</nombre>\n", funcion.nombre);
-      fprintf(std, "<tipo_mensaje>%c</tipo_mensaje>\n", funcion.tipo_mensaje);
-      fprintf(std, "<descripcion>%s</descripcion>\n", funcion.descripcion);
-      fprintf(std, "<server>%s</server>\n", funcion.server);
-      fprintf(std, "</servicio>\n");
+      fprintf(std, " %-32.32s %c %s\n", funcion.nombre, funcion.tipo_mensaje, funcion.server);
+      svc_count++;
     }
   }
-  fprintf(std, "</servicios>\n");
-  fprintf(std, "</cgmtdb_dump>\n");
+  fprintf(std, "--------------------------------------------------------------------------------\n");
+  fprintf(std, "  Servicios: %i / %i\n", svc_count, m_max_services);
+  fprintf(std, "--------------------------------------------------------------------------------\n");
+
   return 0;
 }
 

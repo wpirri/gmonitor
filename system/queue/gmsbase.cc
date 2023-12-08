@@ -185,8 +185,11 @@ int CGMServerBase::Post(string& event, CGMBuffer* data)
 
 int CGMServerBase::Suscribe(const char *event, char tipo_mensaje)
 {
+  int rc;
+
   if( !m_pConfig) return -1;
-  return m_pConfig->AddSvc(event, tipo_mensaje, m_server_name.c_str());
+  rc = m_pConfig->AddSvc(event, tipo_mensaje, m_server_name.c_str());
+  return rc;
 }
 
 int CGMServerBase::UnSuscribe(const char *event, char tipo_mensaje)

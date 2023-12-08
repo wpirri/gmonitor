@@ -7,6 +7,7 @@ install:
 	$(CP) gmonitor $(INST_ETCDIR)/
 	echo "SERVER_CONF="$(INST_VARDIR) >> $(INST_ETCDIR)/gmonitor
 	echo "SERVER_BIN="$(INST_SBINDIR) >> $(INST_ETCDIR)/gmonitor
+	echo "CLIENT_BIN="$(INST_BINDIR) >> $(INST_ETCDIR)/gmonitor
 	echo "SU_USER=\"$(RUN_USER)\"" >> $(INST_ETCDIR)/gmonitor
 	echo "CONFIG_PROMPT=\"gmonitor> \"" >> $(INST_ETCDIR)/gmonitor
 	x=`uname`; \

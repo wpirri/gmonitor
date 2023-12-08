@@ -130,7 +130,7 @@ int main(int argc, char** argv)
   pLog->Add(10, "Inicio");
   /* Cre el area de configuracion */
   pConfig = new CGMTdb(MONITOR_CONFIG_PATH,
-        MAX_SERVERS, MAX_SERVICES, NULL);
+        MAX_SERVERS, MAX_SERVICES, pLog);
   if(pConfig->Create() != 0)
   {
     pLog->Add(1, "Error al cargar configuracion");

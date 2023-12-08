@@ -33,11 +33,11 @@ using namespace std;
 #include <string.h>
 #include <syslog.h>
 
-/* FALTA: guardar la configuración en un archivo */
+/* FALTA: guardar la configuraciï¿½n en un archivo */
 
 CGMConfig::CGMConfig(CGMServer* pServer, CGLog* plog)
 {
-  /* No es necesario pasarle el primer parámetro porque se va a
+  /* No es necesario pasarle el primer parï¿½metro porque se va a
   conectar a una base ya creada */
   m_pDB = new CGMTdb(NULL, MAX_SERVERS, MAX_SERVICES, plog);
   m_pLog = plog;
@@ -88,7 +88,7 @@ int CGMConfig::Process( const char *funcion, char typ,
     m_pLog->Add(100, "          SAF-NAME: %s", saf_name);
     if(rc == GME_OK)
     {
-      /* si se agregó bien creo la cola de SAF y lo suscribo */
+      /* si se agregï¿½ bien creo la cola de SAF y lo suscribo */
       rc = m_pServer->Notify(".create-queue", saf_name, strlen(saf_name+1));
       if(rc == GME_OK)
       {
@@ -104,7 +104,7 @@ int CGMConfig::Process( const char *funcion, char typ,
       m_pLog->Add(100, "  --> Ok");
       /* le devuelvo el nombre de SAF para que consulte directamente a su cola */
       *outlen = strlen(saf_name);
-      /* los buffers de salida siempre tienen que alocarse porque después del anvío se llama a un free() automaticamente */
+      /* los buffers de salida siempre tienen que alocarse porque despuï¿½s del anvï¿½o se llama a un free() automaticamente */
       *out = calloc(*outlen, sizeof(char));
       memcpy(*out, saf_name, *outlen);
       /* FALTA: poner un timer para eliminar este servicio por inactividad */
@@ -147,50 +147,43 @@ int CGMConfig::Process( const char *funcion, char typ,
   {
     m_pLog->Add(100, "GET-SERVER-LIST");
     v_svr = m_pDB->ServerList(/*string& servicio, char tipo_mensaje*/NULL, 0);
-    /*b = "<?xml version=\"1.0\" standalone=\"yes\"?>\n";*/
-    b = "<servers>\n";
+    b = "- Servers ----------------------------------------------------------------------\n";
     for(i = 0; i < (int)v_svr.size(); i++)
     {
-      b += "<server>\n";
-      b.AddFormat("<nombre>%s</nombre>\n", v_svr[i].nombre.c_str());
-      b.AddFormat("<modo>%i</modo>\n", v_svr[i].modo);
-      b.AddFormat("<descripcion>%s</descripcion>\n", v_svr[i].descripcion.c_str());
-      b.AddFormat("<path>%s</path>\n", v_svr[i].path.c_str());
-      b += "<colas>\n";
+      b.AddFormat(" %-32.32s %i ", v_svr[i].nombre.c_str(), v_svr[i].modo);
       for(j = 0; j < (int)v_svr[i].cola.size(); j++)
       {
-        b.AddFormat("<cola>0x%08X</cola> ", v_svr[i].cola[j]);
+        b.AddFormat("0x%08X ", v_svr[i].cola[j]);
       }
-      b += "\n</colas>\n";
-      b += "</server>\n";
+      b += "\n";
     }
-    b += "</servers>\n";
+    b += "--------------------------------------------------------------------------------\n";
+    b.AddFormat("  Servers: %i / %i\n", i, MAX_SERVERS);
+    b += "--------------------------------------------------------------------------------\n";
+    b += "\n";
     *outlen = b.Length();
     *out = (char*)malloc(*outlen);
     memcpy(*out, b.C_Str(), *outlen);
-    m_pLog->Add(100, "  %i servers, tamaño mensaje %lu bytes", i, *outlen);
+    m_pLog->Add(100, "  %i servers, tamano mensaje %lu bytes", i, *outlen);
     return GME_OK;
   }
   else if( !strcmp(funcion, ".get_service_list"))
   {
     m_pLog->Add(100, "GET-SERVICE-LIST");
     v_svc = m_pDB->ServicioList(/*string& server*/NULL);
-    /*b = "<?xml version=\"1.0\" standalone=\"yes\"?>\n";*/
-    b = "<servicios>\n";
+    b = "- Servicios --------------------------------------------------------------------\n";
     for(i = 0; i < (int)v_svc.size(); i++)
     {
-      b += "<servicio>\n";
-      b.AddFormat("<nombre>%s</nombre>\n", v_svc[i].nombre.c_str());
-      b.AddFormat("<tipo_mensaje>%c</tipo_mensaje>\n", v_svc[i].tipo_mensaje);
-      b.AddFormat("<descripcion>%s</descripcion>\n", v_svc[i].descripcion.c_str());
-      b.AddFormat("<server>%s</server>\n", v_svc[i].server.c_str());
-      b += "</servicio>\n";
+      b.AddFormat(" %-32.32s %c %s\n", v_svc[i].nombre.c_str(), v_svc[i].tipo_mensaje, v_svc[i].server.c_str());
     }
-    b += "</servicios>\n";
+    b += "--------------------------------------------------------------------------------\n";
+    b.AddFormat("  Servicios: %i / %i\n", i, MAX_SERVICES);
+    b += "--------------------------------------------------------------------------------\n";
+    b += "\n";
     *outlen = b.Length();
     *out = (char*)malloc(*outlen);
     memcpy(*out, b.C_Str(), *outlen);
-    m_pLog->Add(100, "  %i servicios, tamaño mensaje %lu bytes", i, *outlen);
+    m_pLog->Add(100, "  %i servicios, tamano mensaje %lu bytes", i, *outlen);
     return GME_OK;
   }
   /* si hay un servicio suscripto en forma remota se guarda el mensaje en su SAF */
@@ -226,7 +219,7 @@ int CGMConfig::AddService(const char* svc, char typ, const char* saf)
                   m_vServiceRel[i].typ == typ     )
 
       {
-        /* si la relación ya existe ... */
+        /* si la relaciï¿½n ya existe ... */
         return (GME_OK+1);
       }
       if( strncmp(m_vServiceRel[i].svc, svc, 32)) return (GME_OK-1);

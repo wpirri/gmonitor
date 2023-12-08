@@ -87,7 +87,7 @@ public:
 	int Reload();
 	/* se asocia a un area de configuracion previmente creada */
 	int Open(CGLog* plog = NULL);
-	/* depende de si se creó o se asoció libera o se desasocia */
+	/* depende de si se creï¿½ o se asociï¿½ libera o se desasocia */
 	void Close();
 	/* Obtienen los datos asociados con un server o servicio */
 	/*int Data(CSrvTab& s); Obsoleto */
@@ -131,8 +131,10 @@ public:
 	int RemoveSvc(const char* servicio, char tipo_mensaje, const char* server);
 	int RemoveSvc(string& servicio, char tipo_mensaje, string& server);
 	void Dump();
-	int Dump(ostream& std, ostream& err);
-	int Dump(FILE* std, FILE* err);
+	int DumpSrv(ostream& std, ostream& err);
+	int DumpSrv(FILE* std, FILE* err);
+	int DumpSvc(ostream& std, ostream& err);
+	int DumpSvc(FILE* std, FILE* err);
   int GetSysInfo(CSystemInfo *si);
   int SetSysInfo(CSystemInfo &si);
   int SetSysInfo(CSystemInfo *si);
