@@ -37,6 +37,7 @@
 #include <cerrno>
 using namespace std;
 
+#include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -176,7 +177,7 @@ int main(int argc, char** argv)
   pLog->Add(1, "Key: %i (%i)", pMsg->GetKey(), pMsg->GetIndex());
   /* actualizo en la base la clave de la cola de mensajes */
   /* para que el monitor sepa donde mandar lo que es para este servidor */
-  if(pServer->m_pConfig->AddSrv(server_params.nombre, pMsg->GetKey(), pMsg->GetIndex()))
+  if(pServer->m_pConfig->AddSrv(server_params.nombre, getpid(), pMsg->GetKey(), pMsg->GetIndex()))
   {
     pLog->Add(1, "Error al registrar server");
     delete pMsg;

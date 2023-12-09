@@ -30,6 +30,7 @@
 #include <cerrno>
 using namespace std;
 
+#include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -88,7 +89,7 @@ int CGMServerWait::Init(const char *server_name)
 	m_pLog->Add(100, "Key: %i (%i)", m_pMsg->GetKey(), m_pMsg->GetIndex());
 	/* actualizo en la base la clave de la cola de mensajes */
 	/* para que el monitor sepa donde mandar lo que es para este servidor */
-	if(m_pConfig->AddSrv(m_server_params.nombre, m_pMsg->GetKey(), m_pMsg->GetIndex()))
+	if(m_pConfig->AddSrv(m_server_params.nombre, getpid(), m_pMsg->GetKey(), m_pMsg->GetIndex()))
 	{
 		m_pLog->Add(1, "Error al registrar server");
 		delete m_pMsg;
