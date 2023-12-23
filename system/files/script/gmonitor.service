@@ -1,0 +1,18 @@
+# ***gmonitor.service***
+[Unit]
+Description=Gnu-Monitor
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/gmond start
+ExecStop=/usr/local/sbin/gmond stop
+User=root
+WorkingDirectory=/var/lib/gmonitor
+Restart=on-abort
+StandardOutput=syslog
+StandardError=syslog
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

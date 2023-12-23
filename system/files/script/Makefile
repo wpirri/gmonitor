@@ -5,7 +5,7 @@ include ../../configure.mk
 install:
 	$(CP) clean-gmonitor-logs /etc/cron.daily/
 	chmod 0755 /etc/cron.daily/clean-gmonitor-logs
-
+#
 	$(CP) clean-gmonitor-old-logs.sh $(INST_SBINDIR)/
 	chmod 0755 $(INST_SBINDIR)/clean-gmonitor-old-logs.sh
 	$(CP) gmon_config $(INST_SBINDIR)/
@@ -18,23 +18,30 @@ install:
 	chmod 0755 $(INST_SBINDIR)/gmon_stop
 	$(CP) gmond $(INST_SBINDIR)/
 	chmod 0755 $(INST_SBINDIR)/gmond
-
-	if test -d /etc/init.d; then\
-	  ln -sf $(INST_SBINDIR)/gmond /etc/init.d/gmond;\
-	else\
-	  if test -d /etc/rc.d; then\
-	    ln -sf $(INST_SBINDIR)/gmond /etc/rc.d/gmond;\
-	  fi;\
-	fi
+	$(CP) drop_ipc.sh $(INST_SBINDIR)/ 
+	$(CHMOD) 0755 $(INST_SBINDIR)/drop_ipc.sh
+#
+	$(CP) gmonitor.service /lib/systemd/system/
+	systemctl daemon-reload
+	systemctl enable gmonitor.service
+	systemctl start gmonitor.service
+#
+	if test -e /etc/init.d/gmond ; then $(RM) /etc/init.d/gmond ; fi
+	ln -s $(INST_SBINDIR)/gmond /etc/init.d/gmond
 
 uninstall:
-	$(RM) /etc/init.d/gmond
-	$(RM) /etc/rc.d/gmond
-	$(RM) /etc/cron.daily/clean-gmonitor-logs
+	systemctl stop gmonitor.service
+	systemctl disable gmonitor.service
+	$(RM) /lib/systemd/system/gmonitor.service
+	systemctl daemon-reload
 	$(RM) $(INST_SBINDIR)/clean-gmonitor-old-logs.sh
 	$(RM) $(INST_SBINDIR)/gmon_config
 	$(RM) $(INST_SBINDIR)/gmon_start
 	$(RM) $(INST_SBINDIR)/gmon_status
 	$(RM) $(INST_SBINDIR)/gmon_stop
 	$(RM) $(INST_SBINDIR)/gmond
-	
+	$(RM) $(INST_SBINDIR)/drop_ipc.sh
+	$(RM) /etc/init.d/gmond
+	$(RM) /etc/rc.d/gmond
+	$(RM) /etc/cron.daily/clean-gmonitor-logs
+

@@ -17,29 +17,42 @@ else
 fi
 
 SU="su -s /bin/sh -c "
+SU_USER="gmonitor"
 
 #
 # Este script levanta el listener, el router de transacciones y una instancia
 # de cada servicio configurado en el monitor transaccional.
-# Si se decide utilizar inetd o xinetd se deber�n comentar las lineas que
+# Si se decide utilizar inetd o xinetd se deber▒n comentar las lineas que
 # convocan al programa gmd.
 #
 
 case $1 in
   start)
+    /etc/init.d/apache2 stop
+    /etc/init.d/xinetd stop
+    #update sniffer
+    x=`ps -eaf | grep -v grep | grep /usr/local/sbin/check_for_updates.sh`
+    if [ "X${x}" = "X" ]; then
+        /usr/local/sbin/check_for_updates.sh
+    fi
+
     #$SU "${SERVER_BIN}/gmd -d --mode=listener" $SU_USER
     $SU "${SERVER_BIN}/gmt -d --debug $LOG_LEVEL" $SU_USER
     sleep 3
     $SERVER_BIN/gmon_start all
+    /etc/init.d/apache2 start
+    /etc/init.d/xinetd start
   ;;
   stop)
+    /etc/init.d/apache2 stop
+    /etc/init.d/xinetd stop
     $SERVER_BIN/gmon_stop all
-
+    sleep 3
     gmt_pid=`ps -eaf | grep -v grep | grep $SERVER_BIN/gmt | awk '{ print $2; }'`
     $SU "kill ${gmt_pid}" $SU_USER
 
-    #gmd_pid=`ps -eaf | grep -v grep | grep $SERVER_BIN/gmd | awk '{ print $2; }'`
-    #$SU "kill ${gmd_pid}" $SU_USER
+    sleep 3
+    /usr/local/sbin/drop_ipc.sh $SU_USER
   ;;
   status)
     $SU "${SERVER_BIN}/gmon_status all" $SU_USER
@@ -55,4 +68,3 @@ case $1 in
     echo "Use $0 start|stop|restart|status|reload"
   ;;
 esac
-
