@@ -27,7 +27,6 @@ install:
 	make -C client install
 	make -C servers install
 	make -C tools install
-	make -C systemd install
 
 uninstall:
 	make -C files uninstall
@@ -38,4 +37,3 @@ uninstall:
 	make -C client uninstall
 	make -C servers uninstall
 	make -C tools uninstall
-	make -C systemd uninstall
