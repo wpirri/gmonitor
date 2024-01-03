@@ -88,7 +88,7 @@ public:
 protected:
     void GetErr(const char *msg, ...);
     int LocalConn(const char *addr, int port);
-    int RemoteConn(const char *addr, int port);
+    int RemoteConn(const char *addr, int port, int to_ms);
     unsigned int ResolvAddr(const char *addr);
 
 private:

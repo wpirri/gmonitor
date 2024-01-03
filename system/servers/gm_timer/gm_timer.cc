@@ -89,7 +89,7 @@ int main(int argc, char** argv, char** env)
     if(rc > 0)
     {
       m_pServer->m_pLog->Add(100, "RECIBIDO %s, 0x%X, %lu", fn, m_pInBuffer, inlen);
-      /* proceso el mensaje que llegó */
+      /* proceso el mensaje que llegï¿½ */
       rc = m_pGMTimer->Message(fn, m_pInBuffer, inlen,
                    (void**)&m_pOutBuffer, &outlen,
                   &m_pServer->m_ClientData);
@@ -97,7 +97,7 @@ int main(int argc, char** argv, char** env)
       if(m_pServer->Resp(m_pOutBuffer, outlen, rc) != GME_OK)
       {
         /* error al responder */
-        m_pServer->m_pLog->Add(15, "ERROR al responder mensaje");
+        m_pServer->m_pLog->Add(15, "ERROR al responder mensaje [%s] typ: %c", fn, typ);
       }
     }
     /* Proceso vencimiento de timers */

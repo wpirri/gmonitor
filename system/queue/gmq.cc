@@ -274,18 +274,18 @@ void InitSignals()
 void OnClose(int sig)
 {
   pLog->Add(50, "Exit on signal %i", sig);
-  if(sig == SIGTERM)
-  {
-    signal(SIGTERM, OnClose);
+  //if(sig == SIGTERM)
+  //{
+    //signal(SIGTERM, OnClose);
     /* preparo la salida */
     pServer->UnSuscribe(".log-level", GM_MSG_TYPE_MSG);
     pServer->Exit();
     pServer->m_pConfig->RemoveSrv(server_params.nombre, pMsg->GetIndex());
-    pLog->Add(100, "Exit Ok");
+    //pLog->Add(100, "Exit Ok");
     delete pMsg;
     delete pServer;
     delete pLog;
-  }
+  //}
   exit(0);
 }
 
