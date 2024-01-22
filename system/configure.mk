@@ -35,4 +35,4 @@ CHMOD=chmod
 # RBPi4 - -mcpu=cortex-a72 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits
 # Habilitar la siguiente definicion si se compila en RBPi3 o 4 para compatibilidad
 # con RBPi2
-#PROCESSOR-PARAMS=-mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
+PROCESSOR-PARAMS=-mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4

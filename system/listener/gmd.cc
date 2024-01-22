@@ -45,10 +45,8 @@ CTcp* pListenSocket;
 int verbose;
 
 void OnClose(int sig);
-void OnAlarm(int sig);
 void OnChildExit(int sig);
 void SocketError(int sig);
-void InitSignals();
 int MessageProc(CTcp* pclient, CMsg* pmsg);
 void LogMessage(const char* label, CGMessage* msg);
 
@@ -70,7 +68,7 @@ int main(int argc, char** argv)
 
   pListenSocket = NULL;
   verbose = 0;
-  /* inicio la conexión con el log del sistema */
+  /* inicio la conexiï¿½n con el log del sistema */
   openlog("gmd", LOG_CONS|LOG_PID, LOG_USER);
 
   /* se empieza a leer del parametro 0 porque inetd manda aca
@@ -125,7 +123,7 @@ int main(int argc, char** argv)
   }
   if(help)
   {
-    fprintf(stderr, "GNU-Monitor - Módulo Listener.\n");
+    fprintf(stderr, "GNU-Monitor - Mï¿½dulo Listener.\n");
     fprintf(stderr, "Use %s [options] listen_mode\n", argv[0]);
     fprintf(stderr, "  Listen modes:\n");
     fprintf(stderr, "    -ml|--mode=listener: Listener standalone.\n");
@@ -140,7 +138,7 @@ int main(int argc, char** argv)
     return 1;
   }
   if(verbose) syslog(LOG_DEBUG, "Fin parseo de opciones");
-  /* si no se seleccionó el listener propietario apago el demonio */
+  /* si no se seleccionï¿½ el listener propietario apago el demonio */
   if(!mode_listener) daemon = 0;
   /* me fijo si voy a necesitar el pidfile */
   if(daemon || tokill)
@@ -158,7 +156,7 @@ int main(int argc, char** argv)
         sleep(3);
       }
     }
-    /* si era solamente matar salgo acá */
+    /* si era solamente matar salgo acï¿½ */
     if(tokill)
     {
       if(verbose) syslog(LOG_DEBUG, "Fin corrida para eliminar otro proceso");
@@ -186,13 +184,31 @@ int main(int argc, char** argv)
   }
   /* ****************************************************************** */
   if(verbose) syslog(LOG_DEBUG, "Inicializando signails");
-  InitSignals();
+
+   /* Capturo las seï¿½ales que necesito */
+  signal(SIGPIPE, SIG_IGN);
+  signal(SIGKILL, OnClose);
+  signal(SIGTERM, OnClose);
+  signal(SIGSTOP, OnClose);
+  signal(SIGABRT, OnClose);
+  signal(SIGQUIT, OnClose);
+  signal(SIGINT, OnClose);
+  signal(SIGILL, OnClose);
+  signal(SIGFPE, OnClose);
+  signal(SIGSEGV, OnClose);
+  signal(SIGBUS, OnClose);
+  signal(SIGALRM, OnClose);
+  signal(SIGCHLD, OnChildExit);
+  signal(SIGHUP, SIG_IGN);
+  signal(SIGPIPE, SocketError);
+ 
   if(verbose) syslog(LOG_DEBUG, "Iniciando cola de mensajes");
   pMsg = new CMsg;
 
   if(pMsg->Open() != 0)
   {
     syslog(LOG_ERR, "ERROR: al abrir cola de mensaje");
+    delete pMsg;
     return 1;
   }
   if(mode_listener)
@@ -228,46 +244,6 @@ int main(int argc, char** argv)
   return 0;
 }
 
-void InitSignals()
-{
-  /* Capturo las señales que necesito */
-  signal(SIGALRM, OnAlarm);
-  signal(SIGPIPE, SIG_IGN);
-  signal(SIGKILL, OnClose);
-  signal(SIGTERM, OnClose);
-  signal(SIGSTOP, OnClose);
-  signal(SIGABRT, OnClose);
-  signal(SIGQUIT, OnClose);
-  signal(SIGINT, OnClose);
-  signal(SIGILL, OnClose);
-  signal(SIGFPE, OnClose);
-  signal(SIGSEGV, OnClose);
-  signal(SIGBUS, OnClose);
-  signal(SIGCHLD, OnChildExit);
-  signal(SIGHUP, SIG_IGN);
-  signal(SIGPIPE, SocketError);
-}
-
-void ClearSignals()
-{
-  /* Capturo las señales que necesito */
-  signal(SIGALRM, SIG_DFL);
-  signal(SIGPIPE, SIG_DFL);
-  signal(SIGKILL, SIG_DFL);
-  signal(SIGTERM, SIG_DFL);
-  signal(SIGSTOP, SIG_DFL);
-  signal(SIGABRT, SIG_DFL);
-  signal(SIGQUIT, SIG_DFL);
-  signal(SIGINT, SIG_DFL);
-  signal(SIGILL, SIG_DFL);
-  signal(SIGFPE, SIG_DFL);
-  signal(SIGSEGV, SIG_DFL);
-  signal(SIGBUS, SIG_DFL);
-  signal(SIGCHLD, SIG_DFL);
-  signal(SIGHUP, SIG_DFL);
-  signal(SIGPIPE, SIG_DFL);
-}
-
 void SocketError(int sig)
 {
   signal(SIGPIPE, SocketError);
@@ -276,24 +252,11 @@ void SocketError(int sig)
 
 void OnClose(int sig)
 {
-  if(sig != SIGTERM && sig != SIGKILL)
+  if(pListenSocket)
   {
-    syslog(LOG_ERR, "ERROR: cancelando por signal %i", sig);
-  }
-  else
-  {
-    if(verbose) syslog(LOG_DEBUG, "saliendo por signal de terminacion");
-    if(pListenSocket)
-    {
-      pListenSocket->Close();
-    }
+    pListenSocket->Close();
   }
   exit(0);
-}
-
-void OnAlarm(int sig)
-{
-  if(verbose) syslog(LOG_DEBUG, "alarm, signal %i", sig);
 }
 
 void OnChildExit(int sig)
@@ -316,17 +279,18 @@ int MessageProc(CTcp* s, CMsg* pmsg)
 
   comm = new CGMComm(s);
 
+  alarm(10);
   if(verbose) syslog(LOG_DEBUG, "Inicio de procesamiento de mensaje");
   do
   {
     if(verbose) syslog(LOG_DEBUG, "Esperando header del mensaje...");
-    /* leo solamente el header para determinar el tamaño de los datos */
+    /* leo solamente el header para determinar el tamaï¿½o de los datos */
     if((rc = in.SetHeader( comm->Read(in.GetHeaderLen(),500) )) < 0)
     {
       if(verbose) syslog(LOG_DEBUG, "ERROR: %i al leer header", rc);
       break;
     }
-    if(verbose) syslog(LOG_DEBUG, "Se recibió un header válido, esperando datos del mensaje...");
+    if(verbose) syslog(LOG_DEBUG, "Se recibiï¿½ un header vï¿½lido, esperando datos del mensaje...");
     /* leo los datos */
     if(in.TamMensaje() > 0)
     {
@@ -336,7 +300,7 @@ int MessageProc(CTcp* s, CMsg* pmsg)
         break;
       }
     }
-    if(verbose) syslog(LOG_DEBUG, "Se recibieron datos válidos");
+    if(verbose) syslog(LOG_DEBUG, "Se recibieron datos vï¿½lidos");
     LogMessage("IN", &in);
     if(verbose) syslog(LOG_DEBUG, "Enviando a la cola del router y esperando respuesta...");
     /* Hago la consulta a la cola del router */
@@ -353,7 +317,7 @@ int MessageProc(CTcp* s, CMsg* pmsg)
       out.OrigenRespuesta(GM_ORIG_LISTEN);
       out.IdDestino(getpid());
     }
-    if(verbose) syslog(LOG_DEBUG, "Se recibió una respuesta, devolviendo datos al cliente...");
+    if(verbose) syslog(LOG_DEBUG, "Se recibiï¿½ una respuesta, devolviendo datos al cliente...");
     LogMessage("OUT", &out);
     /* devuelvo el resultado */
     if(out.GetMsgLen() > GM_COMM_MSG_LEN)
@@ -365,15 +329,17 @@ int MessageProc(CTcp* s, CMsg* pmsg)
     {
       syslog(LOG_ERR, "ERROR: %i al escribir datos de respuesta", rc);
     }
-    break;
+    /*break;*/
+
     /* se debe mantener el loop para permitor los mensajes interactivos */
-    /*
     if(out.CodigoRetorno() != GME_MORE_DATA) break;
-    if(verbose) syslog(LOG_DEBUG, "Mensaje con continuación...");
-    */
+    if(verbose) syslog(LOG_DEBUG, "Mensaje con continuaci?n...");
+
   } while(1);
+
   if(verbose) syslog(LOG_DEBUG, "Fin de procesamiento de mensaje");
   delete comm;
+
   return 0;
 }
 

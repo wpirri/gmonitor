@@ -49,14 +49,14 @@ start_one_service()
 
 	while [ $instancias -gt 0 ]; do 
 
-        	if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
-        		echo "Arrancando: ${descripcion}"
-        		$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}&" $SU_USER
-        	else
-        		echo "Arrancando: ${descripcion}"
-			echo "$SU ${server} -n ${servicio} ${params}& $SU_USER"
-        		$SU "${server} -n ${servicio} ${params}&" $SU_USER
-        	fi
+		if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
+			echo "Arrancando: ${descripcion}"
+			$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}" $SU_USER &
+		else
+			echo "Arrancando: ${descripcion}"
+			echo "${SU} ${server} -n ${servicio} ${params} ${SU_USER} &"
+			$SU "${server} -n ${servicio} ${params}" $SU_USER &
+		fi
 
 		instancias=`expr $instancias - 1`
 	done
@@ -80,13 +80,14 @@ start_all_services()
 
 			while [ $instancias -gt 0 ]; do 
 
-                        	if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
-        				echo "Arrancando: ${descripcion}"
-					$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}&" $SU_USER
-                        	else
-        				echo "Arrancando: ${descripcion}"
-					$SU "${server} -n ${servicio} ${params}&" $SU_USER
-                        	fi
+                if [ "X${modo}" = "X0" ] || [ "X${modo}" = "X1" ]; then
+        			echo "Arrancando: ${descripcion}"
+					$SU "${SERVER_BIN}/gmq -n ${servicio} ${params}" $SU_USER &
+                else
+        			echo "Arrancando: ${descripcion}"
+					echo "${SU} ${server} -n ${servicio} ${params} ${SU_USER} &"
+					$SU "${server} -n ${servicio} ${params}" $SU_USER &
+                fi
 
 				instancias=`expr $instancias - 1`
 			done

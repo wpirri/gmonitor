@@ -42,7 +42,6 @@ using namespace std;
 
 #define PID_FILE  "/var/run/Gnu-Monitor_gmt.pid"
 
-void InitSignals();
 void OnClose(int sig);
 void LogSignal(int sig);
 void OnChildExit(int sig);
@@ -125,7 +124,17 @@ int main(int argc, char** argv)
       fclose(f_pid);
     }
   }
-  InitSignals();
+ 
+  signal(SIGPIPE, OnClose);
+  signal(SIGILL,  OnClose);
+  signal(SIGQUIT, OnClose);
+  signal(SIGINT,  OnClose);
+  signal(SIGTERM, OnClose);
+  signal(SIGABRT, OnClose);
+  signal(SIGSEGV, OnClose);
+  signal(SIGHUP,  Reload);
+  signal(SIGCHLD, OnChildExit);
+
   pLog = new CGLog("gmt", LOG_FILES, loglevel);
   pLog->Add(10, "Inicio");
   /* Cre el area de configuracion */
@@ -154,87 +163,23 @@ int main(int argc, char** argv)
   return 0;
 }
 
-void InitSignals()
-{
-  /* Capturo las se�ales que necesito */
-  signal(SIGPIPE, OnClose);
-  signal(SIGILL,  OnClose);
-  signal(SIGQUIT, OnClose);
-  signal(SIGINT,  OnClose);
-  signal(SIGTERM, OnClose);
-  signal(SIGABRT, OnClose);
-  signal(SIGSEGV, OnClose);
-  signal(SIGHUP,  Reload);
-  signal(SIGCHLD, OnChildExit);
-}
-
-void Reload(int sig)
+void Reload(int /*sig*/)
 {
   pLog->Add(1, "Actualizando configuracion de servidores");
   pConfig->Reload();
   signal(SIGHUP,  Reload);
 }
 
-void OnClose(int sig)
+void OnClose(int sig )
 {
-  switch(sig)
-  {
-  case SIGINT:
-    pLog->Add(1, "Se�al SIGINT - Interrupci�n procedente del teclado");
-    break;
-  case SIGQUIT:
-    pLog->Add(1, "Se�al SIGQUIT - Terminaci�n procedente del teclado");
-    break;
-  case SIGILL:
-    pLog->Add(1, "Se�al SIGILL - Instrucci�n ilegal");
-    break;
-  case SIGABRT:
-    pLog->Add(1, "Se�al SIGABRT - Se�al de aborto procedente de abort(3)");
-    break;
-  case SIGFPE:
-    pLog->Add(1, "Se�al SIGFPE - Excepci�n de coma flotante");
-    break;
-  case SIGKILL:
-    pLog->Add(1, "Se�al SIGKILL - Se�al de matar");
-    break;
-  case SIGSEGV:
-    pLog->Add(1, "Se�al SIGSEGV - Referencia inv�lida a memoria");
-    break;
-  case SIGPIPE:
-    pLog->Add(1, "Se�al SIGPIPE - Tuber�a rota: escritura sin lectores");
-    break;
-  case SIGALRM:
-    pLog->Add(1, "Se�al SIGALRM - Se�al de alarma de alarm(2)");
-    break;
-  case SIGTERM:
-    pLog->Add(1, "Se�al SIGTERM - Se�al de terminaci�n");
-    break;
-  case SIGUSR1:
-    pLog->Add(1, "Se�al SIGUSR1 - Se�al definida por usuario 1");
-    break;
-  case SIGUSR2:
-    pLog->Add(1, "Se�al SIGUSR2 - Se�al definida por usuario 2");
-    break;
-  case SIGTSTP:
-    pLog->Add(1, "Se�al SIGTSTP - Parada escrita en la tty");
-    break;
-  case SIGTTIN:
-    pLog->Add(1, "Se�al SIGTTIN - E. de la tty para un proc. de fondo");
-    break;
-  case SIGTTOU:
-    pLog->Add(1, "Se�al SIGTTOU - S. a la tty para un proc. de fondo");
-    break;
-  default:
-    pLog->Add(1, "Se�al (%i)", sig);
-    break;
-  }
+  pLog->Add(1, "Saliendo por signal %i", sig);
   if(pMsg) delete pMsg;
   if(pConfig) delete pConfig;
   if(pLog) delete pLog;
   exit(0);
 }
 
-void OnChildExit(int sig)
+void OnChildExit(int /*sig*/)
 {
   int st;
   CGMTdb::CSystemInfo tsi;
@@ -264,6 +209,9 @@ int MsgRouter()
   CGMTdb::CSystemInfo tsi;
   ST_SBUFFER* psbuffer;
   unsigned long psbuffer_len;
+  time_t next_measure;
+  time_t curr_measure;
+  unsigned long transac_count;
 
   pMsg = new CMsg;
   pinmsg = new CGMessage;
@@ -272,7 +220,12 @@ int MsgRouter()
 
   pMsg->Open();
 
-  /* Este loop es para que el router est� permanentemente en escucha */
+  /* Inicializacion de mediciones de TPS */
+  next_measure = time(&next_measure);
+  curr_measure = next_measure;
+  transac_count = 0;
+
+  /* Este loop es para que el router este permanentemente en escucha */
   do
   {
     pbuffer->Clear();
@@ -282,6 +235,24 @@ int MsgRouter()
       pLog->Add(10, "Error de comunicacion");
       break;
     }
+
+    /* contador para TPS */
+    transac_count++;
+    curr_measure = time(&curr_measure);
+    if(curr_measure >= next_measure)
+    {
+      pConfig->GetSysInfo(&tsi);
+      tsi.load_tps = transac_count / (curr_measure - next_measure + 10);
+      transac_count = 0;
+      if(tsi.load_tps > tsi.max_tps)
+      {
+        tsi.max_tps = tsi.load_tps; 
+      } 
+      pConfig->SetSysInfo(tsi);
+
+      next_measure = curr_measure + 10;
+    }
+
     /* Forkeo para que el hijo se quede procesando el mensaje mientras
             el padre queda listo para atender otro */
     if(fork() == 0)

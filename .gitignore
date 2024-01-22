@@ -99,5 +99,5 @@ system/tools/gm_safcfg/gm_safcfg.o
 system/tools/gm_viewcfg/gm_viewcfg
 system/tools/gm_viewcfg/gm_viewcfg.d
 system/tools/gm_viewcfg/gm_viewcfg.o
-system/shared/ctcp.cc.bak
-system/shared/ctcp.h.bak
+system/shared/ctcp.cc.001
+system/shared/ctcp.h.001

@@ -30,10 +30,13 @@ case $1 in
   start)
     /etc/init.d/apache2 stop
     /etc/init.d/xinetd stop
+    
     #update sniffer
-    x=`ps -eaf | grep -v grep | grep /usr/local/sbin/check_for_updates.sh`
-    if [ "X${x}" = "X" ]; then
-        /usr/local/sbin/check_for_updates.sh
+    if [ -f /usr/local/sbin/check_for_updates.sh ]; then
+      x=`ps -eaf | grep -v grep | grep /usr/local/sbin/check_for_updates.sh`
+      if [ "X${x}" = "X" ]; then
+          /usr/local/sbin/check_for_updates.sh
+      fi
     fi
 
     #$SU "${SERVER_BIN}/gmd -d --mode=listener" $SU_USER

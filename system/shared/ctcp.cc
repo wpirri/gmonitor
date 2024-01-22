@@ -20,8 +20,6 @@
 #endif /* HAVE_CONFIG_H */
 
 /*
-    https://www.codeproject.com/Tips/168704/How-to-set-a-socket-connection-timeout
-
     Implementacion de comunicacion a travez de TCP
     Soporte SSL/TLS
       Fuente:
@@ -65,20 +63,12 @@ using namespace std;
 #include <netdb.h>
 #include <stdarg.h>
 #include <syslog.h>
-#ifdef DEBUG_TCP
 #include <errno.h>
-#endif
 
 CTcp::CTcp()
 {
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::CTcp()]");
-#endif
   m_sock = (-1);
 #ifdef SOPORTE_SSL_TLS
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::CTcp()] - Soporte TLS habilitado");
-#endif
   m_p_ssl = NULL;
   m_p_ctx = NULL;
   m_ssl_tls = 0;
@@ -94,14 +84,8 @@ CTcp::CTcp()
 
 CTcp::CTcp(int sock)
 {
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::CTcp(sock = %i)]", sock);
-#endif
   m_sock = sock;
 #ifdef SOPORTE_SSL_TLS
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::CTcp()] - Soporte TLS habilitado");
-#endif
   m_p_ssl = NULL;
   m_p_ctx = NULL;
   m_ssl_tls = 0;
@@ -116,9 +100,6 @@ CTcp::CTcp(int sock)
 #ifdef SOPORTE_SSL_TLS
 CTcp::CTcp(int ssl_tls, int ssl_tls_v)
 {
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::CTcp(ssl_tls = %i, ssl_tls_v = %i)]", ssl_tls, ssl_tls_v);
-#endif
   m_p_ssl = NULL;
   m_p_ctx = NULL;
   m_ssl_tls = ssl_tls;
@@ -138,9 +119,6 @@ CTcp::CTcp(int ssl_tls, int ssl_tls_v)
     SSL_load_error_strings();
     if(SSL_library_init() < 0)
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::CTcp(ssl_tls = %i, ssl_tls_v = %i)] - TLS lib error", ssl_tls, ssl_tls_v);
-#endif
       m_ssl_tls = (-1);
     }
   }
@@ -148,9 +126,7 @@ CTcp::CTcp(int ssl_tls, int ssl_tls_v)
 
 CTcp::CTcp(int sock, SSL *ssl_sock, int ver)
 {
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::CTcp(sock = %i, SSL* = 0x%X, ver = %i)]", sock, ssl_sock, ver);
-#endif
+
   m_p_ssl = ssl_sock;
   m_p_ctx = NULL;
   m_ssl_tls = 1;
@@ -166,9 +142,6 @@ CTcp::CTcp(int sock, SSL *ssl_sock, int ver)
 
 CTcp::~CTcp()
 {
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::CTcp~()]");
-#endif
   Close();
 }
 
@@ -179,53 +152,29 @@ unsigned int CTcp::ResolvAddr(const char *addr)
 
   if(!addr)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::ResolvAddr(addr = INADDR_ANY)]");
-#endif
     inaddr.s_addr = INADDR_ANY;
   }
   else
   {
     if(strlen(addr))
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::ResolvAddr(addr = %s)]", addr);
-#endif
-      /* trato de obtener la dirección del formato nnn.nnn.nnn.nnn */
+      /* trato de obtener la direcci�n del formato nnn.nnn.nnn.nnn */
       if(!inet_aton((char*)addr, &inaddr))
       {
         /* no estaba en ese formato -> lo busco por DNS */
-#ifdef DEBUG_TCP
-        syslog(LOG_INFO, "[CTcp::ResolvAddr(addr = %s)] - gethostbyname", addr);
-#endif
         hostEnt = gethostbyname((char*)addr);
         if(!hostEnt)
         {
-#ifdef DEBUG_TCP
-          syslog(LOG_INFO, "[CTcp::ResolvAddr(addr = %s)] - gethostbyname -> INADDR_NONE", addr);
-#endif
           inaddr.s_addr = INADDR_NONE;
         }
         else
         {
-#ifdef DEBUG_TCP
-          syslog(LOG_INFO, "[CTcp::ResolvAddr(addr = %s)] - gethostbyname -> %s", addr, hostEnt->h_addr_list[0]);
-#endif
           memcpy(&inaddr, hostEnt->h_addr_list[0], hostEnt->h_length);
         }
       }
-#ifdef DEBUG_TCP
-      else
-      {
-        syslog(LOG_INFO, "[CTcp::ResolvAddr(addr = %s)] - inet_aton Ok", addr);
-      }
-#endif
     }
     else
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::ResolvAddr(addr = INADDR_ANY)]");
-#endif
       inaddr.s_addr = INADDR_ANY;
     }
   }
@@ -238,62 +187,38 @@ int CTcp::LocalConn(const char *addr, int port)
   struct sockaddr_in local;
   int localLen;
 
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::LocalConn(addr = %s, port = %i)]", addr, port);
-#endif
   /* abro el socket */
   if((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0)
   {
     /* error al crear el socket */
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::LocalConn(addr = %s, port = %i) - socket error]", addr, port);
-#endif
     GetErr("[CTCP] ERROR LocalConn()->socket() (%s:%i)", (addr)?addr:"", port);
     return CTCP_GENERAL_ERROR;
   }
   /* conecto el socket a la red */
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::LocalConn(addr = %s, port = %i)] - socket ok", addr, port);
-#endif
   memset(&(local.sin_zero), 0, sizeof(local.sin_zero));
   local.sin_family = AF_INET;
   local.sin_port = htons(port);
   if((local.sin_addr.s_addr = ResolvAddr(addr)) == INADDR_NONE)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::LocalConn(addr = %s, port = %i)] - ResolvAddr error", addr, port);
-#endif
-    /* el DNS devolvió la dirección en un formato erróneo */
+    /* el DNS devolvi� la direcci�n en un formato err�neo */
     GetErr("[CTCP] ERROR LocalConn()->ResolvAddr() (%s:%i)", (addr)?addr:"", port);
     close(sock);
     return CTCP_ADDRESS_NOT_FOUND;
   }
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::LocalConn(addr = %s, port = %i)] - ResolvAddr ok", addr, port);
-#endif
   localLen = sizeof(struct sockaddr_in);
   if(bind(sock, (struct sockaddr*)&local, localLen) < 0)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::LocalConn(addr = %s, port = %i)] - bind error", addr, port);
-#endif
     /* error al darle nombre al socket */
     GetErr("[CTCP] ERROR LocalConn()->bind() (%s:%i)", (addr)?addr:"", port);
     close(sock);
     return CTCP_HOST_NOT_FOUND;
   }
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::LocalConn(addr = %s, port = %i)] - Ok ok", addr, port);
-#endif
   return sock;
 }
 
-int CTcp::RemoteConn(const char *addr, int port, int to_ms)
+int CTcp::RemoteConn(const char *addr, int port)
 {
   struct sockaddr_in remote;
-  struct timeval tv;
-  int fcntl_flags;
-  fd_set fd_wr, fd_err;
 
   if(!addr || !port)
   {
@@ -303,15 +228,9 @@ int CTcp::RemoteConn(const char *addr, int port, int to_ms)
     return CTCP_INVALID_ADDRESS;
   }
 
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)]", addr, port);
-#endif
 #ifdef SOPORTE_SSL_TLS
   if(m_ssl_tls < 0)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)] - TLS lib error", addr, port);
-#endif
     GetErr("[SSL/TLS] Library Error.");
     return CTCP_SSL_LIB_ERROR;
   }
@@ -320,9 +239,6 @@ int CTcp::RemoteConn(const char *addr, int port, int to_ms)
     m_p_method = TLS_client_method();
     if ( (m_p_ctx = SSL_CTX_new(m_p_method)) == NULL)
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)] - SSL_CTX_new error", addr, port);
-#endif
       GetErr("[SSL/TLS] Unable to create a new SSL context structure..");
       return CTCP_SSL_LIB_ERROR;
     }
@@ -340,49 +256,14 @@ int CTcp::RemoteConn(const char *addr, int port, int to_ms)
   remote.sin_port = htons(port);
   if((remote.sin_addr.s_addr = ResolvAddr(addr)) == INADDR_NONE)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)] - ResolvAddr error", addr, port);
-#endif
     /* el DNS devolvi� la direcci�n en un formato err�neo */
     GetErr("[CTCP] ERROR RemoteConn()->ResolvAddr() (%s:%i)", (addr)?addr:"", port);
     return CTCP_ADDRESS_NOT_FOUND;
   }
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)] - connect", addr, port);
-#endif
-
-  fcntl_flags = fcntl(m_sock, F_GETFL);
-  /* pongo el socket no bloqueante */
-  fcntl(m_sock, F_SETFL, fcntl_flags|O_NONBLOCK);
   /* me conecto con el server TCP */
-  connect(m_sock, (struct sockaddr*)&remote, sizeof(struct sockaddr_in));
-  /* lo vuelvo a poner bloqueante bloqueante */
-  fcntl(m_sock, F_SETFL, fcntl_flags & ~O_NONBLOCK);
-  /* Seteo el timeout en el socket */
-  FD_ZERO(&fd_wr);
-  FD_ZERO(&fd_err);
-  FD_SET(m_sock, &fd_wr);
-  FD_SET(m_sock, &fd_err);
-
-  /* Seteo la estructura para el time-out */
-  if(to_ms >= 1000)
+  if((connect(m_sock, (struct sockaddr*)&remote, sizeof(struct sockaddr_in))) < 0)
   {
-    tv.tv_sec = to_ms / 1000;
-    tv.tv_usec = 0;
-  }
-  else
-  {
-    tv.tv_sec = 0;
-    tv.tv_usec = to_ms * 1000;
-  }
-  /* hago un select para bloquear hasta que el socket esté disponible o time-out */
-  select(0,NULL,&fd_wr,&fd_err,&tv);			
-  if( !FD_ISSET(m_sock, &fd_wr)) 
-  {	
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)] - select error", addr, port);
-#endif
-    GetErr("[CTCP] ERROR RemoteConn()->select() (%s:%i)", (addr)?addr:"", port);
+    GetErr("[CTCP] ERROR RemoteConn()->connect() (%s:%i)", (addr)?addr:"", port);
     return CTCP_HOST_NOT_FOUND;
   }
 
@@ -392,17 +273,11 @@ int CTcp::RemoteConn(const char *addr, int port, int to_ms)
     SSL_set_fd(m_p_ssl, m_sock);
     if( SSL_connect(m_p_ssl) != 1 )
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)] - SSL_connect error", addr, port);
-#endif
       GetErr("[SSL/TLS] Could not build a SSL session.");
       return CTCP_SSL_SESSION_ERROR;
     }
   }
 #endif /* SOPORTE_SSL_TLS */
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::RemoteConn(addr = %s, port = %i)] - Ok", addr, port);
-#endif
 
   return CTCP_OK;
 }
@@ -410,14 +285,10 @@ int CTcp::RemoteConn(const char *addr, int port, int to_ms)
 CTcp* CTcp::Listen(const char *addr, int port)
 {
   int newsock;
-  int fcntl_flags;
 #ifdef SOPORTE_SSL_TLS
   SSL *newssl;
 #endif
 
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - Ok", addr, port);
-#endif
   if(m_sock < 0)
   {
     /* si es el primer listen lo conecto */
@@ -430,9 +301,6 @@ CTcp* CTcp::Listen(const char *addr, int port)
 #ifdef SOPORTE_SSL_TLS
   if(m_ssl_tls < 0)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - TLS lib error", addr, port);
-#endif
     GetErr("[SSL/TLS] Library Error.");
     return NULL;
   }
@@ -441,9 +309,6 @@ CTcp* CTcp::Listen(const char *addr, int port)
     m_p_method = TLS_server_method();
     if ( (m_p_ctx = SSL_CTX_new(m_p_method)) == NULL)
     {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - SSL_CTX_new error", addr, port);
-#endif
       GetErr("[SSL/TLS] Unable to create a new SSL context structure..");
       return NULL;
     }
@@ -457,17 +322,11 @@ CTcp* CTcp::Listen(const char *addr, int port)
   {
     if(SSL_CTX_use_certificate_file(m_p_ctx, m_cert_pem.c_str(), SSL_FILETYPE_PEM) <= 0)
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - SSL_CTX_use_certificate_file error", addr, port);
-#endif
       GetErr("[SSL/TLS] Unable to load cert PEM.");
       return NULL;
     }
     if(SSL_CTX_use_PrivateKey_file(m_p_ctx, m_key_pem.c_str(), SSL_FILETYPE_PEM) <= 0)
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - SSL_CTX_use_PrivateKey_file error", addr, port);
-#endif
       GetErr("[SSL/TLS] Unable to load key PEM.");
       return NULL;
     }
@@ -477,20 +336,17 @@ CTcp* CTcp::Listen(const char *addr, int port)
 
   if(listen(m_sock, SOMAXCONN) < 0)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - listen error", addr, port);
-#endif
     GetErr("[CTCP] ERROR Listen()->listen() (%s:%i)", (addr)?addr:"", port);
     return NULL;
   }
   if((newsock = accept(m_sock, 0, 0)) < 0)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - accept error", addr, port);
-#endif
     GetErr("[CTCP] ERROR Listen()->accept() (%s:%i)", (addr)?addr:"", port);
     return NULL;
   }
+  /* el nuevo socket no es bloqueante */
+  fcntl(newsock, F_SETFL, O_NONBLOCK);
+
 #ifdef SOPORTE_SSL_TLS
   if(m_ssl_tls > 0)
   {
@@ -498,25 +354,16 @@ CTcp* CTcp::Listen(const char *addr, int port)
     SSL_set_fd(newssl, newsock);
     if(SSL_accept(newssl) <= 0)
     {
-#ifdef DEBUG_TCP
-      syslog(LOG_INFO, "[CTcp::Listen(addr = %s, port = %i)] - SSL_accept error", addr, port);
-#endif
       SSL_shutdown(newssl);
       SSL_free(newssl);
       GetErr("[SSL/TLS] ERROR Listen()->accept() (%s:%i)", (addr)?addr:"", port);
       return NULL;
     }
-    fcntl_flags = fcntl(newsock, F_GETFL);
-    /* pongo el socket no bloqueante */
-    fcntl(newsock, F_SETFL, fcntl_flags|O_NONBLOCK);
     return new CTcp(newsock, newssl, m_ssl_tls_ver);
   }
   else
   {
 #endif /* SOPORTE_SSL_TLS */
-    fcntl_flags = fcntl(newsock, F_GETFL);
-    /* pongo el socket no bloqueante */
-    fcntl(newsock, F_SETFL, fcntl_flags|O_NONBLOCK);
     return new CTcp(newsock);
 #ifdef SOPORTE_SSL_TLS
   }
@@ -532,42 +379,25 @@ CTcp* CTcp::Listen(string saddr, int port)
 int CTcp::Connect(const char* addrloc, const char *addrrem, int port)
 {
   int rc;
-  int fcntl_flags;
 
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::Connect(addrloc = %s, addrrem = %s, port = %i)]", addrloc, addrrem, port);
-#endif
   if(m_sock >= 0)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Connect(addrloc = %s, addrrem = %s, port = %i)] - ya esta conectado", addrloc, addrrem, port);
-#endif
     /* ya esta conectado */
     return CTCP_OK;
   }
   /* lo conecto localmente */
   if((rc = LocalConn(addrloc, 0)) < CTCP_OK)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Connect(addrloc = %s, addrrem = %s, port = %i)] - LocalConn error", addrloc, addrrem, port);
-#endif
     return rc;
   }
   m_sock = rc;
   /* lo conecto al server */
-  if((rc = RemoteConn(addrrem, port, 5)) != CTCP_OK)
+  if((rc = RemoteConn(addrrem, port)) != CTCP_OK)
   {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Connect(addrloc = %s, addrrem = %s, port = %i)] - RemotelConn error", addrloc, addrrem, port);
-#endif
     return rc;
   }
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::Connect(addrloc = %s, addrrem = %s, port = %i)] - OK", addrloc, addrrem, port);
-#endif
-  fcntl_flags = fcntl(m_sock, F_GETFL);
-  /* pongo el socket no bloqueante */
-  fcntl(m_sock, F_SETFL, fcntl_flags|O_NONBLOCK);
+  /* el nuevo socket no es bloqueante */
+  fcntl(m_sock, F_SETFL, O_NONBLOCK);
   return CTCP_OK;
 }
 
@@ -581,9 +411,6 @@ int CTcp::LocalPort()
     struct sockaddr_in local;
     int localLen;
 
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::LocalPort()]");
-#endif
     /* obtengo el port al que esta conectado el socket */
     localLen = sizeof(struct sockaddr_in);
     if(getsockname(m_sock, (struct sockaddr*)&local, (socklen_t*)&localLen) == 0)
@@ -598,9 +425,6 @@ int CTcp::RemotePort()
   struct sockaddr_in local;
   int localLen;
 
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::RemotePort()]");
-#endif
   /* obtengo el port al que esta conectado el socket */
   localLen = sizeof(struct sockaddr_in);
   if(getpeername(m_sock, (struct sockaddr*)&local, (socklen_t*)&localLen) == 0)
@@ -615,9 +439,6 @@ char* CTcp::LocalAddress()
   struct sockaddr_in local;
   int localLen;
 
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::LocalAddress()]");
-#endif
   /* obtengo el port al que esta conectado el socket */
   localLen = sizeof(struct sockaddr_in);
   if(getsockname(m_sock, (struct sockaddr*)&local, (socklen_t*)&localLen) == 0)
@@ -633,9 +454,6 @@ char* CTcp::RemoteAddress()
   struct sockaddr_in remote;
   int remoteLen;
 
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::RemoteAddress()]");
-#endif
   /* obtengo el port al que esta conectado el socket */
   remoteLen = sizeof(struct sockaddr_in);
   if(getpeername(m_sock, (struct sockaddr*)&remote, (socklen_t*)&remoteLen) == 0)
@@ -649,9 +467,6 @@ char* CTcp::RemoteAddress()
 int CTcp::Close()
 {
 
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Close()]");
-#endif
 #ifdef SOPORTE_SSL_TLS
   if(m_p_ssl)
   {
@@ -675,9 +490,6 @@ int CTcp::Close()
 
 int CTcp::Kill()
 {
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Kill()]");
-#endif
   if(m_sock >= 0)
   {
     if(close(m_sock) < 0)
@@ -698,9 +510,6 @@ int CTcp::Send(const void *msg, unsigned int msglen)
   struct pollfd pfd[1];
   int rc;
 
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Send()]");
-#endif
   if(m_sock < 0)
   {
     /* el socket no esta abierto */
@@ -760,11 +569,7 @@ int CTcp::Receive(void *msg, unsigned int msglen, int to_ms)
   int recvlen;
   int rc;
   struct pollfd pfd[1];
-  int to;
 
-#ifdef DEBUG_TCP
-    syslog(LOG_INFO, "[CTcp::Receive()]");
-#endif
   if(m_sock < 0)
   {
     /* el socket no esta abierto */
@@ -783,23 +588,20 @@ int CTcp::Receive(void *msg, unsigned int msglen, int to_ms)
   {
     recvlen = 0;
     rc = 0;
-    to = to_ms;
 
     do
     {
       rc = SSL_read(m_p_ssl, (char*)((char*)msg+recvlen), (msglen-recvlen) );
-      if(rc < 0) break;
       if(rc == 0)
       {
         usleep(1000);
-        to--;
+        to_ms--;
       }
       else if(rc > 0)
       {
         recvlen += rc;
-        to = to_ms;
       }
-    } while(recvlen < (int)msglen && to);
+    } while(recvlen < (int)msglen && (rc > 0 || recvlen == 0) && to_ms);
   }
   else
   {
@@ -855,6 +657,7 @@ void CTcp::GetErr(const char *msg, ...)
   va_start(vl, msg);
   vsprintf(m_strError, msg, vl);
   va_end(vl);
+  syslog(LOG_DEBUG, "%s", m_strError);
 }
 
 char* CTcp::GetErrorText()
@@ -889,9 +692,6 @@ int CTcp::Query(const char* raddr, int rport, const char* snd, char* rcv, int rc
 {
   int rc = 0; 
 
-#ifdef DEBUG_TCP
-  syslog(LOG_INFO, "[CTcp::Query()]");
-#endif
   this->Connect(NULL, raddr, rport);
   if(rc != 0) 
   {

@@ -89,7 +89,7 @@ int main(int argc, char** argv, char** env)
     if(rc > 0)
     {
       m_pServer->m_pLog->Add(100, "RECIBIDO %s, 0x%X, %lu", fn, m_pInBuffer, inlen);
-      /* proceso el mensaje que llegï¿½ */
+      /* proceso el mensaje que llegó */
       rc = m_pGMTimer->Message(fn, m_pInBuffer, inlen,
                    (void**)&m_pOutBuffer, &outlen,
                   &m_pServer->m_ClientData);
