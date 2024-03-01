@@ -101,3 +101,6 @@ system/tools/gm_viewcfg/gm_viewcfg.d
 system/tools/gm_viewcfg/gm_viewcfg.o
 system/shared/ctcp.cc.001
 system/shared/ctcp.h.001
+system/monitor/monitor
+system/monitor/monitor.d
+system/monitor/monitor.o
