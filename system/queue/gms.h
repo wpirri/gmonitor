@@ -34,7 +34,7 @@ public:
 	int Exit();
 	/* Colocar en esta funcion el proceso que intepreta el
 	mensaje recibido */
-	int Main(const char *funcion, char typ, void* in, unsigned long inlen, void** out, unsigned long *outlen);
+	int Main(const char *funcion, char typ, void* in, unsigned long inlen, void* out, unsigned long *outlen, unsigned long max_outlen);
 	/* estas rutinas se llaman antes y despu�s de la de
 	procesamiento de mensaje */
 	int PreMain();

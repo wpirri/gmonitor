@@ -1,7 +1,7 @@
 # ***gmonitor.service***
 [Unit]
 Description=Gnu-Monitor
-After=multi-user.target
+After=network.target mysql.service
 
 [Service]
 Type=simple
@@ -10,8 +10,6 @@ ExecStop=/usr/local/sbin/gmond stop
 User=root
 WorkingDirectory=/var/lib/gmonitor
 Restart=on-abort
-StandardOutput=syslog
-StandardError=syslog
 RemainAfterExit=yes
 
 [Install]

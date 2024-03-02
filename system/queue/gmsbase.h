@@ -37,7 +37,7 @@ public:
   typedef struct _GMIOS
   {
     unsigned long len;
-    void *data;
+    char data[GM_COMM_MSG_LEN];
   } GMIOS;
 
   int LoadConfig();
@@ -49,8 +49,10 @@ public:
   int Post(const char *event, const void *data, unsigned long len);
   int Post(string& event, CGMBuffer& data);
   int Post(string& event, CGMBuffer* data);
+  /*
   int Broadcast(const char *user, const char *client,
           const char *group, const void *data, unsigned long len);
+  */
   /* modo encolado */
   int Enqueue(const char* queue, const void *data, unsigned long len);
   int Enqueue(string& queue, const void *data, unsigned long len);
@@ -67,10 +69,10 @@ public:
   int UnSuscribe(const char *event, char tipo_mensaje);
   /* Para servers ON-LINE y OFF-LINE */
   int Run(const char* exe, char* const params[]);
-  int Main(void* in, unsigned long inlen, void** out, unsigned long *outlen);
+  int Main(void* in, unsigned long inlen, void* out, unsigned long *outlen, unsigned long max_outlen);
   /* liberacion del buffer recibido */
-  int Free(GMIOS s);
-  int Free(GMIOS* ps);
+ // int Free(GMIOS s);
+ // int Free(GMIOS* ps);
 
   /* puntero provisto por la clase para uso generico */
   void* m_gptr;

@@ -41,13 +41,15 @@ public:
   typedef struct _GMIOS
   {
     unsigned long len;
-    void *data;
+    char data[GM_COMM_MSG_LEN];
   } GMIOS;
   /* liberacion del buffer recibido */
+/*
   int Free(GMIOS s);
   int Free(GMIOS* ps);
+*/
 
-  /* Inicialización alternativa */
+  /* Inicializaciï¿½n alternativa */
   void Init(CGMInitData *init_data = NULL);
 
   /* manejo de transaccion */
@@ -63,8 +65,10 @@ public:
   int Post(const char *event, const void *data, unsigned long len);
   int Post(string& event, CGMBuffer& data);
   int Post(string& event, CGMBuffer* data);
+  /*
   int Broadcast(const char *user, const char *client,
           const char *group, const char *event, const void *data, unsigned long len);
+  */
   /* suscripcion a eventos */
   int Suscribe(const char *event, char typ, SERVICE_FUNCTION fcn);
   int Suscribe(string& event, char typ, SERVICE_FUNCTION fcn);
@@ -76,10 +80,11 @@ public:
   int Call(const char *fn, const void *query, unsigned long qlen, GMIOS *presp, long to);
   int Call(string fn, CGMBuffer& query, CGMBuffer& response, long to_cs);
   int Call(string fn, CGMBuffer* query, CGMBuffer* response, long to_cs);
+  /*
   int ACall(const char *fn, const void *query, unsigned long qlen);
   int GetReply(GMIOS *presp, long to_cs);
   int Cancel();
-
+  */
   /* modo interactivo */
   int Connect(const char *fn, unsigned long transfer_len = 0);
   int Connect(string fn, unsigned long transfer_len = 0);

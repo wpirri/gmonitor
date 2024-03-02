@@ -49,7 +49,7 @@ CGMessage::~CGMessage()
 const char* CGMessage::GetMsg()
 {
 /*
-	Ya no se setea acá pra que sea un dato puesto por el cliente
+	Ya no se setea acï¿½ pra que sea un dato puesto por el cliente
 	time_t t;
 	t = time(&t);
 	TimeStamp(t);

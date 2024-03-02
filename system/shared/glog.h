@@ -36,7 +36,6 @@ public:
 
 	void Add(unsigned int level, const char* msg, ...);
 	void AddBin(unsigned int level, const char *id, const void *buffer, unsigned int len);
-	void Clean(unsigned int days);
 	unsigned int LogLevel();
 	void LogLevel(unsigned int level);
 

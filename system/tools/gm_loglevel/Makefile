@@ -4,7 +4,7 @@ include ../../configure.mk
 
 CC=g++
 INCLUDE=-I./ -I../../shared -I../../client
-DEFINE=-D __NO__DEBUG__
+DEFINE=$(GENERAL_DEFINES)
 CFLAGS=
 CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../../client -L../../shared

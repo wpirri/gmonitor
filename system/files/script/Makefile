@@ -21,7 +21,7 @@ install:
 	$(CP) drop_ipc.sh $(INST_SBINDIR)/ 
 	$(CHMOD) 0755 $(INST_SBINDIR)/drop_ipc.sh
 #
-	$(CP) gmonitor.service /lib/systemd/system/
+	$(CP) gmonitor.service /etc/systemd/system/
 	systemctl daemon-reload
 	systemctl enable gmonitor.service
 	systemctl start gmonitor.service
@@ -32,7 +32,7 @@ install:
 uninstall:
 	systemctl stop gmonitor.service
 	systemctl disable gmonitor.service
-	$(RM) /lib/systemd/system/gmonitor.service
+	$(RM) /etc/systemd/system/gmonitor.service
 	systemctl daemon-reload
 	$(RM) $(INST_SBINDIR)/clean-gmonitor-old-logs.sh
 	$(RM) $(INST_SBINDIR)/gmon_config

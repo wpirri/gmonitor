@@ -19,19 +19,19 @@
 /*
   En este server se pretende implementar el soporte necesario para la
   funcionalidad de control de transacciones.
-  Se implementa asignando un id unico a cada transacción en el comienzo de
-  esta y un control de tiempo limite para la finalización de la ejecución de
+  Se implementa asignando un id unico a cada transacciï¿½n en el comienzo de
+  esta y un control de tiempo limite para la finalizaciï¿½n de la ejecuciï¿½n de
   la misma.
-  El server recibirá los ensajes ".begintrans", ".committrans" y ".aborttrans"
+  El server recibirï¿½ los ensajes ".begintrans", ".committrans" y ".aborttrans"
   en modo Consulta/Respuesta.
   ".begintrans" - asigna un nuevo id de transaccion.
-  ".comittrans" - finaliza una transacción de forma exitosa notificando a
+  ".comittrans" - finaliza una transacciï¿½n de forma exitosa notificando a
     todos los servidores.
-  ".aborttrans" - finaliza una transacción anulando los cambias que esta haya
+  ".aborttrans" - finaliza una transacciï¿½n anulando los cambias que esta haya
     provocado.
   El server a la vez de contestar al cliente notifica a los demas servidores
   enviando el mismo mensaj pero en modo evento pasando como dato el id de la
-  transacción.
+  transacciï¿½n.
 */
 
 #ifdef HAVE_CONFIG_H
@@ -59,7 +59,7 @@ CGMServerWait *m_pServer;
 CTransac *m_pTransac;
 void OnClose(int sig);
 
-int main(int argc, char** argv, char** env)
+int main(int /*argc*/, char** /*argv*/, char** /*env*/)
 {
 /*
   int rc;
@@ -74,7 +74,7 @@ int main(int argc, char** argv, char** env)
 
   signal(SIGPIPE, SIG_IGN);
   signal(SIGKILL,         OnClose);
-        signal(SIGTERM,         OnClose);
+  signal(SIGTERM,         OnClose);
   /*
   signal(SIGSTOP,         OnClose);
   signal(SIGABRT,         OnClose);
@@ -187,7 +187,7 @@ int main(int argc, char** argv, char** env)
   return 0;
 }
 
-void OnClose(int sig)
+void OnClose(int /*sig*/)
 {
   m_pServer->m_pLog->Add(1, "Terminando server");
   m_pServer->UnSuscribe(".aborttrans", GM_MSG_TYPE_NOT);

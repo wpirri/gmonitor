@@ -52,7 +52,7 @@ int CGMTimer::Message(const char *funcion,
 {
   ST_STIMER* pt;
 
-  /* proceso el mensaje que llegó */
+  /* proceso el mensaje que llegï¿½ */
   pt = (ST_STIMER*)in;
   *outlen = 0;
   *out = NULL;
@@ -106,7 +106,7 @@ int CGMTimer::Message(const char *funcion,
     }
     pt->set_timer.data[0] = '\0';
     pt->set_timer.len = 0;
-    if(pt->set_timer.id < 0)
+    if(pt->set_timer.id == 0)
     {
       *outlen = 0;
       m_pLog->Add(10, "ERROR: No se pudo obtener un timer en .set_timer()");

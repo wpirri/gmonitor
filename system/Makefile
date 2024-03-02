@@ -8,7 +8,7 @@ all:
 	make -C client
 	make -C servers
 	make -C tools
-	make -C monitor
+#	make -C monitor
 
 clean:
 	make -C shared clean
@@ -29,7 +29,7 @@ install:
 	make -C client install
 	make -C servers install
 	make -C tools install
-	make -C monitor install
+#	make -C monitor install
 
 uninstall:
 	make -C files uninstall

@@ -3,6 +3,7 @@
 include ../configure.mk
 
 INCLUDE=-I./
+DEFINE=$(GENERAL_DEFINES)
 CFLAGS=-fPIC
 CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LIBS=
@@ -12,7 +13,6 @@ OBJECTS=cmsg.o glog.o gmcomm.o gmessage.o gmidat.o gmontdb.o shmem.o sincro.o \
 
 
 OUTPUT=libgmshared.so
-DEFINE=-D __NO__DEBUG__ -DGM_CONFIG_KEY=$(GM_CONFIG_KEY)
 CC=g++
 
 HEADER_FILES=cmsg.h glog.h gmcomm.h gmerror.h gmheader.h gmisc.h gmshared.h msgtype.h sincmem.h svcstru.h \

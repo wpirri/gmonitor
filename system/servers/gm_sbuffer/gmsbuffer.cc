@@ -42,7 +42,7 @@ using namespace std;
 
 CGMSBuffer::CGMSBuffer(CGMServer* pServer, CGLog* plog)
 {
-  /* No es necesario pasarle el primer parámetro porque se va a
+  /* No es necesario pasarle el primer parï¿½metro porque se va a
   conectar a una base ya creada */
   m_pDB = new CGMTdb("", MAX_SERVERS, MAX_SERVICES, plog);
   m_pDB->Open();
@@ -70,7 +70,7 @@ CGMSBuffer::~CGMSBuffer()
 
 int CGMSBuffer::Process(const char *funcion,
       void* in, unsigned long inlen,
-      void** out, unsigned long *outlen,
+      void* out, unsigned long *outlen,
       CGMServerBase::CLIENT_DATA* pClientData)
 {
   int i;
@@ -80,13 +80,12 @@ int CGMSBuffer::Process(const char *funcion,
   char buffer[1024];
   CGMServerBase::GMIOS gmio;
   ST_STIMER* pt = (ST_STIMER*)buffer;
-  unsigned long rlen;
   int rc;
 
   m_pLog->Add(100, "CGMSBuffer::Process(%s, %-16.16s..., %lu)", funcion, in, inlen);
 
   *outlen = 0;
-  *out = NULL;
+  //*out = NULL;
   if(inlen < sizeof(ST_SBUFFER))
   {
     m_pLog->Add(10, "ERROR: no hay datos sufifientes de entrada");
@@ -128,10 +127,9 @@ int CGMSBuffer::Process(const char *funcion,
       return GME_UNDEFINED;
     }
     pt = (ST_STIMER*)gmio.data;
-    rlen = gmio.len;
     /* me guardo tambien el ID del timer */
     stb.id_timer = pt->set_timer.id;
-    free(gmio.data);
+    //free(gmio.data);
     m_pLog->Add(100, "  Nuevo ID  %u", stb.id_buffer);
     m_pLog->Add(100, "    trans   %u", stb.id_trans);
     m_pLog->Add(100, "    timer   %u", stb.id_timer);
@@ -148,8 +146,8 @@ int CGMSBuffer::Process(const char *funcion,
         stb.buffer->C_Str());
     /* Aloco memoria y paso los datos */
     *outlen = sizeof(ST_SBUFFER);
-    *out = (char*)calloc(*outlen, sizeof(char));
-    sbfo = (ST_SBUFFER*)*out;
+    //*out = (char*)calloc(*outlen, sizeof(char));
+    sbfo = (ST_SBUFFER*)out;
     sbfo->new_buffer.id = stb.id_buffer;
 
     m_pLog->Add(100, "OK: .new_buffer()");
@@ -169,7 +167,7 @@ int CGMSBuffer::Process(const char *funcion,
       {
         if(m_buffer_list[i].id_buffer == sbfi->add_buffer.id) break;
       }
-      /* si no encontró id en vector */
+      /* si no encontrï¿½ id en vector */
       if(i == (int)m_buffer_list.size())
       {
         m_pLog->Add(10, "ERROR: El buffer ID %u no existe",
@@ -177,7 +175,7 @@ int CGMSBuffer::Process(const char *funcion,
         return GME_UNDEFINED;
       }
       /* verifico la validez del cliente */
-      /* este control de va a hacer cuando esté terminado el router
+      /* este control de va a hacer cuando estï¿½ terminado el router
       if( m_buffer_list[i].id_trans != pClientData->m_trans ||
         m_buffer_list[i].user != pClientData->m_user ||
         m_buffer_list[i].client != pClientData->m_client ||
@@ -213,7 +211,7 @@ int CGMSBuffer::Process(const char *funcion,
       {
         if(m_buffer_list[i].id_buffer == sbfi->get_buffer.id) break;
       }
-      /* si no encontró id en vector */
+      /* si no encontrï¿½ id en vector */
       if(i == (int)m_buffer_list.size())
       {
         m_pLog->Add(10, "ERROR: .get_buffer() - El buffer ID %u no existe",
@@ -222,7 +220,7 @@ int CGMSBuffer::Process(const char *funcion,
       }
       m_pLog->Add(100, "Buffer %u encontrado en indice %i", sbfi->get_buffer.id, i);
       /* verifico la validez del cliente */
-      /* este control de va a hacer cuando esté terminado el router
+      /* este control de va a hacer cuando estï¿½ terminado el router
       if( m_buffer_list[i].id_trans != pClientData->m_trans ||
         m_buffer_list[i].user != pClientData->m_user ||
         m_buffer_list[i].client != pClientData->m_client ||
@@ -247,8 +245,8 @@ int CGMSBuffer::Process(const char *funcion,
       *outlen = min( (m_buffer_list[i].buffer->Length() - sbfi->get_buffer.offset),
           (sbfi->get_buffer.maxlen) );
       *outlen += sizeof(ST_SBUFFER);
-      *out = (char*)calloc(*outlen, sizeof(char));
-      sbfo = (ST_SBUFFER*)*out;
+      //*out = (char*)calloc(*outlen, sizeof(char));
+      sbfo = (ST_SBUFFER*)out;
       sbfo->get_buffer.id = sbfi->del_buffer.id;
       sbfo->get_buffer.offset = sbfi->get_buffer.offset;
       sbfo->get_buffer.maxlen = sbfi->get_buffer.maxlen;
@@ -304,7 +302,7 @@ unsigned int CGMSBuffer::GetNewId()
       {
         if( m_buffer_list[j].id_buffer == new_id ) break;
       }
-      /* si no encontró id en vector */
+      /* si no encontrï¿½ id en vector */
       if(j == (int)m_buffer_list.size())
       {
         m_last_id = new_id;
@@ -323,7 +321,7 @@ unsigned int CGMSBuffer::GetNewId()
   return m_last_id;
 }
 
-int CGMSBuffer::DeleteId(unsigned int id, CGMServerBase::CLIENT_DATA* pClientData)
+int CGMSBuffer::DeleteId(unsigned int id, CGMServerBase::CLIENT_DATA* /*pClientData*/)
 {
   int i;
   ST_STIMER timer;
@@ -334,10 +332,10 @@ int CGMSBuffer::DeleteId(unsigned int id, CGMServerBase::CLIENT_DATA* pClientDat
     {
       if(m_buffer_list[i].id_buffer == id) break;
     }
-    /* si no encontró id en vector */
+    /* si no encontrï¿½ id en vector */
     if(i == (int)m_buffer_list.size()) return -1;
     /* verifico la validez del cliente */
-    /* este control de va a hacer cuando esté terminado el router
+    /* este control de va a hacer cuando estï¿½ terminado el router
     if( m_buffer_list[i].id_trans != pClientData->m_trans ||
       m_buffer_list[i].user != pClientData->m_user ||
       m_buffer_list[i].client != pClientData->m_client ||
@@ -377,9 +375,9 @@ int CGMSBuffer::DeleteTrans(unsigned int trans)
     {
       if(m_buffer_list[i].id_trans == trans) break;
     }
-    /* si no encontró id en vector */
+    /* si no encontrï¿½ id en vector */
     if(i == (int)m_buffer_list.size()) return -1;
-    /* acá no hace falta borra el timer porque se deberia borrar por la transa */
+    /* acï¿½ no hace falta borra el timer porque se deberia borrar por la transa */
     /* lo borro, primero el buffer y luego el vector */
     if(m_buffer_list[i].buffer)
     {

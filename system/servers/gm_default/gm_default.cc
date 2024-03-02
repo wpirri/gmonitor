@@ -46,9 +46,9 @@ using namespace std;
         La variable 'void* m_gptr' es un puntero para uso generico por el server
         es el unico puntero miembro de la clase que puede ser utilizado libremente
         al realizar el programa server.
-        La variable 'CGMInitData m_ClientData' se completará con los valores del
-        cliente que solicitó el servicio antes del llamado a la función PreMain()
-        y mantendrá este valos para ser utilizado por el server si es necesario
+        La variable 'CGMInitData m_ClientData' se completarï¿½ con los valores del
+        cliente que solicitï¿½ el servicio antes del llamado a la funciï¿½n PreMain()
+        y mantendrï¿½ este valos para ser utilizado por el server si es necesario
         hasta el final del servicio.
 */
 
@@ -83,7 +83,7 @@ int CGMServer::Exit()
   return 0;
 }
 
-/* Estas rutinas son llamadas para el manejo de transaccion se debe colocar en ellas el código necesario para cada uno de los procesos */
+/* Estas rutinas son llamadas para el manejo de transaccion se debe colocar en ellas el cï¿½digo necesario para cada uno de los procesos */
 int CGMServer::BeginTrans(unsigned int trans)
 {
   pLog->Add(100, "INICIO DE TRANSACCION %u", trans);
@@ -100,7 +100,7 @@ int CGMServer::RollbackTrans(unsigned int trans)
   return 0;
 }
 
-/* estas rutinas se llaman antes y después de la de procesamiento de mensaje */
+/* estas rutinas se llaman antes y despuï¿½s de la de procesamiento de mensaje */
 int CGMServer::PreMain()
 {
   return 0;
@@ -111,16 +111,14 @@ int CGMServer::PosMain()
 }
 
 /* Colocar en esta funcion el proceso que intepreta el mensaje recibido */
-int CGMServer::Main(const char *funcion, char typ, void* in, unsigned long inlen, void** out, unsigned long *outlen)
+int CGMServer::Main(const char *funcion, char /*typ*/, void* in, unsigned long inlen, void* out, unsigned long *outlen, unsigned long /*max_outlen*/)
 {
   pLog->Add(100, "CGMServer::Main(%s, 0x%08X, %lu)", funcion, in, inlen);
   *outlen = 0;
-  *out = NULL;
   if(!strcmp(funcion, ".eco"))
   {
     *outlen = inlen;
-    *out = (char*)malloc(*outlen);
-    memcpy(*out, in, *outlen);
+    memcpy(out, in, *outlen);
     sleep(1); /* para probar los timeouts */
     return GME_OK;
   }

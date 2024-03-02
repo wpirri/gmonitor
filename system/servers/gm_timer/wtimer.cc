@@ -53,7 +53,7 @@ int CWTimer::Ok(unsigned int id)
   {
     if(m_vTimer[i].id == id) break;
   }
-  if(i == m_vTimer.size()) return -1; /* no se encontró */
+  if(i == m_vTimer.size()) return -1; /* no se encontrï¿½ */
   if(m_vTimer[i].restart > 0)
   {
     /* reprogramo el timer */
@@ -70,8 +70,8 @@ int CWTimer::Ok(unsigned int id)
 
 /* Borra un timer por Id, verifica identidad del cliente */
 int CWTimer::DelId(unsigned int id,
-      const char* user, const char* client,
-      const char* key, const char* group)
+      const char* /*user*/, const char* /*client*/,
+      const char* /*key*/, const char* /*group*/)
 {
   unsigned int i;
 
@@ -80,7 +80,7 @@ int CWTimer::DelId(unsigned int id,
   {
     if(m_vTimer[i].id == id) break;
   }
-  if(i == m_vTimer.size()) return -1; /* no se encontró */
+  if(i == m_vTimer.size()) return -1; /* no se encontrï¿½ */
   /* tengo que hacer el control de identidad */
 
 
@@ -90,7 +90,7 @@ int CWTimer::DelId(unsigned int id,
   return 0;
 }
 
-/* Borra un o varios timer por transacción */
+/* Borra un o varios timer por transacciï¿½n */
 int CWTimer::DelTrans(unsigned int trans)
 {
   unsigned int i;
@@ -100,7 +100,7 @@ int CWTimer::DelTrans(unsigned int trans)
   {
     if(m_vTimer[i].trans == trans) break;
   }
-  if(i == m_vTimer.size()) return -1; /* no se encontró */
+  if(i == m_vTimer.size()) return -1; /* no se encontrï¿½ */
   /* limpio el timer */
   if(m_vTimer[i].buffer) delete m_vTimer[i].buffer;
   m_vTimer.erase(m_vTimer.begin() + i);
@@ -156,7 +156,7 @@ unsigned int CWTimer::Set(unsigned int seconds, const char* servicio, char tipo,
   ST_WTIMER wt;
 
   /* tomo la hora actual para usar como referencia esto puede traer problemas
-     de retrasos por la diferencia de tiempo entre la petición del servicio
+     de retrasos por la diferencia de tiempo entre la peticiï¿½n del servicio
      y el momento en que se procesa en mensaje de la cola.
      Si se trae desde el cliente una referencia de tiempo se va a cargar con la
            diferencia entre los relojes
@@ -198,7 +198,7 @@ int CWTimer::Check()
   int i;
   time_t t;
 
-  /* si el vector está vacío salgo directamente */
+  /* si el vector estï¿½ vacï¿½o salgo directamente */
   if(m_vTimer.empty()) return 0;
   /* tomo la hora actual para usar como referencia */
   t = time(&t);
@@ -208,13 +208,13 @@ int CWTimer::Check()
     /* detecto el vencido */
     if(m_vTimer[i].end_t <= t) break;
   }
-  /* devuelvo el indice si encontré, sino devuelvo -1 */
+  /* devuelvo el indice si encontrï¿½, sino devuelvo -1 */
   return (i >= (int)m_vTimer.size())?0:m_vTimer[i].id;
 }
 
 int CWTimer::Get(unsigned int id, char* servicio, char* tipo,
-         unsigned int trans, const char* user,
-         const char* client, const char* key, const char* group,
+         unsigned int /*trans*/, const char* /*user*/,
+         const char* /*client*/, const char* /*key*/, const char* /*group*/,
          void** msg, unsigned long* msg_len)
 {
   unsigned int i;
@@ -224,7 +224,7 @@ int CWTimer::Get(unsigned int id, char* servicio, char* tipo,
   {
     if(m_vTimer[i].id == id) break;
   }
-  if(i == m_vTimer.size()) return -1; /* no se encontró */
+  if(i == m_vTimer.size()) return -1; /* no se encontrï¿½ */
   /* paso los datos */
   if(servicio) sprintf(servicio, "%-.32s", m_vTimer[i].servicio);
   if(tipo) *tipo = m_vTimer[i].tipo;
@@ -309,7 +309,7 @@ unsigned int CWTimer::GetNewId()
       {
         if( m_vTimer[j].id == new_id ) break;
       }
-      /* si no encontró id en vector */
+      /* si no encontrï¿½ id en vector */
       if(j == (int)m_vTimer.size())
       {
         m_last_id = new_id;

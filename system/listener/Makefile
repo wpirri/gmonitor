@@ -4,7 +4,7 @@ include ../configure.mk
 
 CC=g++
 INCLUDE=-I./ -I../shared
-DEFINE=-D __NO__DEBUG__ -DBIN_MONITOR=$(BIN_MONITOR) -DGM_COMM_MSG_LEN=$(GM_COMM_MSG_LEN) 
+DEFINE=$(GENERAL_DEFINES)
 CFLAGS=
 CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../shared

@@ -220,15 +220,14 @@ int CGMServer::PosMain()
 }
 
 /* Colocar en esta funcion el proceso que intepreta el mensaje recibido */
-int CGMServer::Main(const char *funcion, char typ,
+int CGMServer::Main(const char *funcion, char /*typ*/,
       void* in, unsigned long inlen,
-      void** out, unsigned long *outlen)
+      void* out, unsigned long *outlen, unsigned long max_outlen)
 {
   ST_SQUEUE *st;
-  CGMSafFile::saf_info *pinfo;
+  CGMSafFile::saf_info s_info;
   int saf_id;
   int i, vlen;
-  int max_len;
   CGMBuffer buff;
   vector <CGMSafFile::saf_info> vslist;
   int rc;
@@ -236,11 +235,10 @@ int CGMServer::Main(const char *funcion, char typ,
   pLog->Add(100, "CGMServer::Main(%s, 0x%08X, %lu)", funcion, in, inlen);
 
   *outlen = 0;
-  *out = NULL;
   st = (ST_SQUEUE*)in;
   if( !strcmp(funcion, ".enqueue")) /* GM_MSG_TYPE_NOT */
   {
-    if((rc = pSaf->Add(st->saf_name, &st->data[0], st->len, m_ClientData.m_trans)) == GME_OK)
+    if((rc = pSaf->Add(st->head.saf_name, &st->data[0], st->head.len, m_ClientData.m_trans)) == GME_OK)
     {
       return GME_OK;
     }
@@ -251,24 +249,13 @@ int CGMServer::Main(const char *funcion, char typ,
   }
   else if( !strcmp(funcion, ".dequeue")) /* GM_MSG_TYPE_CR */
   {
-    /* hay que alocar espacio para el retorno m�ximo */
-    if(st->len)
-    {
-      max_len = st->len;
-    }
-    else
-    {
-      max_len = 4096;
-    }
-    *out = calloc(sizeof(char), max_len);
-    saf_id = pSaf->Get(st->saf_name, *out, max_len,
-                       outlen, m_ClientData.m_trans);
+    saf_id = pSaf->Get(st->head.saf_name, out, max_outlen, outlen, m_ClientData.m_trans);
     if(saf_id > 0)
     {
       /* si no hay una transa de por medio ya le mando el commit */
       if(!m_ClientData.m_trans)
       {
-        pSaf->CommitGet(st->saf_name, saf_id);
+        pSaf->CommitGet(st->head.saf_name, saf_id);
       }
       else
       {
@@ -279,8 +266,8 @@ int CGMServer::Main(const char *funcion, char typ,
           if( vtrans[i].trans == m_ClientData.m_trans)
           {
             /* con esto me aseguro que el string no se va a pasar de largo */
-            st->len = 0;
-            vtrans[i].vsaf.push_back(string(st->saf_name));
+            st->head.len = 0;
+            vtrans[i].vsaf.push_back(string(st->head.saf_name));
             break;
           }
         }
@@ -299,48 +286,48 @@ int CGMServer::Main(const char *funcion, char typ,
   }
   else if(!strcmp(funcion, ".create-queue"))
   {
-    if((rc = pSaf->Create((const char*)in)) == GME_OK)
+    if((rc = pSaf->Create(st->head.saf_name)) == GME_OK)
     {
-      pLog->Add(10, "CREANDO SAF %s OK", (char*)in);
+      pLog->Add(10, "CREANDO SAF %s OK", st->head.saf_name);
       return GME_OK;
     }
     else
     {
-      pLog->Add(10, "ERROR %i AL CREAR SAF %s", rc, (char*)in);
+      pLog->Add(10, "ERROR %i AL CREAR SAF %s", rc, st->head.saf_name);
       return rc;
     }
   }
   else if(!strcmp(funcion, ".drop-queue"))
   {
-    if((rc = pSaf->Drop((const char*)in)) == GME_OK)
+    if((rc = pSaf->Drop(st->head.saf_name)) == GME_OK)
     {
-      pLog->Add(10, "ELIMINANDO SAF %s OK", (char*)in);
+      pLog->Add(10, "ELIMINANDO SAF %s OK", st->head.saf_name);
       return GME_OK;
     }
     else
     {
-      pLog->Add(10, "ERROR %i AL ELIMINAR SAF %s", rc, (char*)in);
+      pLog->Add(10, "ERROR %i AL ELIMINAR SAF %s", rc, st->head.saf_name);
       return rc;
     }
   }
   else if(!strcmp(funcion, ".info-queue"))
   {
-    pinfo = (CGMSafFile::saf_info*)calloc(sizeof(char), sizeof(CGMSafFile::saf_info));
-    if((rc = pSaf->Info((const char*)in, pinfo)) == GME_OK)
+    //pinfo = (CGMSafFile::saf_info*)calloc(sizeof(char), sizeof(CGMSafFile::saf_info));
+    if((rc = pSaf->Info(st->head.saf_name, &s_info)) == GME_OK)
     {
-      pLog->Add(10, "INFORMACION DE SAF %s OK", (char*)in);
-      pLog->Add(10, "  pinfo.filename:     %s", pinfo->filename);
-      pLog->Add(10, "  pinfo.name:         %s", pinfo->name);
-      pLog->Add(10, "  pinfo.record_count: %lu", pinfo->record_count);
-      pLog->Add(10, "  pinfo.data_count:   %lu", pinfo->data_count);
+      pLog->Add(10, "INFORMACION DE SAF %s OK", st->head.saf_name);
+      pLog->Add(10, "  s_info.filename:     %s", s_info.filename);
+      pLog->Add(10, "  s_info.name:         %s", s_info.name);
+      pLog->Add(10, "  s_info.record_count: %lu", s_info.record_count);
+      pLog->Add(10, "  s_info.data_count:   %lu", s_info.data_count);
 
-      *out = pinfo;
       *outlen = sizeof(CGMSafFile::saf_info);
+      memcpy(out, &s_info, *outlen);
       return GME_OK;
     }
     else
     {
-      pLog->Add(10, "ERROR %i DE INFORMACION DE SAF %s", rc, (char*)in);
+      pLog->Add(10, "ERROR %i DE INFORMACION DE SAF %s", rc, st->head.saf_name);
       return rc;
     }
   }
@@ -363,8 +350,7 @@ int CGMServer::Main(const char *funcion, char typ,
       }
       buff.Add("</queues>\n");
       *outlen = buff.Length();
-      *out = calloc(sizeof(char), *outlen);
-      memcpy(*out, buff.C_Str(), *outlen);
+      memcpy(out, buff.C_Str(), *outlen);
     }
     return GME_OK;
   }

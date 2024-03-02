@@ -120,11 +120,6 @@ void CGLog::AddBin(unsigned int level, const char *id, const void *buffer, unsig
         }
 }
 
-void CGLog::Clean(unsigned int days)
-{
-
-}
-
 unsigned int CGLog::LogLevel()
 {
 	return m_log_level;

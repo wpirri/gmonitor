@@ -197,6 +197,7 @@ int main(int argc, char** argv)
       exit(1);
     }
     memset(param_list, 0, sizeof(param_list));
+    /*
     if(pServer->m_pConfig->SrvParams(server_name, param_list) != GME_OK)
     {
       pLog->Add(1, "Error al traer parametros del server");
@@ -206,6 +207,7 @@ int main(int argc, char** argv)
       delete pLog;
       exit(1);
     }
+    */
     if((rc = pServer->Run(server_params.path.c_str(), param_list)) != GME_OK)
     {
       pLog->Add(1, "Error %i al ejecutar CGMServer::Run", rc);
@@ -293,13 +295,14 @@ void ServerLoop()
 {
   int rc;
   long from;
-  char* msg;
   unsigned long msglen;
   char* param_list[256];
   CGMBuffer MBuffer;
   CGMessage inMessage;
   CGMessage outMessage;
   CGMTdb::CFcnTab funcion_param;
+  char MessageBuffer[GM_COMM_MSG_LEN];
+
 
   while((from = pMsg->Receive(&MBuffer, -1)) >= 0) // espera infinita  hasta recibir algo
   {
@@ -333,14 +336,15 @@ void ServerLoop()
         }
         /* en el ultimo parametro va funcion_param */
         memset(param_list, 0, sizeof(param_list));
+        /*
         if((rc = pServer->m_pConfig->FcnParams(server_params.path, param_list)) != GME_OK)
         {
           pLog->Add(1, "Error al traer parametros del server");
-          /* TODO: genero un mensaje de error para devolver */
 
 
           break;
         }
+        */
         pLog->Add(100, "Ejecutando: [%s][%s][%s][%s]",
             server_params.path.c_str(),
             (param_list[0])?param_list[0]:"",
@@ -360,7 +364,6 @@ void ServerLoop()
 
     /* En todos los modos se ejecuta de aca en adelante */
     msglen = 0;
-    msg = NULL;
     while(rc == 0) /* el loop es solo para el salto y de paso controlo que no haya erroresd e antes */
     {
       /* lleno la estructura con los datos del cliente */
@@ -438,7 +441,7 @@ void ServerLoop()
         }
         if((rc = pServer->Main(inMessage.Funcion(), inMessage.TipoMensaje(),
             (void*)inMessage.GetData(),inMessage.GetDataLen(),
-            (void**)&msg, &msglen)) != GME_OK)
+            (void*)MessageBuffer, &msglen, GM_COMM_MSG_LEN)) != GME_OK)
         {
           pLog->Add(50, "Error %i al ejecutar CGMServer::Main", rc);
           /* genero un mensaje de error para devolver */
@@ -464,7 +467,7 @@ void ServerLoop()
     {
       if(rc == GME_OK)
       {
-        outMessage.SetData(msg, msglen);
+        outMessage.SetData(MessageBuffer, msglen);
         outMessage.CodigoRetorno(rc);
       }
       else
@@ -473,7 +476,6 @@ void ServerLoop()
       }
       outMessage.OrigenRespuesta(GM_ORIG_SVR);
       outMessage.IdDestino(getpid());
-      if(msg) free(msg); /* esta linea libera la memoria que se haya asignado dentro de Main */
       MBuffer.Set(outMessage.GetMsg(), outMessage.GetMsgLen());
       if(pMsg->Send(from, &MBuffer) != 0)
       {

@@ -159,9 +159,9 @@ int CGMTdb::Server(CSrvTab& s)
 
 
 /* devuelve la lista de parametros para el server */
+/*
 int CGMTdb::SrvParams(string srv, char** param_list)
 {
-/*
   param_list[j] = (char*)malloc( m_vServerParametro[i].parametro.length() + 1 );
   strcpy(param_list[j++], m_vServerParametro[i].parametro.c_str());
   if(m_vServerParametro[i].valor.length())
@@ -169,20 +169,22 @@ int CGMTdb::SrvParams(string srv, char** param_list)
     param_list[j] = (char*)malloc( m_vServerParametro[i].valor.length() + 1 );
     strcpy(param_list[j++], m_vServerParametro[i].valor.c_str());
   }
-*/
   return 0;
 }
+*/
 
 /* devuelve la lista de parametros para el server */
+/*
 int CGMTdb::SrvParams(const char* srv, char** param_list)
 {
   return SrvParams(string(srv), param_list);
 }
+*/
 
 /* devuelve la lista de parametros del servicio */
+/*
 int CGMTdb::FcnParams(string fcn, char** param_list)
 {
-/*
   param_list[j] = (char*)malloc( m_vFuncionParametro[i].parametro.length() + 1 );
   strcpy(param_list[j++], m_vFuncionParametro[i].parametro.c_str());
   if(m_vFuncionParametro[i].valor.length())
@@ -190,14 +192,15 @@ int CGMTdb::FcnParams(string fcn, char** param_list)
     param_list[j] = (char*)malloc( m_vFuncionParametro[i].valor.length() + 1 );
     strcpy(param_list[j++], m_vFuncionParametro[i].valor.c_str());
   }
-*/
   return 0;
 }
-
+*/
+/*
 int CGMTdb::FcnParams(const char* fcn, char** param_list)
 {
   return FcnParams(string(fcn), param_list);
 }
+*/
 
 vector <int> CGMTdb::Cola(string& servicio, char tipo_mensaje)
 {
@@ -495,6 +498,8 @@ int CGMTdb::LoadSrvPar()
         m_pLog->Add(50, "Parametro: %s", t.parametro.c_str());
         m_pLog->Add(50, "Valor:     %s", t.valor.c_str());
       }
+      m_pLog->Add(1, "INFO **** Falta cargar parametros de servers en memoria****");
+      /*
       if(Add(t) != 0 && m_pLog)
       {
         m_pLog->Add(1, "ERROR al cargar parametros de servers en memoria");
@@ -502,6 +507,7 @@ int CGMTdb::LoadSrvPar()
         m_pLog->Add(1, "ERROR Parametro: %s", t.parametro.c_str());
         m_pLog->Add(1, "ERROR Valor:     %s", t.valor.c_str());
       }
+      */
       if(m_pLog)
       {
         m_pLog->Add(50, "------------------------------------------------------------");
@@ -602,6 +608,8 @@ int CGMTdb::LoadFcnPar()
         m_pLog->Add(50, "Parametro: %s", t.parametro.c_str());
         m_pLog->Add(50, "Valor:     %s", t.valor.c_str());
       }
+      m_pLog->Add(1, "INFO **** Falta cargar parametros de servicios en memoria****");
+      /*
       if(Add(t) != 0 && m_pLog)
       {
         m_pLog->Add(1, "ERROR al cargar parametros de servicios en memoria");
@@ -609,6 +617,7 @@ int CGMTdb::LoadFcnPar()
         m_pLog->Add(1, "ERROR Parametro: %s", t.parametro.c_str());
         m_pLog->Add(1, "ERROR Valor:     %s", t.valor.c_str());
       }
+      */
       if(m_pLog)
       {
         m_pLog->Add(50, "------------------------------------------------------------");
@@ -768,6 +777,7 @@ int CGMTdb::Add(CSrvTab t)
 }
 
 /* Carga en memoria los datos a medida que los levanta del archivo de configuraci�n */
+/*
 int CGMTdb::Add(CSrvParTab t)
 {
   if(m_pLog)
@@ -776,6 +786,7 @@ int CGMTdb::Add(CSrvParTab t)
   }
   return -1;
 }
+*/
 
 /* Carga de l tabla de servicios */
 /* Carga en memoria los datos a medida que los levanta del archivo de configuraci�n */
@@ -856,6 +867,7 @@ int CGMTdb::Add(CFcnTab t)
 }
 
 /* Carga en memoria los datos a medida que los levanta del archivo de configuraci�n */
+/*
 int CGMTdb::Add(CFcnParTab t)
 {
   if(m_pLog)
@@ -864,6 +876,7 @@ int CGMTdb::Add(CFcnParTab t)
   }
   return -1;
 }
+*/
 
 /* Borra una relacion server - servicio */
 int CGMTdb::Remove(CFcnTab t)
@@ -975,17 +988,19 @@ void CGMTdb::Dump()
   m_pLog->Add(1, "---------------------------------------------------------");
 }
 
+/*
 int CGMTdb::DumpSrv(ostream& std, ostream& err)
 {
-  /* ... alguien lo va a hace en alg�n momento */
   return -1;
 }
+*/
 
+/*
 int CGMTdb::DumpSvc(ostream& std, ostream& err)
 {
-  /* ... alguien lo va a hace en alg�n momento */
   return -1;
 }
+*/
 
 int CGMTdb::DumpSrv(FILE* std, FILE* err)
 {
@@ -1118,8 +1133,8 @@ vector <CGMTdb::CFcnTab> CGMTdb::ServicioList(string& server)
   return ServicioList(server.c_str());
 }
 
-/* FALTA: que le d� bola al par�metro server */
-vector <CGMTdb::CFcnTab> CGMTdb::ServicioList(const char* server)
+/* TODO: que le de bola al parametro server */
+vector <CGMTdb::CFcnTab> CGMTdb::ServicioList(const char* /*server*/)
 {
   int i;
   SH_FUNCION funcion;

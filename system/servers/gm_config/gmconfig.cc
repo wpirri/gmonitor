@@ -53,8 +53,8 @@ CGMConfig::~CGMConfig()
 
 int CGMConfig::Process( const char *funcion, char typ,
             void* in, unsigned long inlen,
-            void** out, unsigned long *outlen,
-            CGMServerBase::CLIENT_DATA* pClientData)
+            void* out, unsigned long *outlen,
+            CGMServerBase::CLIENT_DATA* /*pClientData*/)
 {
   vector <CGMTdb::CSrvTab> v_svr;
   vector <CGMTdb::CFcnTab> v_svc;
@@ -65,11 +65,10 @@ int CGMConfig::Process( const char *funcion, char typ,
   int rc = 0;
   int idx = 0; /* secuencia para el nombre */
   const char* p_saf_name;
-  ST_SQUEUE *p_st_queue;
+  ST_SQUEUE p_st_queue;
   char svc_typ;
 
   *outlen = 0;
-  *out = NULL;
   if( !strcmp(funcion, ".suscribe"))
   {
     /* el tipo de servicio es el primer caracter */
@@ -105,8 +104,7 @@ int CGMConfig::Process( const char *funcion, char typ,
       /* le devuelvo el nombre de SAF para que consulte directamente a su cola */
       *outlen = strlen(saf_name);
       /* los buffers de salida siempre tienen que alocarse porque despu�s del anv�o se llama a un free() automaticamente */
-      *out = calloc(*outlen, sizeof(char));
-      memcpy(*out, saf_name, *outlen);
+      memcpy(out, saf_name, *outlen);
       /* FALTA: poner un timer para eliminar este servicio por inactividad */
 
 
@@ -162,8 +160,7 @@ int CGMConfig::Process( const char *funcion, char typ,
     b += "--------------------------------------------------------------------------------\n";
     b += "\n";
     *outlen = b.Length();
-    *out = (char*)malloc(*outlen);
-    memcpy(*out, b.C_Str(), *outlen);
+    memcpy(out, b.C_Str(), *outlen);
     m_pLog->Add(100, "  %i servers, tamano mensaje %lu bytes", i, *outlen);
     return GME_OK;
   }
@@ -181,8 +178,7 @@ int CGMConfig::Process( const char *funcion, char typ,
     b += "--------------------------------------------------------------------------------\n";
     b += "\n";
     *outlen = b.Length();
-    *out = (char*)malloc(*outlen);
-    memcpy(*out, b.C_Str(), *outlen);
+    memcpy(out, b.C_Str(), *outlen);
     m_pLog->Add(100, "  %i servicios, tamano mensaje %lu bytes", i, *outlen);
     return GME_OK;
   }
@@ -191,12 +187,12 @@ int CGMConfig::Process( const char *funcion, char typ,
   {
     if(inlen > 0)
     {
-      p_st_queue = (ST_SQUEUE*)calloc(sizeof(ST_SQUEUE) + inlen, sizeof(char));
-      strcpy(p_st_queue->saf_name, p_saf_name);
-      p_st_queue->len = inlen;
-      memcpy(&p_st_queue->data[0], in, inlen);
-      rc = m_pServer->Notify(".enqueue", p_st_queue, sizeof(ST_SQUEUE) + inlen);
-      free(p_st_queue);
+      //p_st_queue = (ST_SQUEUE*)calloc(sizeof(ST_SQUEUE) + inlen, sizeof(char));
+      strcpy(p_st_queue.head.saf_name, p_saf_name);
+      p_st_queue.head.len = inlen;
+      memcpy(&p_st_queue.data[0], in, inlen);
+      rc = m_pServer->Notify(".enqueue", &p_st_queue, sizeof(ST_SQUEUE::head) + inlen);
+      //free(p_st_queue);
     }
     return rc;
   }

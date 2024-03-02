@@ -47,7 +47,10 @@ CMsg::CMsg()
 
 CMsg::CMsg(int fd)
 {
-
+	m_fd = fd;
+	m_error = 0;
+	m_key = -1;
+	m_priority = MSG_DEFAULT_PRIORITY;
 }
 
 CMsg::~CMsg()
@@ -117,7 +120,7 @@ int CMsg::Close()
 */
 int CMsg::Send(int key, CGMBuffer* msg)
 {
-	char *data;
+	char data[GM_COMM_MSG_LEN];
 	int fd;
 
 	/* verifico que se haya hecho el Open */
@@ -127,7 +130,7 @@ int CMsg::Send(int key, CGMBuffer* msg)
 		m_error = errno;
 		return -1;
 	}
-	data = (char*)malloc(sizeof(long) + msg->Length());
+	//data = (char*)malloc(sizeof(long) + msg->Length());
 	memcpy(data, &m_priority, sizeof(long));
 	/* vuelvo a cargar el default */
 	m_priority = MSG_DEFAULT_PRIORITY;
@@ -142,12 +145,39 @@ int CMsg::Send(int key, CGMBuffer* msg)
 	return 0;
 }
 
+int CMsg::Send(int key, const char* msg, long len)
+{
+	char data[GM_COMM_MSG_LEN];
+	int fd;
+
+	/* verifico que se haya hecho el Open */
+	if(m_fd == -1) return -1;
+	if((fd = msgget(key, 0)) == -1)
+	{
+		m_error = errno;
+		return -1;
+	}
+	//data = (char*)malloc(sizeof(long) + msg->Length());
+	memcpy(&data[0], &m_priority, sizeof(long));
+	/* vuelvo a cargar el default */
+	m_priority = MSG_DEFAULT_PRIORITY;
+	memcpy((char*)((&data[0])+sizeof(long)), msg, len);
+	if(msgsnd(fd, (char*)&data[0], sizeof(long) + len, 0) != 0)
+	{
+		m_error = errno;
+		close(fd);
+		return -1;
+	}
+	close(fd);
+	return 0;
+}
+
 /*
 	Recibe un Query, to en cent de seg., -1 infinito
 */
 long CMsg::Receive(CGMBuffer* msg, long to_cs)
 {
-	char *data;
+	char data[GM_COMM_MSG_LEN];
 	long rc, len;
 	long from;
 
@@ -156,16 +186,16 @@ long CMsg::Receive(CGMBuffer* msg, long to_cs)
 	rc = Wait(to_cs);
 	if(rc < 0) return -1; /* error */
 	if(rc == 0) return 0; /* time-out */
-	data = (char*)malloc(rc + sizeof(long));
+	//data = (char*)malloc(rc + sizeof(long));
 	if((len = msgrcv(m_fd, data, rc + sizeof(long), -10, 0)) < 0)
 	{
 		m_error = errno;
-		free(data);
+		//free(data);
 		return -1;
 	}
 	/* copy en la variable from el segundo long que viene en el mensaje
 	que corresponde al ID de la cola donde se espera la respuesta */
-	/* el primer long es el canal del mensaje, va de 1 a 10 según como se haya enviado
+	/* el primer long es el canal del mensaje, va de 1 a 10 segï¿½n como se haya enviado
 	   mas adelante se va a usar para definr priorida de mensajes */
 	/*memcpy(, data, sizeof(long));*/
 	/* el segundo es el ID de la cola para responder */
@@ -173,14 +203,52 @@ long CMsg::Receive(CGMBuffer* msg, long to_cs)
 	/* el mensaje real viene 2 long despu del comienzo del buffer */
 	*msg = "";
 	msg->Add((char*)(data + (2*sizeof(long))), len - (2*sizeof(long)));
-        free(data);
+    //free(data);
 	return from;
+}
+
+long CMsg::Receive(char* msg, long max_len, long to_cs)
+{
+	char data[GM_COMM_MSG_LEN];
+	long rc, len;
+	long from;
+
+	/* verifivc que se haya hecho el Open */
+	if(m_fd == -1) return (-1);
+	rc = Wait(to_cs);
+	if(rc < 0) return (-1); /* error */
+	if(rc == 0) return 0; /* time-out */
+	//data = (char*)malloc(rc + sizeof(long));
+	if((len = msgrcv(m_fd, (char*)&data[0], rc + sizeof(long), -10, 0)) < 0)
+	{
+		m_error = errno;
+		//free(data);
+		return (-1);
+	}
+	/* copy en la variable from el segundo long que viene en el mensaje
+	que corresponde al ID de la cola donde se espera la respuesta */
+	/* el primer long es el canal del mensaje, va de 1 a 10 segï¿½n como se haya enviado
+	   mas adelante se va a usar para definr priorida de mensajes */
+	/*memcpy(, data, sizeof(long));*/
+	if(len <= max_len)
+	{
+		/* el segundo es el ID de la cola para responder */
+		memcpy(&from, (char*)((&data[0])+sizeof(long)), sizeof(long));
+		/* el mensaje real viene 2 long despu del comienzo del buffer */
+		memcpy(msg, (char*)((&data[0])+(2*sizeof(long))), len - (2*sizeof(long)));
+		//free(data);
+		return from;
+	}
+	else
+	{
+		return (-1);
+	}
 }
 
 int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 {
 	int fd;
-	char *data;
+	char data[GM_COMM_MSG_LEN];
 	long rc, len;
 	bool close_on_exit = false;
 
@@ -201,25 +269,25 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 		return -1;
 	}
 	/* aloco memoria para el numero de canal, el ID de la cola de retorno y los datos */
-	data = (char*)malloc((2*sizeof(long)) + qmsg->Length());
+	//data = (char*)malloc((2*sizeof(long)) + qmsg->Length());
 	/* en el primer long es el canal */
 	memcpy(data, &m_priority, sizeof(long));
 	/* vuelvo a cargar el default */
 	m_priority = MSG_DEFAULT_PRIORITY;
-	/* después el ID de la cola para la respuesta */
+	/* despuï¿½s el ID de la cola para la respuesta */
 	memcpy((char*)(data+sizeof(long)), &m_key, sizeof(long));
-	/* después los datos */
+	/* despuï¿½s los datos */
 	memcpy((char*)(data+(2*sizeof(long))), qmsg->Data(), qmsg->Length());
 	/* envio */
 	if(msgsnd(fd, data, (2*sizeof(long)) + qmsg->Length(), 0) == -1)
 	{
 		m_error = errno;
-		free(data);
+		//free(data);
 		close(fd);
 		if(close_on_exit) Close();
 		return -1;
 	}
-	free(data);
+	//free(data);
 	close(fd);
 	/* recepcion */
 	rc = Wait(to_cs);
@@ -234,18 +302,95 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 		return 0; /* time-out */
 	}
 	/* aloco memoria suficiente para lo que haya en la cola */
-	data = (char*)malloc(rc + sizeof(long));
+	//data = (char*)malloc(rc + sizeof(long));
 	/* me lo traigo */
 	if((len = msgrcv(m_fd, data, rc + sizeof(long), -10, 0)) < 0)
 	{
 		m_error = errno;
-		free(data);
+		//free(data);
 		if(close_on_exit) Close();
 		return -1;
 	}
 	*rmsg = "";
 	rmsg->Add((char*)(data + sizeof(long)), len - sizeof(long));
-	free(data);
+	//free(data);
+	if(close_on_exit) Close();
+	return (len - sizeof(long));
+}
+
+long CMsg::Query(int key, const char* qmsg, long qlen, char* rmsg, long rmax_len, long to_cs)
+{
+	int fd;
+	char data[GM_COMM_MSG_LEN];
+	long rc, len;
+	bool close_on_exit = false;
+
+	if( key <= 0 || !qmsg || !rmsg ) return -1; /* deben existir */
+	/* verifico que se haya hecho el Open */
+	if(m_fd == -1)
+	{
+		if(Open(NULL) != 0)
+		{
+			return -1;
+		}
+		close_on_exit = true;
+	}
+	/* tomo un fd a la cola */
+	if((fd = msgget(key, 0)) == -1)
+	{
+		m_error = errno;
+		return -1;
+	}
+	/* en el primer long es el canal */
+	memcpy(&data[0], &m_priority, sizeof(long));
+	/* vuelvo a cargar el default */
+	m_priority = MSG_DEFAULT_PRIORITY;
+	/* despues el ID de la cola para la respuesta */
+	memcpy((char*)((&data[0])+sizeof(long)), &m_key, sizeof(long));
+	/* despues los datos */
+	memcpy((char*)((&data[0])+(2*sizeof(long))), qmsg, qlen);
+	/* envio */
+	if(msgsnd(fd, &data[0], (2*sizeof(long)) + qlen, 0) == -1)
+	{
+		m_error = errno;
+		//free(data);
+		close(fd);
+		if(close_on_exit) Close();
+		return -1;
+	}
+	//free(data);
+	close(fd);
+	/* recepcion */
+	rc = Wait(to_cs);
+	if(rc < 0)
+	{
+		if(close_on_exit) Close();
+		return -1; /* error */
+	}
+	if(rc == 0)
+	{
+		if(close_on_exit) Close();
+		return 0; /* time-out */
+	}
+	/* aloco memoria suficiente para lo que haya en la cola */
+	//data = (char*)malloc(rc + sizeof(long));
+	/* me lo traigo */
+	if((len = msgrcv(m_fd, (char*)&data[0], rc + sizeof(long), -10, 0)) < 0)
+	{
+		m_error = errno;
+		//free(data);
+		if(close_on_exit) Close();
+		return -1;
+	}
+	if(len <= rmax_len)
+	{
+		memcpy(rmsg, (char*)((&data[0])+sizeof(long)), len-sizeof(long));
+	}
+	else
+	{
+		len = 0;
+	}
+	//free(data);
 	if(close_on_exit) Close();
 	return (len - sizeof(long));
 }
@@ -342,7 +487,7 @@ int CMsg::Wait(long to_cs)
 	}
 	else if( to_cs >= 0)
 	{
-		/* tiempos de espera menores a 10 seg cn presiciòn de sentesimas */
+		/* tiempos de espera menores a 10 seg cn presiciï¿½n de sentesimas */
 		for(tto = to_cs ; tto ; tto--)
 		{
 			// pego una mirada a la cola

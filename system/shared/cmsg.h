@@ -34,10 +34,13 @@ public:
 
 	/* para el server */
 	int Send(int key, CGMBuffer* msg);
+	int Send(int key, const char* msg, long len);
 	long Receive(CGMBuffer* msg, long to_cs = -1);
+	long Receive(char* msg, long max_len, long to_cs = -1);
 
 	/* para cliente (to en segundos)*/
 	int Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs);
+	long Query(int key, const char* qmsg, long qlen, char* rmsg, long max_len, long to_cs);
 
 	int GetKey();
 	int GetIndex();

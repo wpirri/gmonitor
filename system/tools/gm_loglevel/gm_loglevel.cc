@@ -21,7 +21,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
-void OnChildExit(int sig)
+void OnChildExit(int /*sig*/)
 {
 	int st;
 

@@ -62,18 +62,21 @@ CGMClient::~CGMClient()
 }
 
 /* liberacion del buffer recibido */
+/*
 int CGMClient::Free(GMIOS s)
 {
   return Free(&s);
 }
-
+*/
 /* liberacion del buffer recibido */
+/*
 int CGMClient::Free(GMIOS *ps)
 {
   if(ps->data && ps->len) free(ps->data);
   ps->len = 0;
   return GME_OK;
 }
+*/
 
 void CGMClient::Init(CGMInitData *init_data)
 {
@@ -164,7 +167,7 @@ int CGMClient::Notify(const char *event, const void *data, unsigned long len)
   rc = Send(data, len);
   if(!rc) rc = Recv(&gmio, 3000);
   Discon();
-  Free(gmio);
+  //Free(gmio);
   return rc;
 }
 
@@ -178,11 +181,13 @@ int CGMClient::Notify(string& event, CGMBuffer* data)
   return Notify(event.c_str(), data->C_Str(), data->Length());
 }
 
+/*
 int CGMClient::Broadcast(const char *user, const char *client,
              const char *group, const char *event, const void *data, unsigned long len)
 {
   return 0;
 }
+*/
 
 /* ver si vale la pena ponerle time-out al post */
 int CGMClient::Post(const char *event, const void *data, unsigned long len)
@@ -196,7 +201,7 @@ int CGMClient::Post(const char *event, const void *data, unsigned long len)
   rc = Send(data, len);
   if(!rc) rc = Recv(&gmio, 3000);
   Discon();
-  Free(gmio);
+  //Free(gmio);
   return rc;
 }
 int CGMClient::Post(string& event, CGMBuffer& data)
@@ -267,7 +272,7 @@ int CGMClient::UnSuscribe(string& event, char typ)
   return UnSuscribe(event.c_str(), typ);
 }
 
-int CGMClient::CheckService(long to_cs)
+int CGMClient::CheckService(long /*to_cs*/)
 {
   int i, vlen;
   GMIOS data;
@@ -279,7 +284,7 @@ int CGMClient::CheckService(long to_cs)
   /* para cada uno de los serviciode registrados... */
   for(i = 0; i < vlen; i++)
   {
-    /* si existe la función callback... */
+    /* si existe la funciï¿½n callback... */
     if(m_svc_rel[i].fcn)
     {
       /* me traigo todos los mensajes que tenga encolados... */
@@ -290,7 +295,7 @@ int CGMClient::CheckService(long to_cs)
                                  m_svc_rel[i].typ,
                                  data.data,
                                  data.len );
-        Free(data);
+        //Free(data);
         /* para que las funciones puedan decir "Basta, me estas matando" */
         if(rc == 0) break;
       }
@@ -332,20 +337,26 @@ int CGMClient::Call(string fn, CGMBuffer* query, CGMBuffer* response, long to_cs
   return rc;
 }
 
+/*
 int CGMClient::ACall(const char *fn, const void *query, unsigned long qlen)
 {
   return GME_OK;
 }
+*/
 
+/*
 int CGMClient::GetReply(GMIOS *presp, long to_cs)
 {
   return GME_OK;
 }
+*/
 
+/*
 int CGMClient::Cancel()
 {
   return GME_OK;
 }
+*/
 
 /* modo interactivo */
 int CGMClient::Connect(const char *fn, unsigned long transfer_len)
@@ -498,7 +509,7 @@ int CGMClient::Recv(GMIOS *presp, long to_cs)
   /* Asigno por default nulos a estos valores si tengo que devolverlos */
   if(presp)
   {
-    presp->data = NULL;
+    presp->data[0] = 0;
     presp->len = 0;
   }
   /* Limpio el buffer donde voy a recibir los datos */
@@ -558,7 +569,7 @@ int CGMClient::Recv(GMIOS *presp, long to_cs)
     {
       if(m_pidata->IsVerbose()) syslog(LOG_DEBUG, "copiando %lu bytes de datos del mensaje recibido", presp->len);
       /* lo paso al mensaje de salida */
-      presp->data = (char*)malloc(presp->len + sizeof(char));
+      //presp->data = (char*)malloc(presp->len + sizeof(char));
       memcpy(presp->data, m_pmsgr->GetData(), presp->len);
       /* En mensajes interactivos recalculo los datos para poder pedir mas */
       if(m_pmsgr->TipoMensaje() == GM_MSG_TYPE_R_INT)
@@ -578,13 +589,13 @@ int CGMClient::Recv(GMIOS *presp, long to_cs)
     }
     else
     {
-      presp->data = NULL;
+      presp->data[0] = 0;
     }
     return m_pmsgr->CodigoRetorno();
   }
   else if(m_pmsgr->CodigoRetorno() != 0)
   {
-    if(m_pidata->IsVerbose()) syslog(LOG_DEBUG, "el mensaje señala error en el codigo de retorno");
+    if(m_pidata->IsVerbose()) syslog(LOG_DEBUG, "el mensaje seï¿½ala error en el codigo de retorno");
     return m_pmsgr->CodigoRetorno();
   }
   else
@@ -607,7 +618,7 @@ int CGMClient::Recv(CGMBuffer* response, long to_cs)
   if(( rc = Recv(&gmio, to_cs) ) == GME_OK)
   {
     response->Add(gmio.data, gmio.len);
-    Free(gmio);
+    //Free(gmio);
   }
   return rc;
 }
@@ -626,16 +637,14 @@ int CGMClient::Discon()
 /* modo encolado */
 int CGMClient::Enqueue(const char* queue, const void *data, unsigned long len)
 {
-  ST_SQUEUE *st;
+  ST_SQUEUE st;
   int rc;
 
   if(m_pidata->IsVerbose()) syslog(LOG_DEBUG, "CGMClient::Enqueue(...)");
-  st = (ST_SQUEUE*)calloc(sizeof(char),sizeof(ST_SQUEUE) + len);
-  memcpy(st->saf_name, queue, strlen(queue));
-  st->len = len;
-  memcpy(&st->data[0], data, len);
-  rc = Notify(".enqueue", st, sizeof(ST_SQUEUE) + len);
-  free(st);
+  strcpy(st.head.saf_name, queue);
+  st.head.len = len;
+  memcpy(&st.data[0], data, len);
+  rc = Notify(".enqueue", &st, sizeof(ST_SQUEUE::head) + len);
   return rc;
 }
 
@@ -646,14 +655,8 @@ int CGMClient::Enqueue(string queue, const void *data, unsigned long len)
 
 int CGMClient::Dequeue(const char* queue, GMIOS *pdata)
 {
-  ST_SQUEUE st;
-
   if(m_pidata->IsVerbose()) syslog(LOG_DEBUG, "CGMClient::Dequeue(...)");
-  memset(&st, 0, sizeof(ST_SQUEUE));
-  memcpy(st.saf_name, queue, strlen(queue));
-  st.len = 0;
-
-  return Call(".dequeue", &st, sizeof(ST_SQUEUE), pdata, 3000);
+  return Call(".dequeue", queue, strlen(queue)+1, pdata, 3000);
 }
 
 int CGMClient::Dequeue(string queue, GMIOS *pdata)

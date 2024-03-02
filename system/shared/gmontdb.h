@@ -115,10 +115,12 @@ public:
 		Los parametros del server no se usan.
 		Los parametros de funcion no se usan.
 	*/
+	/*
 	int SrvParams(string srv, char** param_list);
 	int FcnParams(string fcn, char** param_list);
 	int SrvParams(const char* srv, char** param_list);
 	int FcnParams(const char* fcn, char** param_list);
+	*/
 	/* Obtiene las colas asociadas al servicio */
 	vector <int> Cola(string& servicio, char tipo_mensaje);
 	vector <int> Cola(const char* servicio, char tipo_mensaje);
@@ -132,9 +134,9 @@ public:
 	int RemoveSvc(const char* servicio, char tipo_mensaje, const char* server);
 	int RemoveSvc(string& servicio, char tipo_mensaje, string& server);
 	void Dump();
-	int DumpSrv(ostream& std, ostream& err);
+	/*int DumpSrv(ostream& std, ostream& err);*/
 	int DumpSrv(FILE* std, FILE* err);
-	int DumpSvc(ostream& std, ostream& err);
+	/*int DumpSvc(ostream& std, ostream& err);*/
 	int DumpSvc(FILE* std, FILE* err);
   int GetSysInfo(CSystemInfo *si);
   int SetSysInfo(CSystemInfo &si);
@@ -173,8 +175,8 @@ protected:
 	int SaveFcnPar();
 	int Add(CSrvTab	t);
 	int Add(CFcnTab t);
-	int Add(CSrvParTab t);
-	int Add(CFcnParTab t);
+	/*int Add(CSrvParTab t);*/
+	/*int Add(CFcnParTab t);*/
 	int Remove(CFcnTab t);
 
 	CGLog* m_pLog;

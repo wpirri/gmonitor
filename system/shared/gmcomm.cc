@@ -95,11 +95,11 @@ CGMBuffer* CGMComm::FDRead(unsigned int len, int to_s)
 	while(buff->Length() < len)
 	{
 		rc = read(m_fdin, ch, 1);
-		if(rc > 0)                         /* Si leyó algo */
+		if(rc > 0)                         /* Si leyï¿½ algo */
     {
       buff->Add(ch,1);
     }
-		else if((remain = alarm(0)) > 0)   /* si no leyó nada pero todavía queda tiempo */
+		else if((remain = alarm(0)) > 0)   /* si no leyï¿½ nada pero todavï¿½a queda tiempo */
     {
       alarm(remain);
     }
@@ -122,17 +122,17 @@ CGMBuffer* CGMComm::FDRead(unsigned int len, int to_s)
 
 CGMBuffer* CGMComm::SockRead(unsigned int len, int to_cs)
 {
-	char *ch;
+	char buffer[GM_COMM_MSG_LEN];
 	int rc;
 	CGMBuffer *buff = NULL;
 
-	ch = (char*)malloc(len);
-	rc = m_socket->Receive(ch, len, to_cs * 10);
+	//ch = (char*)malloc(len);
+	rc = m_socket->Receive(buffer, len, to_cs * 10);
 	if(rc > 0)
 	{
-		buff = new CGMBuffer(ch, rc);
+		buff = new CGMBuffer(buffer, rc);
 	}
-	free(ch);
+	//free(ch);
 	return buff;
 }
 
@@ -148,6 +148,10 @@ int CGMComm::FDWrite(const void* data, unsigned int datalen)
 			datalen - len)) >= 0)
 		{
 			len+=rc;
+		}
+		else
+		{
+			break;
 		}
 	}
 	return len;

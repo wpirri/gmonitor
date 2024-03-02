@@ -27,7 +27,7 @@ using namespace std;
 CClassApp::CClassApp(){ }
 CClassApp::~CClassApp(){ }
 
-int CClassApp::Main(int argc, char** argv, char** env)
+int CClassApp::Main(int argc, char** argv, char** /*env*/)
 {
 	int rc = 0;
 	int i;

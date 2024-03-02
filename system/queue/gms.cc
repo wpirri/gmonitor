@@ -31,17 +31,17 @@ int CGMServer::Init() { return 0; }
 int CGMServer::Exit() { return 0; }
 
 /* Estas rutinas son llamadas para el manejo de transaccion se debe colocar en ellas el c�digo necesario para cada uno de los procesos */
-int CGMServer::BeginTrans(unsigned int trans) { return 0; }
-int CGMServer::CommitTrans(unsigned int trans) { return 0; }
-int CGMServer::RollbackTrans(unsigned int trans) { return 0; }
+int CGMServer::BeginTrans(unsigned int /*trans*/) { return 0; }
+int CGMServer::CommitTrans(unsigned int /*trans*/) { return 0; }
+int CGMServer::RollbackTrans(unsigned int /*trans*/) { return 0; }
 
 /* estas rutinas se llaman antes y despu�s de la de procesamiento de mensaje */
 int CGMServer::PreMain() { return 0; }
 int CGMServer::PosMain() { return 0; }
 
 /* Colocar en esta funcion el proceso que intepreta el mensaje recibido */
-int CGMServer::Main(const char *funcion, char typ, void* in, unsigned long inlen, void** out, unsigned long *outlen)
+int CGMServer::Main(const char */*funcion*/, char /*typ*/, void* in, unsigned long inlen, void* out, unsigned long *outlen, unsigned long max_outlen)
 {
-  return CGMServerBase::Main(in, inlen, out, outlen);
+  return CGMServerBase::Main(in, inlen, out, outlen, max_outlen);
 }
 

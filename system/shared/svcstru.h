@@ -89,9 +89,12 @@ typedef union _ST_STIMER
 
 typedef struct _ST_SQUEUE
 {
-  char saf_name[32];
-  unsigned long len;
-  char data[1];
+  struct 
+  {
+    char saf_name[32];
+    unsigned long len;
+  } head;
+  char data[GM_COMM_MSG_LEN];
 } ST_SQUEUE;
 
 

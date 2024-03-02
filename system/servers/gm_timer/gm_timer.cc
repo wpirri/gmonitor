@@ -39,11 +39,11 @@ CGMServerWait *m_pServer;
 CGMTimer* m_pGMTimer;
 
 void OnClose(int sig);
-char *m_pInBuffer;
-char *m_pOutBuffer;
+char m_pInBuffer[GM_COMM_MSG_LEN];
+char m_pOutBuffer[GM_COMM_MSG_LEN];
 /*char *m_pOutBuffer;*/
 
-int main(int argc, char** argv, char** env)
+int main(int /*argc*/, char** /*argv*/, char** /*env*/)
 {
   int rc;
   char fn[33];
@@ -65,17 +65,13 @@ int main(int argc, char** argv, char** env)
   signal(SIGSEGV,         OnClose);
   signal(SIGBUS,          OnClose);
   */
-  m_pInBuffer = NULL;
-  /*m_pOutBuffer = NULL;*/
+
   m_pServer = new CGMServerWait;
   m_pServer->Init("gm_timer");
   m_pServer->SetTransMode(true);
   m_pServer->m_pLog->Add(1, "Iniciando server");
 
   m_pGMTimer = new CGMTimer(m_pServer, m_pServer->m_pLog);
-
-  m_pInBuffer = (char*)calloc(1024, sizeof(char));
-  /*m_pOutBuffer = (char*)calloc(1024, sizeof(char));*/
 
   if(( rc =  m_pServer->Suscribe(".set_timer", GM_MSG_TYPE_CR)) != GME_OK)
     m_pServer->m_pLog->Add(1, "ERROR al suscribir a .set_timer");
@@ -89,7 +85,7 @@ int main(int argc, char** argv, char** env)
     if(rc > 0)
     {
       m_pServer->m_pLog->Add(100, "RECIBIDO %s, 0x%X, %lu", fn, m_pInBuffer, inlen);
-      /* proceso el mensaje que llegó */
+      /* proceso el mensaje que llegï¿½ */
       rc = m_pGMTimer->Message(fn, m_pInBuffer, inlen,
                    (void**)&m_pOutBuffer, &outlen,
                   &m_pServer->m_ClientData);
@@ -108,10 +104,9 @@ int main(int argc, char** argv, char** env)
   return 0;
 }
 
-void OnClose(int sig)
+void OnClose(int /*sig*/)
 {
   m_pServer->m_pLog->Add(1, "Terminando server");
-  if(m_pInBuffer) free(m_pInBuffer);
   /*if(m_pOutBuffer) free(m_pOutBuffer);*/
   m_pServer->UnSuscribe(".kill_timer", GM_MSG_TYPE_NOT);
   m_pServer->UnSuscribe(".set_timer", GM_MSG_TYPE_CR);

@@ -250,7 +250,7 @@ void SocketError(int sig)
   syslog(LOG_ERR, "ERROR en socket, signal %i", sig);
 }
 
-void OnClose(int sig)
+void OnClose(int /*sig*/)
 {
   if(pListenSocket)
   {

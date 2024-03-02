@@ -4,7 +4,7 @@ include ../../configure.mk
 
 CC=g++
 INCLUDE=-I./ -I../../shared  -I../../queue
-DEFINE=-D __NO__DEBUG__ -DLOG_FILES=$(LOG_FILES) -DMAX_SERVERS=$(MAX_SERVERS) -DMAX_SERVICES=$(MAX_SERVICES) -DSAF_FILES=$(SAF_FILES)
+DEFINE=$(GENERAL_DEFINES)
 CFLAGS=
 CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../../shared -L../../queue 

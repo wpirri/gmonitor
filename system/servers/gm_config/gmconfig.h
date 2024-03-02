@@ -31,7 +31,7 @@ public:
 
   int Process(const char *funcion, char typ,
         void* in, unsigned long inlen,
-        void** out, unsigned long *outlen,
+        void* out, unsigned long *outlen,
         CGMServerBase::CLIENT_DATA* pClientData);
 
 protected:

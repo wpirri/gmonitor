@@ -70,9 +70,9 @@ int CGMServerBase::Notify(const char *event, const void *data, unsigned long len
 {
   CGMessage omsg;
   CGMessage imsg;
-  CGMBuffer ibuff;
-  CGMBuffer obuff;
   CMsg qmsg;
+  char resp_buffer[GM_COMM_MSG_LEN];
+  long resp_len;
 
   omsg.IdUsuario(m_IdUsuario.c_str());
   omsg.IdCliente(m_IdCliente.c_str());
@@ -91,10 +91,12 @@ int CGMServerBase::Notify(const char *event, const void *data, unsigned long len
   omsg.Funcion(event);
   omsg.SetData(data, len);
   /* Hago la consulta a la cola del router */
-  ibuff.Set(omsg.GetMsg(), omsg.GetMsgLen());
-  if(qmsg.Query(qmsg.GetRemoteKey(BIN_MONITOR), &ibuff, &obuff, 3000) > 0)
+  resp_len = qmsg.Query(qmsg.GetRemoteKey(BIN_MONITOR), 
+                        omsg.GetMsg(), omsg.GetMsgLen(), 
+                        &resp_buffer[0], GM_COMM_MSG_LEN, 3000);
+  if(resp_len > 0)
   {
-    imsg.SetMsg(&obuff);
+    imsg.SetMsg(&resp_buffer[0], resp_len);
   }
   else
   {
@@ -121,11 +123,13 @@ int CGMServerBase::Notify(string& event, CGMBuffer* data)
   }
 }
 
+/*
 int CGMServerBase::Broadcast(const char *user, const char *client,
                const char *group, const void *data, unsigned long len)
 {
   return 0;
 }
+*/
 
 int CGMServerBase::Post(const char *event, const void *data, unsigned long len)
 {
@@ -226,12 +230,12 @@ int CGMServerBase::Call(const char *fn, const void *query, unsigned long qlen, G
 
   /* Hago la consulta a la cola del router */
   ibuff.Set(omsg.GetMsg(), omsg.GetMsgLen());
-  if(qmsg.Query(qmsg.GetRemoteKey(BIN_MONITOR), &ibuff, &obuff, 3000) > 0)
+  if(qmsg.Query(qmsg.GetRemoteKey(BIN_MONITOR), &ibuff, &obuff, to) > 0)
   {
     imsg.SetMsg(&obuff);
     if(presp)
     {
-      presp->data = (char*)calloc(imsg.GetDataLen(), sizeof(char));
+      //presp->data = (char*)calloc(imsg.GetDataLen(), sizeof(char));
       memcpy(presp->data, imsg.GetData(), imsg.GetDataLen());
       presp->len = imsg.GetDataLen();
     }
@@ -270,24 +274,27 @@ int CGMServerBase::Call(string& fn, CGMBuffer* query, CGMBuffer* response, int t
     {
       response->Add(gmio.data, gmio.len);
     }
-    free(gmio.data);
+    //free(gmio.data);
   }
   return rc;
 }
 
 /* liberacion del buffer recibido */
+/*
 int CGMServerBase::Free(GMIOS s)
 {
   return Free(&s);
 }
-
+*/
 /* liberacion del buffer recibido */
+/*
 int CGMServerBase::Free(GMIOS *ps)
 {
   if(ps->data && ps->len) free(ps->data);
   ps->len = 0;
   return GME_OK;
 }
+*/
 
 int CGMServerBase::SetTransMode(bool on_off)
 {
@@ -311,8 +318,6 @@ int CGMServerBase::SetTransMode(bool on_off)
   return 0;
 }
 
-/* Esta ya no se usa, ahora los mensajes se mandan a la cola del router
-   la dejo porque me da lastima borrarla */
 int CGMServerBase::Run(const char* exe, char* const params[])
 {
   int rc;
@@ -349,10 +354,10 @@ int CGMServerBase::Run(const char* exe, char* const params[])
 
 /* Esta ya no se usa, ahora los mensajes se mandan a la cola del router
    la dejo porque me da lastima borrarla */
-int CGMServerBase::Main(void* in, unsigned long inlen, void** out, unsigned long *outlen)
+int CGMServerBase::Main(void* in, unsigned long inlen, void* out, unsigned long *outlen, unsigned long max_outlen)
 {
   CGMBuffer buffer;
-  char appBuffer[1024];
+  char appBuffer[GM_COMM_MSG_LEN];
   int rc;
 
   *outlen = 0;
@@ -385,10 +390,16 @@ int CGMServerBase::Main(void* in, unsigned long inlen, void** out, unsigned long
     /* Me fijo si tir� algo por error */
     WaitRead(m_stderr_pipe, appBuffer, sizeof(appBuffer), 1);
   }
-  *out = calloc(buffer.Length(), sizeof(char));
-  memcpy(*out, buffer.Data(), buffer.Length());
-  *outlen = buffer.Length();
-  return 0;
+  if(buffer.Length() <= max_outlen)
+  {
+    memcpy(out, buffer.Data(), buffer.Length());
+    *outlen = buffer.Length();
+    return 0;
+  }
+  else
+  {
+    return (-1);
+  }
 }
 /* Esta ya no se usa, ahora los mensajes se mandan a la cola del router
    la dejo porque me da lastima borrarla */
@@ -411,15 +422,14 @@ int CGMServerBase::WaitRead(int fd, void* buff, int count, long to_cs)
 
 int CGMServerBase::Enqueue(const char* queue, const void *data, unsigned long len)
 {
-  ST_SQUEUE *st;
+  ST_SQUEUE st;
   int rc;
 
-  st = (ST_SQUEUE*)calloc(sizeof(char),sizeof(ST_SQUEUE) + len);
-  memcpy(st->saf_name, queue, strlen(queue));
-  st->len = len;
-  memcpy(&st->data[0], data, len);
-  rc = Notify(".enqueue", st, sizeof(ST_SQUEUE) + len);
-  free(st);
+  strcpy(st.head.saf_name, queue);
+  st.head.len = len;
+  memcpy(&st.data[0], data, len);
+  rc = Notify(".enqueue", &st, sizeof(ST_SQUEUE::head) + len);
+
   return rc;
 }
 
@@ -430,13 +440,7 @@ int CGMServerBase::Enqueue(string& queue, const void *data, unsigned long len)
 
 int CGMServerBase::Dequeue(const char* queue, GMIOS *pdata)
 {
-  ST_SQUEUE st;
-
-  memset(&st, 0, sizeof(ST_SQUEUE));
-  memcpy(st.saf_name, queue, strlen(queue));
-  st.len = 0;
-
-  return Call(".dequeue", &st, sizeof(ST_SQUEUE), pdata, 3000);
+  return Call(".dequeue", queue, strlen(queue)+1, pdata, 3000);
 }
 
 int CGMServerBase::Dequeue(string& queue, GMIOS *pdata)

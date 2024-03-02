@@ -34,7 +34,7 @@ public:
 
 	int Process(const char *funcion,
 				void* in, unsigned long inlen,
-				void** out, unsigned long *outlen,
+				void* out, unsigned long *outlen,
 				CGMServerBase::CLIENT_DATA* pClientData);
 
 	unsigned int GetNewId();

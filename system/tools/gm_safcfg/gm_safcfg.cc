@@ -56,7 +56,7 @@ int ListSaf()
     {
       fprintf(stdout, "<?xml version=\"1.0\" standalone=\"yes\"?>\n");
       fprintf(stdout, "%s\n", (char*)gmio.data);
-      g_pClient->Free(gmio);
+      //g_pClient->Free(gmio);
     }
     else
     {
@@ -68,45 +68,31 @@ int ListSaf()
 
 int CrearSaf(const char* saf_name)
 {
-  ST_SQUEUE sq;
-
-  strcpy(sq.saf_name, saf_name);
-  sq.len = 0;
-
-  return g_pClient->Notify(".create-queue", &sq, sizeof(ST_SQUEUE));
+  return g_pClient->Notify(".create-queue", saf_name, strlen(saf_name)+1);
 }
 
 int DropSaf(const char* saf_name)
 {
-  ST_SQUEUE sq;
-
-  strcpy(sq.saf_name, saf_name);
-  sq.len = 0;
-
-  return g_pClient->Notify(".drop-queue", &sq, sizeof(ST_SQUEUE));
+  return g_pClient->Notify(".drop-queue", saf_name, strlen(saf_name)+1);
 }
 
 int InfoSaf(const char* saf_name)
 {
-  ST_SQUEUE sq;
   saf_info *psi;
   int rc;
   CGMClient::GMIOS gmio;
 
-  strcpy(sq.saf_name, saf_name);
-  sq.len = 0;
-
-  rc = g_pClient->Call(".info-queue", &sq, sizeof(ST_SQUEUE), &gmio, 3000);
+  rc = g_pClient->Call(".info-queue", saf_name, strlen(saf_name)+1, &gmio, 3000);
   if(rc == GME_OK)
   {
     if(gmio.len)
     {
       psi = (saf_info*)gmio.data;
       fprintf(stdout, "Cola: %s\n", psi->name);
-      fprintf(stdout, "Ubicación: %s\n", psi->filename);
+      fprintf(stdout, "Ubicaciï¿½n: %s\n", psi->filename);
       fprintf(stdout, "Registros totales: %lu\n", psi->record_count);
       fprintf(stdout, "Registros utiles: %lu\n", psi->data_count);
-      g_pClient->Free(gmio);
+      //g_pClient->Free(gmio);
     }
     else
     {
@@ -180,7 +166,7 @@ int main(int argc, char** argv)
   if(help)
   {
     fprintf(stderr, "Gnu-Monitor - Sistema Monitor Transaccional\n");
-    fprintf(stderr, "Herramienta de administración de archivos de SAF para servicios de Store & Forward\n");
+    fprintf(stderr, "Herramienta de administraciï¿½n de archivos de SAF para servicios de Store & Forward\n");
     fprintf(stderr, "Use: %s [-m host] [-l|-c|-d|-i|-h] saf-name\n", argv[0]);
     fprintf(stderr, "     -m|--monitor: nombre de host donde corre Gnu-Monitor (default localhost).\n");
     fprintf(stderr, "     -l|--list:    lista receptores de SAF.\n");
