@@ -59,6 +59,48 @@ void OnChildExit(int /*sig*/)
   while(waitpid(-1, &st, WNOHANG|WUNTRACED)>0);
 }
 
+int LoadServerTable()
+{
+  CGMTdb::CSrvTab t;
+  ifstream in;
+  string s;
+  vector<string> vs;
+
+  in.open((m_config_path + "/" + GM_FILENAME_SERVER_DB).c_str());
+  if(! in.is_open())
+  {
+    return -1;
+  }
+  if(m_pLog)
+  {
+    pLog->Add(50, "CGMTdb::LoadSrv");
+  }
+  while(getline(in, s))
+  {
+    if(s.length() > 0 && s[0] != '#') /* salteo comentarios y lineas vacias */
+    {
+      vs = split(s, '|');
+      if(vs.size() < 4)
+      {
+        in.close();
+        pLog->Add(1, "ERROR al parsear configuracion de server");
+        return -1;
+      }
+      t.nombre = vs[0];
+      t.descripcion = vs[1];
+      t.modo = atoi(vs[2].c_str());
+      t.path = vs[3];
+
+
+
+
+
+    }
+  }
+  in.close();
+  return 0;
+}
+
 void StartServer(const char* server)
 {
 
