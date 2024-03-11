@@ -65,6 +65,8 @@ unsigned long CGMessage::GetMsgLen()
 
 int CGMessage::SetMsg(const void* msg, unsigned long len)
 {
+	if( !msg || !len) return (-1);
+
 	if(len < GetHeaderLen())
 	{
 		return -1;
@@ -85,6 +87,8 @@ int CGMessage::SetMsg(CGMBuffer *buffer)
 
 int CGMessage::SetData(const void* msg, unsigned long len)
 {
+	if( !msg || !len) return (-1);
+
 	delete m_msg_buffer;
 	m_msg_buffer = new char[GetHeaderLen() + len];
 	if(msg && len > 0)
@@ -115,6 +119,8 @@ unsigned long CGMessage::GetDataLen()
 
 int CGMessage::SetResponse(CGMessage* msg)
 {
+	if( !msg) return (-1);
+
 	TipoMensaje(TipoRespuesta(msg->TipoMensaje()));
 	IdUsuario(msg->IdUsuario());
 	IdCliente(msg->IdCliente());

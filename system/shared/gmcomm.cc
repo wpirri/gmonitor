@@ -86,7 +86,7 @@ CGMBuffer* CGMComm::FDRead(unsigned int len, int to_s)
 {
 	char ch[1];
 	int rc;
-  unsigned int remain;
+	unsigned int remain;
 	CGMBuffer *buff = new CGMBuffer("");
 
 	signal(SIGALRM, SIG_IGN);
@@ -96,17 +96,17 @@ CGMBuffer* CGMComm::FDRead(unsigned int len, int to_s)
 	{
 		rc = read(m_fdin, ch, 1);
 		if(rc > 0)                         /* Si ley� algo */
-    {
-      buff->Add(ch,1);
-    }
+		{
+			buff->Add(ch,1);
+		}
 		else if((remain = alarm(0)) > 0)   /* si no ley� nada pero todav�a queda tiempo */
-    {
-      alarm(remain);
-    }
-    else
-    {
-      break;
-    }
+		{
+			alarm(remain);
+		}
+		else
+		{
+			break;
+		}
 	}
 	alarm(0);
 	if(buff->Length() > 0)
