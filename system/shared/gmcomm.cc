@@ -99,9 +99,9 @@ CGMBuffer* CGMComm::FDRead(unsigned int len, int to_s)
 		{
 			buff->Add(ch,1);
 		}
-		else if((remain = alarm(0)) > 0)   /* si no ley� nada pero todav�a queda tiempo */
+		else if((remain = alarm(0)) > 1)   /* si no ley� nada pero todav�a queda tiempo */
 		{
-			alarm(remain);
+			alarm(remain-1);
 		}
 		else
 		{
