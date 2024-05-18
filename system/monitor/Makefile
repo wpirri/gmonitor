@@ -2,32 +2,37 @@
 
 include ../configure.mk
 
-CC=g++
 INCLUDE=-I./ -I../shared
 DEFINE=$(GENERAL_DEFINES)
 CFLAGS=
 CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
-LFLAGS=-L../shared
+LFLAGS=-L../shared/$(PROG)
 LIBS=-lgmshared -lssl -lcrypto
 
 OBJECTS=monitor.o
 OUTPUT=monitor
 
-all: monitor
+OBJECTS=$(OBJ)/monitor.o
+OUTPUT=$(PROG)/$(EXE)
+EXE=monitor
 
-monitor.o: monitor.cc
-	$(CC) $(CFLAGS) $(CXXFLAGS) $(INCLUDE) $(DEFINE) -c monitor.cc
+all: $(OUTPUT)
 
-monitor: $(OBJECTS)
+$(OBJ)/monitor.o: monitor.cc
+	$(MKDIR) $(OBJ)
+	$(CC) $(CFLAGS) $(CXXFLAGS) $(INCLUDE) $(DEFINE) -c monitor.cc -o $(OBJ)/monitor.o
+
+$(OUTPUT): $(OBJECTS)
+	$(MKDIR) $(PROG)
 	$(CC) $(CXXFLAGS) $(LFLAGS) -O $(OBJECTS) $(LIBS) -o $(OUTPUT) 
 
 clean:
-	$(RM)  $(OBJECTS) $(OUTPUT) *.d
+	$(RMR) $(MACHINE)
 
 install:
 	$(CP) $(OUTPUT) $(INST_SBINDIR)/
-	chown $(INST_USER): $(INST_SBINDIR)/$(OUTPUT)
-	chmod 0755 $(INST_SBINDIR)/$(OUTPUT)
+	chown $(INST_USER): $(INST_SBINDIR)/$(EXE)
+	chmod 0755 $(INST_SBINDIR)/$(EXE)
 
 uninstall:
-	$(RM) $(INST_SBINDIR)/$(OUTPUT)
+	$(RM) $(INST_SBINDIR)/$(EXE)

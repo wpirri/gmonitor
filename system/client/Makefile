@@ -2,35 +2,36 @@
 
 include ../configure.mk
 
-CC=g++
 INCLUDE=-I./ -I../shared
+CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
+LIBS=-lgmshared -lssl -lcrypto
 DEFINE=$(GENERAL_DEFINES)
 CFLAGS=-fPIC
-CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
-LFLAGS=-L../shared -shared
-LIBS=-lgmshared -lssl -lcrypto
+LFLAGS=-L../shared/$(PROG) -shared
+OBJECTS=$(OBJ)/gmc.o
+OUTPUT=$(PROG)/$(EXE)
+EXE=libgmc.so
 
-OBJECTS=gmc.o
-OUTPUT=libgmc.so
+all: $(OUTPUT)
 
-all: libgmc.so
+$(OBJ)/gmc.o: gmc.cc
+	$(MKDIR) $(OBJ)
+	$(CC) $(CFLAGS) $(CXXFLAGS) $(INCLUDE) $(DEFINE) -c gmc.cc -o $(OBJ)/gmc.o
 
-gmc.o: gmc.cc
-	$(CC) $(CFLAGS) $(CXXFLAGS) $(INCLUDE) $(DEFINE) -c gmc.cc
-
-libgmc.so: $(OBJECTS)
+$(OUTPUT): $(OBJECTS)
+	$(MKDIR) $(PROG)
 	$(CC) $(CXXFLAGS) $(LFLAGS) -O $(OBJECTS) $(LIBS) -o $(OUTPUT) 
 
 clean:
-	$(RM)  $(OBJECTS) $(OUTPUT) *.d
+	$(RMR) $(MACHINE)
 
 install:
 	$(MKDIR) $(INST_LIBDIR)
 	$(CP) $(OUTPUT) $(INST_LIBDIR)/
-	chown $(INST_USER): $(INST_LIBDIR)/$(OUTPUT)
-	chmod 0755 $(INST_LIBDIR)/$(OUTPUT)
+	chown $(INST_USER): $(INST_LIBDIR)/$(EXE)
+	chmod 0755 $(INST_LIBDIR)/$(EXE)
 	$(CP) gmc.h $(INST_INCDIR)/
 
 uninstall:
-	$(RM) $(INST_LIBDIR)/$(OUTPUT)
+	$(RM) $(INST_LIBDIR)/$(EXE)
 	$(RM) $(INST_INCDIR)/gmc.h

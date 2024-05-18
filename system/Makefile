@@ -1,4 +1,13 @@
-#!/usr/bin/make -f
+ #!/usr/bin/make -f
+
+# =============================================================================
+# instalar
+#	Entorno de desarrollo mínimo: build-essential vim net-tools nfs-common mc minicom
+#	Para Desarrollo: xinetd libssl-dev
+#	Para Produccion: xinetd libssl
+#
+
+include configure.mk
 
 all:
 	make -C shared
@@ -41,3 +50,18 @@ uninstall:
 	make -C servers uninstall
 	make -C tools uninstall
 	make -C monitor uninstall
+
+test:
+	@echo "RUN_USER:         "$(RUN_USER)
+	@echo "INST_USER:        "$(INST_USER)
+	@echo "INST_LIBDIR:      "$(INST_LIBDIR)
+	@echo "INST_HEADDIR:     "$(INST_HEADDIR)
+	@echo "INST_BINDIR:      "$(INST_BINDIR)
+	@echo "INST_SBINDIR:     "$(INST_SBINDIR)
+	@echo "INST_ETCDIR:      "$(INST_ETCDIR)
+	@echo "INST_VARDIR:      "$(INST_VARDIR)
+	@echo "INST_INCDIR:      "$(INST_INCDIR)
+	@echo "INST_LOGDIR:      "$(INST_LOGDIR)
+	@echo "PROCESSOR-PARAMS: "$(PROCESSOR-PARAMS)
+
+	$(if $(findstring arm,$(MACHINE)) ,@echo "Compilando para RaspBerry Pi", @echo "Compilando para PC" )

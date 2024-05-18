@@ -1,19 +1,32 @@
 #!/usr/bin/make -f
 
-.c.o:
-	cc $(PROCESSOR-PARAMS) -c $?
+include ../../configure.mk
 
-all: gmcrypt
+OBJECTS=$(OBJ)/des.o $(OBJ)/sec.o
+OUTPUT=$(PROG)/$(EXE)
+EXE=gmcrypt
 
-gmcrypt: des.o sec.o
-	cc $(PROCESSOR-PARAMS) -O des.o sec.o -o gmcrypt 
+all: $(OUTPUT)
+
+$(OBJ)/des.o:
+	$(MKDIR) $(OBJ)
+	$(CC) $(PROCESSOR-PARAMS) -c des.c -o $(OBJ)/des.o
+$(OBJ)/sec.o:
+	$(MKDIR) $(OBJ)
+	$(CC) $(PROCESSOR-PARAMS) -c sec.c -o $(OBJ)/sec.o
+
+$(OUTPUT): $(OBJECTS)
+	$(MKDIR) $(PROG)
+	$(CC) $(PROCESSOR-PARAMS) -O $(OBJECTS) -o $(OUTPUT) 
 
 clean:
-	rm -f des.o sec.o gmcrypt
+	$(RMR) $(MACHINE)
 
 install:
-	cp -f gmcrypt /usr/local/bin/
+	$(CP) $(OUTPUT) $(INST_BINDIR)/
+	chown $(INST_USER): $(INST_BINDIR)/$(EXE)
+	chmod 0755 $(INST_BINDIR)/$(EXE)
 
 uninstall:
-	rm -f /usr/local/bin/gmcrypt
+	$(RM) $(INST_BINDIR)/$(EXE)
 

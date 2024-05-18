@@ -23,6 +23,13 @@ GM_COMM_MSG_LEN=32768
 MAX_SERVERS=32
 MAX_SERVICES=256
 
+MACHINE=.p$(shell uname -m)
+
+OBJ=$(MACHINE)/obj
+PROG=$(MACHINE)/exe
+INST=$(MACHINE)/inst
+
+CC=g++
 CP=cp
 CPUVA=cp -uva
 RM=rm  -f
@@ -40,4 +47,4 @@ GENERAL_DEFINES=-D __NO__DEBUG__ -DLOG_FILES=$(LOG_FILES) -DBIN_MONITOR=$(BIN_MO
 # RBPi4 - -mcpu=cortex-a72 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits
 # Habilitar la siguiente definicion si se compila en RBPi3 o 4 para compatibilidad
 # con RBPi2
-PROCESSOR-PARAMS=-mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
+#PROCESSOR-PARAMS-ARM=-mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4

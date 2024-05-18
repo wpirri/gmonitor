@@ -2,27 +2,28 @@
 
 include ../configure.mk
 
-CC=g++
 INCLUDE=-I./ -I../shared
 DEFINE=$(GENERAL_DEFINES)
 CFLAGS=
 CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
-LFLAGS=-L../shared
+LFLAGS=-L../shared/$(PROG)
 LIBS=-lgmshared -lssl -lcrypto
+OBJECTS=$(OBJ)/gmt.o
+OUTPUT=$(PROG)/$(EXE)
+EXE=gmt
 
-OBJECTS=gmt.o
-OUTPUT=gmt
+all: $(OUTPUT)
 
-all: gmt
+$(OBJ)/gmt.o: gmt.cc
+	$(MKDIR) $(OBJ)
+	$(CC) $(CFLAGS) $(CXXFLAGS) $(INCLUDE) $(DEFINE) -c gmt.cc -o $(OBJ)/gmt.o
 
-gmt.o: gmt.cc
-	$(CC) $(CFLAGS) $(CXXFLAGS) $(INCLUDE) $(DEFINE) -c gmt.cc
-
-gmt: $(OBJECTS)
+$(OUTPUT): $(OBJECTS)
+	$(MKDIR) $(PROG)
 	$(CC) $(CXXFLAGS) $(LFLAGS) -O $(OBJECTS) $(LIBS) -o $(OUTPUT) 
 
 clean:
-	$(RM)  $(OBJECTS) $(OUTPUT) *.d
+	$(RMR) $(MACHINE)
 
 install:
 	groupadd -f $(RUN_USER)
@@ -32,8 +33,8 @@ install:
 
 	$(MKDIR) $(INST_LOGDIR)
 	$(CP) $(OUTPUT) $(INST_SBINDIR)/
-	chown $(INST_USER): $(INST_SBINDIR)/$(OUTPUT)
-	chmod 0755 $(INST_SBINDIR)/$(OUTPUT)
+	chown $(INST_USER): $(INST_SBINDIR)/$(EXE)
+	chmod 0755 $(INST_SBINDIR)/$(EXE)
 
 uninstall:
-	$(RM) $(INST_SBINDIR)/$(OUTPUT)
+	$(RM) $(INST_SBINDIR)/$(EXE)
