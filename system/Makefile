@@ -65,3 +65,8 @@ test:
 	@echo "PROCESSOR-PARAMS: "$(PROCESSOR-PARAMS)
 
 	$(if $(findstring arm,$(MACHINE)) ,@echo "Compilando para RaspBerry Pi", @echo "Compilando para PC" )
+
+fixeol:
+	dos2unix fixeol.sh
+	./fixeol.sh
+	
