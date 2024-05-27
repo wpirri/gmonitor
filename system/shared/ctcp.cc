@@ -592,7 +592,7 @@ int CTcp::Receive(void *msg, unsigned int msglen, int to_ms)
     do
     {
       rc = SSL_read(m_p_ssl, (char*)((char*)msg+recvlen), (msglen-recvlen) );
-      if(rc == 0)
+      if(rc <= 0)
       {
         usleep(1000);
         to_ms--;
