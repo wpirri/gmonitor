@@ -3,5 +3,4 @@
 *.d
 *.o
 *.so
-.px86_64
-.parmv7l
+.tmp*

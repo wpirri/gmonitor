@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 
   if(!strlen(server_name))
   {
-    pLog->Add(1, "Parametro esperado '-name' no recibido");
+    pLog->Add(1, "[gmq] Parametro esperado '-name' no recibido");
     exit(1);
   }
 
@@ -155,31 +155,31 @@ int main(int argc, char** argv)
   server_params.nombre = server_name;
   if(pServer->m_pConfig->Server(server_params) != GME_OK)
   {
-    pLog->Add(1, "Error al traer datos del server,"
+    pLog->Add(1, "[gmq] Error al traer datos del server,"
         " verifique que el servidor esta dado de alta en la base");
     delete pServer;
     delete pLog;
     exit(1);
   }
-  pLog->Add(1, "Server: %s - Modo: %i - App: %s",
+  pLog->Add(1, "[gmq] Server: %s - Modo: %i - App: %s",
     server_params.nombre.c_str(),
     server_params.modo, server_params.path.c_str());
   pMsg = new CMsg();
   if(pMsg->Open(server_params.path.c_str()) != 0)
   {
-    pLog->Add(1, "Error al crear cola de mensajes (controlar que exista el server %s)",
+    pLog->Add(1, "[gmq] Error al crear cola de mensajes (controlar que exista el server %s)",
         server_params.path.c_str());
     delete pMsg;
     delete pServer;
     delete pLog;
     exit(1);
   }
-  pLog->Add(1, "Key: %i (%i)", pMsg->GetKey(), pMsg->GetIndex());
+  pLog->Add(1, "[gmq] Key: %i (%i)", pMsg->GetKey(), pMsg->GetIndex());
   /* actualizo en la base la clave de la cola de mensajes */
   /* para que el monitor sepa donde mandar lo que es para este servidor */
   if(pServer->m_pConfig->AddSrv(server_params.nombre, getpid(), pMsg->GetKey(), pMsg->GetIndex()))
   {
-    pLog->Add(1, "Error al registrar server");
+    pLog->Add(1, "[gmq] Error al registrar server");
     delete pMsg;
     delete pServer;
     delete pLog;
@@ -189,7 +189,7 @@ int main(int argc, char** argv)
   {
     if((rc = pServer->Init()) != GME_OK)
     {
-      pLog->Add(1, "Error %i al ejecutar CGMServer::Init", rc);
+      pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::Init", rc);
       pServer->m_pConfig->RemoveSrv(server_params.nombre, pMsg->GetIndex());
       delete pMsg;
       delete pServer;
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
     */
     if((rc = pServer->Run(server_params.path.c_str(), param_list)) != GME_OK)
     {
-      pLog->Add(1, "Error %i al ejecutar CGMServer::Run", rc);
+      pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::Run", rc);
       pServer->m_pConfig->RemoveSrv(server_params.nombre, pMsg->GetIndex());
       delete pMsg;
       delete pServer;
@@ -232,7 +232,7 @@ int main(int argc, char** argv)
     */
     if((rc = pServer->Init()) != GME_OK)
     {
-      pLog->Add(1, "Error %i al ejecutar CGMServer::Init", rc);
+      pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::Init", rc);
       pServer->m_pConfig->RemoveSrv(server_params.nombre, pMsg->GetIndex());
       delete pMsg;
       delete pServer;
@@ -328,7 +328,7 @@ void ServerLoop()
         */
         if((rc = pServer->Init()) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::Init", rc);
+          pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::Init", rc);
           /* TODO: genero un mensaje de error para devolver */
 
 
@@ -345,14 +345,14 @@ void ServerLoop()
           break;
         }
         */
-        pLog->Add(100, "Ejecutando: [%s][%s][%s][%s]",
+        pLog->Add(100, "[gmq] Ejecutando: [%s][%s][%s][%s]",
             server_params.path.c_str(),
             (param_list[0])?param_list[0]:"",
             (param_list[1])?param_list[1]:"",
             (param_list[2])?param_list[2]:"");
         if((rc = pServer->Run(server_params.path.c_str(), param_list)) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::Run", rc);
+          pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::Run", rc);
           /* TODO: genero un mensaje de error para devolver */
 
 
@@ -382,7 +382,7 @@ void ServerLoop()
       {
         if((rc = pServer->BeginTrans((unsigned int)*inMessage.GetData())) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::BeginTrans", rc);
+          pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::BeginTrans", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -393,7 +393,7 @@ void ServerLoop()
       {
         if((rc = pServer->CommitTrans((unsigned int)*inMessage.GetData())) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::CommitTrans", rc);
+          pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::CommitTrans", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -404,7 +404,7 @@ void ServerLoop()
       {
         if((rc = pServer->RollbackTrans((unsigned int)*inMessage.GetData())) != GME_OK)
         {
-          pLog->Add(1, "Error %i al ejecutar CGMServer::AbortTrans", rc);
+          pLog->Add(1, "[gmq] Error %i al ejecutar CGMServer::AbortTrans", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -427,13 +427,13 @@ void ServerLoop()
           MBuffer.Set(outMessage.GetMsg(), outMessage.GetMsgLen());
           if(pMsg->Send(from, &MBuffer) != 0)
           {
-            pLog->Add(1, "Error al responder mensaje");
+            pLog->Add(1, "[gmq] Error al responder mensaje [%s]", inMessage.Funcion());
           }
           MBuffer.Clear();
         }
         if((rc = pServer->PreMain()) != GME_OK)
         {
-          pLog->Add(50, "Error %i al ejecutar CGMServer::PreMain", rc);
+          pLog->Add(50, "[gmq] Error %i al ejecutar CGMServer::PreMain", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -443,7 +443,7 @@ void ServerLoop()
             (void*)inMessage.GetData(),inMessage.GetDataLen(),
             (void*)MessageBuffer, &msglen, GM_COMM_MSG_LEN)) != GME_OK)
         {
-          pLog->Add(50, "Error %i al ejecutar CGMServer::Main", rc);
+          pLog->Add(50, "[gmq] Error %i al ejecutar CGMServer::Main", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -451,7 +451,7 @@ void ServerLoop()
         }
         if((rc = pServer->PosMain()) != GME_OK)
         {
-          pLog->Add(50, "Error %i al ejecutar CGMServer::PosMain", rc);
+          pLog->Add(50, "[gmq] Error %i al ejecutar CGMServer::PosMain", rc);
           /* genero un mensaje de error para devolver */
 
 
@@ -479,7 +479,7 @@ void ServerLoop()
       MBuffer.Set(outMessage.GetMsg(), outMessage.GetMsgLen());
       if(pMsg->Send(from, &MBuffer) != 0)
       {
-        pLog->Add(1, "Error al responder mensaje");
+        pLog->Add(1, "[gmq] Error al responder mensaje [%s]", inMessage.Funcion());
       }
       MBuffer.Clear();
     }

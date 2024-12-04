@@ -70,28 +70,28 @@ int CGMServerWait::Init(const char *server_name)
 	LoadConfig();
 	if(m_pConfig->Server(m_server_params) != GME_OK)
 	{
-		m_pLog->Add(1, "Error al traer datos del server,"
+		m_pLog->Add(1, "[gmswaited] Error al traer datos del server,"
 				" verifique que el servidor esta dado de alta en la base");
 		delete m_pLog;
 		return -1;
 	}
 
-	m_pLog->Add(100, "Server: %s - Modo: %i - App: %s",
+	m_pLog->Add(100, "[gmswaited] Server: %s - Modo: %i - App: %s",
 		m_server_params.nombre.c_str(), m_server_params.modo, m_server_params.path.c_str());
 	m_pMsg = new CMsg();
 	if(m_pMsg->Open(m_server_params.path.c_str()) != 0)
 	{
-		m_pLog->Add(1, "Error al crear cola de mensajes (controlar que exista el server)");
+		m_pLog->Add(1, "[gmswaited] Error al crear cola de mensajes (controlar que exista el server)");
 		delete m_pMsg;
 		delete m_pLog;
 		return -1;
 	}
-	m_pLog->Add(100, "Key: %i (%i)", m_pMsg->GetKey(), m_pMsg->GetIndex());
+	m_pLog->Add(100, "[gmswaited] Key: %i (%i)", m_pMsg->GetKey(), m_pMsg->GetIndex());
 	/* actualizo en la base la clave de la cola de mensajes */
 	/* para que el monitor sepa donde mandar lo que es para este servidor */
 	if(m_pConfig->AddSrv(m_server_params.nombre, getpid(), m_pMsg->GetKey(), m_pMsg->GetIndex()))
 	{
-		m_pLog->Add(1, "Error al registrar server");
+		m_pLog->Add(1, "[gmswaited] Error al registrar server");
 		delete m_pMsg;
 		delete m_pLog;
 		return -1;
@@ -195,7 +195,7 @@ int CGMServerWait::Resp(const void *data, unsigned long datalen, int rc)
 	MBuffer.Set(m_outMessage.GetMsg(), m_outMessage.GetMsgLen());
 	if(m_pMsg->Send(m_srcMessage, &MBuffer) != 0)
 	{
-		m_pLog->Add(1, "Error al responder mensaje");
+		pLog->Add(1, "[gmswaited] Error al responder mensaje [%s]", m_outMessage.Funcion());
 	}
 	MBuffer.Clear();
 

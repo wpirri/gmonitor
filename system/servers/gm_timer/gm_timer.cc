@@ -69,14 +69,14 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
   m_pServer = new CGMServerWait;
   m_pServer->Init("gm_timer");
   m_pServer->SetTransMode(true);
-  m_pServer->m_pLog->Add(1, "Iniciando server");
+  m_pServer->m_pLog->Add(1, "[gmtimer] Iniciando server");
 
   m_pGMTimer = new CGMTimer(m_pServer, m_pServer->m_pLog);
 
   if(( rc =  m_pServer->Suscribe(".set_timer", GM_MSG_TYPE_CR)) != GME_OK)
-    m_pServer->m_pLog->Add(1, "ERROR al suscribir a .set_timer");
+    m_pServer->m_pLog->Add(1, "[gmtimer] ERROR al suscribir a .set_timer");
   if(( rc = m_pServer->Suscribe(".kill_timer", GM_MSG_TYPE_NOT)) != GME_OK)
-    m_pServer->m_pLog->Add(1, "ERROR al suscribir a .kill_timer");
+    m_pServer->m_pLog->Add(1, "[gmtimer] ERROR al suscribir a .kill_timer");
 
 
   wait = -1;
@@ -84,7 +84,7 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
   {
     if(rc > 0)
     {
-      m_pServer->m_pLog->Add(100, "RECIBIDO %s, 0x%X, %lu", fn, m_pInBuffer, inlen);
+      m_pServer->m_pLog->Add(100, "[gmtimer] RECIBIDO %s, 0x%X, %lu", fn, m_pInBuffer, inlen);
       /* proceso el mensaje que lleg� */
       rc = m_pGMTimer->Message(fn, m_pInBuffer, inlen,
                    (void**)&m_pOutBuffer, &outlen,
@@ -93,12 +93,12 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
       if(m_pServer->Resp(m_pOutBuffer, outlen, rc) != GME_OK)
       {
         /* error al responder */
-        m_pServer->m_pLog->Add(15, "ERROR al responder mensaje [%s] typ: %c", fn, typ);
+        m_pServer->m_pLog->Add(1, "[gmtimer] Error al responder mensaje [%s] typ: %c", fn, typ);
       }
     }
     /* Proceso vencimiento de timers */
     wait = m_pGMTimer->TimeOut();
-    m_pServer->m_pLog->Add(100, "Proximo evento en %li centesimas de segundos", wait);
+    m_pServer->m_pLog->Add(100, "[gmtimer] Proximo evento en %li centesimas de segundos", wait);
   }
   OnClose(0);
   return 0;
@@ -106,7 +106,7 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
 
 void OnClose(int /*sig*/)
 {
-  m_pServer->m_pLog->Add(1, "Terminando server");
+  m_pServer->m_pLog->Add(1, "[gmtimer] Terminando server");
   /*if(m_pOutBuffer) free(m_pOutBuffer);*/
   m_pServer->UnSuscribe(".kill_timer", GM_MSG_TYPE_NOT);
   m_pServer->UnSuscribe(".set_timer", GM_MSG_TYPE_CR);

@@ -88,19 +88,19 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
   m_pServer = new CGMServerWait;
   m_pServer->Init("gm_transac");
 
-  m_pServer->m_pLog->Add(1, "Iniciando server");
+  m_pServer->m_pLog->Add(1, "[gmtransac] Iniciando server");
   if(m_pServer->Suscribe(".begintrans", GM_MSG_TYPE_CR) != GME_OK)
-    m_pServer->m_pLog->Add(1, "ERROR al suscribir a .begintrans");
+    m_pServer->m_pLog->Add(1, "[gmtransac] ERROR al suscribir a .begintrans");
   if(m_pServer->Suscribe(".committrans", GM_MSG_TYPE_NOT) != GME_OK)
-    m_pServer->m_pLog->Add(1, "ERROR al suscribir a .committrans");
+    m_pServer->m_pLog->Add(1, "[gmtransac] ERROR al suscribir a .committrans");
   if(m_pServer->Suscribe(".aborttrans", GM_MSG_TYPE_NOT) != GME_OK)
-    m_pServer->m_pLog->Add(1, "ERROR al suscribir a .aborttrans");
+    m_pServer->m_pLog->Add(1, "[gmtransac] ERROR al suscribir a .aborttrans");
   m_pTransac = new CTransac(m_pServer);
 
   wait = -1;
   do
   {
-    m_pServer->m_pLog->Add(100, "Proximo time-out en %i centesimas (-1 = infinito)", wait);
+    m_pServer->m_pLog->Add(100, "[gmtransac] Proximo time-out en %i centesimas (-1 = infinito)", wait);
     switch(m_pServer->Wait(fn, &typ, in, 256, &inlen, wait))
     {
     case GME_WAIT_ERROR:
@@ -117,13 +117,13 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
         /*contesto*/
         if(m_pServer->Resp(NULL, 0, GME_OK) != GME_OK)
         {
-	  /* error al responder */
-	  m_pServer->m_pLog->Add(15, "ERROR al responder mensaje .begintrans");
+          /* error al responder */
+          m_pServer->m_pLog->Add(1, "[gmtransac] Error al responder mensaje .begintrans");
         }
         m_pServer->Post(".begintrans",
             &m_pServer->m_ClientData.m_trans,
             sizeof(unsigned int));
-        m_pServer->m_pLog->Add(100, "Inicio transaccion %u por %li segundos",
+        m_pServer->m_pLog->Add(100, "[gmtransac] Inicio transaccion %u por %li segundos",
               m_pServer->m_ClientData.m_trans,
               indata);
       }
@@ -134,12 +134,12 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
           m_pServer->Post(".committrans",
               &m_pServer->m_ClientData.m_trans,
               sizeof(unsigned int));
-          m_pServer->m_pLog->Add(100, "Transaccion %u finalizada",
+          m_pServer->m_pLog->Add(100, "[gmtransac] Transaccion %u finalizada",
                 m_pServer->m_ClientData.m_trans);
         }
         else
         {
-          m_pServer->m_pLog->Add(15, "ERROR: Se intento finalizar la transaccion %u que no existe",
+          m_pServer->m_pLog->Add(15, "[gmtransac] ERROR: Se intento finalizar la transaccion %u que no existe",
                 m_pServer->m_ClientData.m_trans);
 /*
           rc = GME_UNKNOWN_TRAN;
@@ -153,12 +153,12 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
           m_pServer->Post(".aborttrans",
               &m_pServer->m_ClientData.m_trans,
               sizeof(unsigned int));
-          m_pServer->m_pLog->Add(100, "Transaccion %u abortada",
+          m_pServer->m_pLog->Add(100, "[gmtransac] Transaccion %u abortada",
                 m_pServer->m_ClientData.m_trans);
         }
         else
         {
-          m_pServer->m_pLog->Add(15, "ERROR: Se intento abortar la transaccion %u que no existe",
+          m_pServer->m_pLog->Add(15, "[gmtransac] ERROR: Se intento abortar la transaccion %u que no existe",
                 m_pServer->m_ClientData.m_trans);
 /*
           rc = GME_UNKNOWN_TRAN;
@@ -173,11 +173,11 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
 */
       /* en este case no va break para que despues procese timeout */
     case GME_WAIT_TIMEOUT:
-      m_pServer->m_pLog->Add(100, "Verificando transacciones vencidas");
+      m_pServer->m_pLog->Add(100, "[gmtransac] Verificando transacciones vencidas");
       while((trans_to = m_pTransac->Check()) > 0)
       {
         m_pServer->Post(".aborttrans", &trans_to, sizeof(unsigned int));
-        m_pServer->m_pLog->Add(100, "Transaccion %lu abortada time-out", trans_to);
+        m_pServer->m_pLog->Add(100, "[gmtransac] Transaccion %lu abortada time-out", trans_to);
       }
       break;
     }

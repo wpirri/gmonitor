@@ -23,7 +23,7 @@ GM_COMM_MSG_LEN=32768
 MAX_SERVERS=32
 MAX_SERVICES=256
 
-MACHINE=.p$(shell uname -m)
+MACHINE=.tmp_$(shell uname -n)
 
 OBJ=$(MACHINE)/obj
 PROG=$(MACHINE)/exe
