@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ X${USER} != "Xroot" ]; then
+  sudo $0
+  exit 0
+fi
+
 if [ -f /etc/gmonitor ]; then
   . /etc/gmonitor
 else

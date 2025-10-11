@@ -50,7 +50,7 @@ case $1 in
     /etc/init.d/apache2 stop
     /etc/init.d/xinetd stop
     $SERVER_BIN/gmon_stop all
-    
+
     sleep 3
     gmt_pid=`ps -eaf | grep -v grep | grep $SERVER_BIN/gmt | awk '{ print $2; }'`
     if [ "X${gmt_pid}" != "X" ]; then
@@ -64,7 +64,9 @@ case $1 in
     $SU "${SERVER_BIN}/gmon_status all" $SU_USER
   ;;
   restart)
-    $0 stop && $0 start
+    $0 stop
+    sleep 5
+    $0 start
   ;;
   reload)
     gmt_pid=`ps -eaf | grep -v grep | grep $SERVER_BIN/gmt | awk '{ print $2; }'`
