@@ -174,10 +174,10 @@ int main(int argc, char** argv)
     delete pLog;
     exit(1);
   }
-  pLog->Add(1, "[gmq] Key: %i (%i)", pMsg->GetKey(), pMsg->GetIndex());
+  pLog->Add(1, "[gmq] AddServer Ppd: %i Key: %i Idx: %i Id: %i", getpid(), pMsg->GetKey(), pMsg->GetIndex(), pMsg->GetId());
   /* actualizo en la base la clave de la cola de mensajes */
   /* para que el monitor sepa donde mandar lo que es para este servidor */
-  if(pServer->m_pConfig->AddSrv(server_params.nombre, getpid(), pMsg->GetKey(), pMsg->GetIndex()))
+  if(pServer->m_pConfig->AddSrv(server_params.nombre, getpid(), pMsg->GetKey(), pMsg->GetId(), pMsg->GetIndex()))
   {
     pLog->Add(1, "[gmq] Error al registrar server");
     delete pMsg;

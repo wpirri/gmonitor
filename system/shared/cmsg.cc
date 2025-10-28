@@ -400,6 +400,11 @@ int CMsg::GetKey()
 	return m_key;
 }
 
+int CMsg::GetId()
+{
+	return m_fd;
+}
+
 int CMsg::GetIndex()
 {
 	return m_index;

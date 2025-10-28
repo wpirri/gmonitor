@@ -8,13 +8,9 @@ CFLAGS=
 CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2 
 LFLAGS=-L../shared/$(PROG)
 LIBS=-lgmshared -lssl -lcrypto
-
-OBJECTS=monitor.o
-OUTPUT=monitor
-
 OBJECTS=$(OBJ)/monitor.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=monitor
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

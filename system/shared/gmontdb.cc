@@ -273,9 +273,9 @@ vector <int> CGMTdb::Cola(const char* servicio, char tipo_mensaje)
   return cola_list;
 }
 
-int CGMTdb::AddSrv(string& server, int pid, int cola, int indice)
+int CGMTdb::AddSrv(string& server, int pid, int cola, int qid, int indice)
 {
-  return AddSrv(server.c_str(), pid, cola, indice);
+  return AddSrv(server.c_str(), pid, cola, qid, indice);
 }
 
 int CGMTdb::RemoveSrv(string& server, int indice)
@@ -286,7 +286,7 @@ int CGMTdb::RemoveSrv(string& server, int indice)
 /* Registra la cola de un server generada con un objeto CMsg */
 /* el parametro cola es la clave y se obtiene con GetKey  */
 /* el parametro indice es para abrir varia colas de un mismo proceso y se obtiene con GetIndex */
-int CGMTdb::AddSrv(const char* nombre_server, int pid, int cola, int indice)
+int CGMTdb::AddSrv(const char* nombre_server, int pid, int cola, int qid, int indice)
 {
   int i;
   SH_SERVER server;
@@ -305,6 +305,7 @@ int CGMTdb::AddSrv(const char* nombre_server, int pid, int cola, int indice)
       if( !strcmp(nombre_server, server.nombre) )
       {
         server.cola[indice] = cola;
+        server.qid[indice] = qid;
         server.pid[indice] = pid;
         if(m_pShMem->SetAt(INDEX_SERVER(i), &server, sizeof(SH_SERVER)) != 0)
         {
@@ -341,6 +342,7 @@ int CGMTdb::RemoveSrv(const char* nombre_server, int indice)
       if( !strcmp(nombre_server, server.nombre) )
       {
         server.cola[indice] = 0;
+        server.qid[indice] = 0;
         server.pid[indice] = 0;
         if(m_pShMem->SetAt(INDEX_SERVER(i), &server, sizeof(SH_SERVER)) != 0)
         {
@@ -958,7 +960,9 @@ void CGMTdb::Dump()
       {
         if(server.cola[j] > 0)
         {
-          m_pLog->Add(1, "         Key 0x%08X (%i)", server.cola[j], server.pid[j]);
+          m_pLog->Add(1, "      Key:    0x%08X", server.cola[j]);
+          m_pLog->Add(1, "         Pid: %i", server.pid[j]);
+          m_pLog->Add(1, "         Id:  %i", server.qid[j]);
         }
         tot_svr++;
       }
@@ -1023,7 +1027,7 @@ int CGMTdb::DumpSrv(FILE* std, FILE* err)
       {
         if(server.cola[j])
         {
-          fprintf(std, "0x%08X (%i) ", server.cola[j], server.pid[j]);
+          fprintf(std, "(0x%08X %i) ", server.cola[j], server.qid[j]);
         }
       }
       fprintf(std, "\n");
@@ -1069,12 +1073,17 @@ vector <CGMTdb::CSrvTab> CGMTdb::ServerList(string& servicio, char tipo_mensaje)
   return ServerList(servicio.c_str(), tipo_mensaje);
 }
 
+/**
+ * Returns a list of servers associated with a given service name and message type.
+ * @param servicio The name of the service to search for. If NULL or empty, returns all servers.
+ * @param tipo_mensaje The message type to filter by, or '\0' to ignore message type.
+ * @return A vector of CSrvTab structures representing the matching servers.
+ */
 vector <CGMTdb::CSrvTab> CGMTdb::ServerList(const char*  servicio, char tipo_mensaje)
 {
   vector <CGMTdb::CSrvTab> svr_list;
   int i, j;
   SH_SERVER server;
-  CGMTdb::CSrvTab svr;
   SH_FUNCION funcion;
   CFcnTab fcn;
 
@@ -1088,17 +1097,25 @@ vector <CGMTdb::CSrvTab> CGMTdb::ServerList(const char*  servicio, char tipo_men
       }
       if(strlen(server.nombre))
       {
+        CGMTdb::CSrvTab svr; // Construct a new svr object per server
+        m_pLog->Add(1, "[CGMTdb::ServerList] Nombre:      %s", server.nombre);
+        m_pLog->Add(1, "[CGMTdb::ServerList] Descripcion: %s", server.descripcion);
+        m_pLog->Add(1, "[CGMTdb::ServerList] Modo:        %i", server.modo);
+        m_pLog->Add(1, "[CGMTdb::ServerList] Path:        %s", server.path);
+
         svr.nombre = server.nombre;
         svr.descripcion = server.descripcion;
         svr.modo = server.modo;
         svr.path = server.path;
-        svr.cola.clear();
-        svr.pid.clear();
         for(j = 0; j < MAX_SERVER_INSTANCES; j++)
         {
           if(server.cola[j] > 0 && server.pid[j] > 0)
           {
+            m_pLog->Add(1, "[CGMTdb::ServerList]  Cola %02i Key: 0x%08X", j, server.cola[j]);
+            m_pLog->Add(1, "[CGMTdb::ServerList]           Id:  %i", server.qid[j]);
+            m_pLog->Add(1, "[CGMTdb::ServerList]          Pid: %i", server.pid[j]);
             svr.cola.push_back(server.cola[j]);
+            svr.qid.push_back(server.qid[j]);
             svr.pid.push_back(server.pid[j]);
           }
         }
@@ -1117,6 +1134,7 @@ vector <CGMTdb::CSrvTab> CGMTdb::ServerList(const char*  servicio, char tipo_men
       if( !strcmp(funcion.nombre, servicio) &&
         (funcion.tipo_mensaje == tipo_mensaje || tipo_mensaje == '\0') )
       {
+        CGMTdb::CSrvTab svr; // Construct a new svr object per server
         svr.nombre = funcion.server;
         if(Server(svr) == 0)
         {

@@ -8,8 +8,8 @@ CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2
 LFLAGS=-L../../shared/$(PROG) -L../../queue/$(PROG)
 LIBS=-lgmshared -lgmqw
 OBJECTS=$(OBJ)/gmtimer.o $(OBJ)/wtimer.o $(OBJ)/gm_timer.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=gm_timer
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

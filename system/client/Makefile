@@ -9,8 +9,8 @@ DEFINE=$(GENERAL_DEFINES)
 CFLAGS=-fPIC
 LFLAGS=-L../shared/$(PROG) -shared
 OBJECTS=$(OBJ)/gmc.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=libgmc.so
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

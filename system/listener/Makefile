@@ -9,8 +9,8 @@ CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2
 LFLAGS=-L../shared/$(PROG)
 LIBS=-lgmshared -lssl -lcrypto
 OBJECTS=$(OBJ)/gmd.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=gmd
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

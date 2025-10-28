@@ -9,8 +9,8 @@ CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2
 LFLAGS=-L../../client/$(PROG) -L../../shared/$(PROG)
 LIBS=-lgmshared -lgmc -lssl -lcrypto
 OBJECTS=$(OBJ)/gm_safcfg.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=gm_safcfg
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

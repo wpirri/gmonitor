@@ -151,7 +151,7 @@ int CGMConfig::Process( const char *funcion, char typ,
       b.AddFormat(" %-32.32s %i ", v_svr[i].nombre.c_str(), v_svr[i].modo);
       for(j = 0; j < (int)v_svr[i].cola.size(); j++)
       {
-        b.AddFormat("0x%08X ", v_svr[i].cola[j]);
+        b.AddFormat("(Key: 0x%08X Id: %i) ", v_svr[i].cola[j], v_svr[i].qid[j]);
       }
       b += "\n";
     }

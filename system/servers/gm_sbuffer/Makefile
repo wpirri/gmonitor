@@ -9,8 +9,8 @@ CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2
 LFLAGS=-L../../shared/$(PROG) -L../../queue/$(PROG)
 LIBS=-lgmshared -lgmq
 OBJECTS=$(OBJ)/gm_sbuffer.o $(OBJ)/gmsbuffer.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=gm_sbuffer
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

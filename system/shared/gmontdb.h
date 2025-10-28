@@ -47,6 +47,7 @@ public:
 		int modo;
 		string path;
 		vector <int> cola;	/* para acelerar la busqueda de resolucion de servicios*/
+		vector <int> qid;	/* para poder eliminar colas por fuera */
 		vector <int> pid;	/* para acelerar la busqueda de control de servers */
 	} CSrvTab;
 	typedef struct _CSrvParTab
@@ -125,8 +126,8 @@ public:
 	vector <int> Cola(string& servicio, char tipo_mensaje);
 	vector <int> Cola(const char* servicio, char tipo_mensaje);
 	/* Para parametrizacion on line */
-	int AddSrv(string& nombre_server, int pid, int cola, int indice);
-	int AddSrv(const char* server, int pid, int cola, int indice);
+	int AddSrv(string& nombre_server, int pid, int cola, int qid, int indice);
+	int AddSrv(const char* server, int pid, int cola, int qid, int indice);
 	int RemoveSrv(string& server, int indice);
 	int RemoveSrv(const char* server, int indice);
 	int AddSvc(const char* servicio, char tipo_mensaje, const char* server);
@@ -149,8 +150,9 @@ protected:
 		char	descripcion[256];
 		int		modo;
 		char	path[256];
-		int		cola[MAX_SERVER_INSTANCES]; /*para distintas instancias de un mismo server*/
-		int		pid[MAX_SERVER_INSTANCES]; /*para distintas instancias de un mismo server*/
+		int cola[MAX_SERVER_INSTANCES]; /*para guardar el key de la cola*/
+		int qid[MAX_SERVER_INSTANCES];  /*para guardar el msqid por si hay que eliminarla desde afuera*/
+		int pid[MAX_SERVER_INSTANCES]; /*para guardar el pid del proceso*/
 	} SH_SERVER;
 	
 	typedef struct _SH_FUNCION

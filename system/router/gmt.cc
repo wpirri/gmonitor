@@ -136,7 +136,7 @@ int main(int argc, char** argv)
   signal(SIGCHLD, OnChildExit);
 
   pLog = new CGLog("gmt", LOG_FILES, loglevel);
-  pLog->Add(10, "Inicio");
+  pLog->Add(1, "Inicio");
   /* Cre el area de configuracion */
   pConfig = new CGMTdb(MONITOR_CONFIG_PATH,
         MAX_SERVERS, MAX_SERVICES, pLog);

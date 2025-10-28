@@ -8,8 +8,8 @@ CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2
 LFLAGS=-L../../shared/$(PROG) -L../../queue/$(PROG)
 LIBS=-lgmshared -lgmqw
 OBJECTS=$(OBJ)/transac.o $(OBJ)/wtimer.o $(OBJ)/gm_transac.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=gm_transac
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

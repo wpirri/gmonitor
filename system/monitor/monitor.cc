@@ -19,19 +19,48 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#include <gmerror.h>
+//#include <gmerror.h>
 #include <gmontdb.h>
+#include <gmstring.h>
+#include <sincmem.h>
 #include <glog.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <iostream>
+#include <cstdio>
+#include <fstream>
+#include <vector>
 using namespace std;
 
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+
+#define INDEX_SERVER( a ) (sizeof(CGMTdb::CSystemInfo) + ( a * sizeof(SH_SERVER)))
+#define INDEX_FUNCTION( a ) (sizeof(CGMTdb::CSystemInfo) + ( a * sizeof(SH_FUNCION)) + (MAX_SERVERS * sizeof(SH_SERVER) ))
+
+typedef struct _SH_SERVER
+{
+  char	nombre[33];
+  char	descripcion[256];
+  int		modo;
+  char	path[256];
+  int cola[MAX_SERVER_INSTANCES]; /*para guardar el key de la cola*/
+  int qid[MAX_SERVER_INSTANCES];  /*para guardar el msqid por si hay que eliminarla desde afuera*/
+  int pid[MAX_SERVER_INSTANCES]; /*para guardar el pid del proceso*/
+} SH_SERVER;
+
+typedef struct _SH_FUNCION
+{
+  char	nombre[33];
+  char	descripcion[256];
+  char	tipo_mensaje;
+  char	server[33];
+  int		suscripciones;
+} SH_FUNCION;
 
 int exit_flag;
 CGLog* pLog;
@@ -66,12 +95,12 @@ int LoadServerTable()
   string s;
   vector<string> vs;
 
-  in.open((m_config_path + "/" + GM_FILENAME_SERVER_DB).c_str());
+  in.open(MONITOR_CONFIG_PATH "/" GM_FILENAME_SERVER_DB);
   if(! in.is_open())
   {
     return -1;
   }
-  if(m_pLog)
+  if(pLog)
   {
     pLog->Add(50, "CGMTdb::LoadSrv");
   }
@@ -126,7 +155,7 @@ void SystemInfo( void )
 
         if(pLog->LogLevel() != si.log_level)
         {
-          pLog->LogLevel(si.log_level);
+          //pLog->LogLevel(si.log_level);
         }
       }
       else
@@ -148,57 +177,46 @@ void SystemInfo( void )
 
 void CheckServers( void )
 {
-  int i, j, rc;
-  CGMTdb* pConfig;
-  vector <CGMTdb::CSrvTab> v_svr;
+  int i;
+  int j;
+  CSincMem* pSHM;
+  SH_SERVER server;
+  int tot_svr = 0;
 
-  pConfig = new CGMTdb(MONITOR_CONFIG_PATH,MAX_SERVERS, MAX_SERVICES, pLog);
-  if(pConfig)
+  pSHM = new CSincMem(GM_CONFIG_KEY);
+  /* creo un espacio de memoria suficientemente
+  grande para contener todos los servers y todos los servicios */
+  if(pSHM->Open(  sizeof(CGMTdb::CSystemInfo) +
+                      (sizeof(SH_SERVER)*MAX_SERVERS) +
+                      (sizeof(SH_FUNCION)*MAX_SERVICES)
+                    ) != 0) return;
+
+  for(i = 0; i < MAX_SERVERS; i++)
   {
-    if(pConfig->Open() == 0)
+    if(pSHM->GetAt(INDEX_SERVER(i), &server, sizeof(SH_SERVER)) != 0)
     {
-      v_svr = pConfig->ServerList(NULL, 0);
-      for(i = 0; i < (int)v_svr.size(); i++)
+      pLog->Add(1, "ERROR en acceso de lectura a memoria compartida en CGMTdb::Dump INDEX_SERVER");
+      break;
+    }
+    if(strlen(server.nombre))
+    {
+      pLog->Add(1, "Server:        %s", server.nombre);
+      pLog->Add(1, "  Descripcion: %s", server.descripcion);
+      pLog->Add(1, "  Modo:        %i", server.modo);
+      pLog->Add(1, "  Path:        %s", server.path);
+      for(j = 0; j < MAX_SERVER_INSTANCES; j++)
       {
-        pLog->Add(100, "[MONITOR] Verificando server %s, %i instancias.", v_svr[i].nombre.c_str(), (int)v_svr[i].cola.size());
-
-        for(j = 0; j < (int)v_svr[i].cola.size(); j++)
+        if(server.cola[j] > 0)
         {
-          if(v_svr[i].pid[j] > 0 && v_svr[i].cola[j] > 0)
-          {
-            rc = kill(v_svr[i].pid[j], 0);
-            if(rc == 0)
-            {
-              pLog->Add(100, "[MONITOR] -> %i: [OK] (PID: %i Cola: 0x%08x)", (j+1), v_svr[i].pid[j], v_svr[i].cola[j]);
-            }
-            else
-            {
-              pLog->Add(100, "[MONITOR] -> %i: [ERROR] el proceso no se está ejecutando", (j+1));
-              pConfig->RemoveSrv(v_svr[i].nombre, j);
-              StartServer(v_svr[i].nombre.c_str());
-            }
-          }
-          else if(v_svr[i].pid[j] <= 0)
-          {
-            pLog->Add(100, "[MONITOR] -> %i: [ERROR] ID de proceso invalido", (j+1));
-          }
-          else if(v_svr[i].cola[j] <= 0)
-          {
-            pLog->Add(100, "[MONITOR] -> %i: [ERROR] valor de queue invalido", (j+1));
-          }
+          pLog->Add(1, " Instancia %3i Pid: %6i Cola: 0x%08X (%i)", 
+                j, server.pid[j], server.cola[j], server.qid[j]);
         }
+        tot_svr++;
       }
     }
-    else
-    {
-      pLog->Add(1, "ERROR: al abrir area de configuracion");
-    }
-    delete pConfig;
   }
-  else
-  {
-    pLog->Add(1, "ERROR: al acoplarse al area de configuracion");
-  }
+  pSHM->Close();
+  delete pSHM;
 }
 
 int main(int /*argc*/, char** /*argv*/)

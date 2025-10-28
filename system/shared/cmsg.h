@@ -43,6 +43,7 @@ public:
 	long Query(int key, const char* qmsg, long qlen, char* rmsg, long max_len, long to_cs);
 
 	int GetKey();
+	int GetId();
 	int GetIndex();
 	long GetCount();
 	long GetRemoteCount(int key);

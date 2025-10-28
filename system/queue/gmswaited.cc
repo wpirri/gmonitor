@@ -86,10 +86,10 @@ int CGMServerWait::Init(const char *server_name)
 		delete m_pLog;
 		return -1;
 	}
-	m_pLog->Add(100, "[gmswaited] Key: %i (%i)", m_pMsg->GetKey(), m_pMsg->GetIndex());
+	m_pLog->Add(1, "[gmswaited] AddServer Ppd: %i Key: %i Idx: %i Id: %i", getpid(), m_pMsg->GetKey(), m_pMsg->GetIndex(), m_pMsg->GetId());
 	/* actualizo en la base la clave de la cola de mensajes */
 	/* para que el monitor sepa donde mandar lo que es para este servidor */
-	if(m_pConfig->AddSrv(m_server_params.nombre, getpid(), m_pMsg->GetKey(), m_pMsg->GetIndex()))
+	if(m_pConfig->AddSrv(m_server_params.nombre, getpid(), m_pMsg->GetKey(), m_pMsg->GetId(), m_pMsg->GetIndex()))
 	{
 		m_pLog->Add(1, "[gmswaited] Error al registrar server");
 		delete m_pMsg;

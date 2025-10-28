@@ -3,8 +3,8 @@
 include ../../configure.mk
 
 OBJECTS=$(OBJ)/des.o $(OBJ)/sec.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=gmcrypt
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

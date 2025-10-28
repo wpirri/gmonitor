@@ -10,8 +10,8 @@ LFLAGS=-L../shared/$(PROG)
 LIBS=-lgmshared -lssl -lcrypto
 
 OBJECTS_GMQ=$(OBJ)/gmsbase.o $(OBJ)/gmq.o $(OBJ)/gms.o
-OUTPUT_GMQ=$(PROG)/$(EXE_GMQ)
 EXE_GMQ=gmq
+OUTPUT_GMQ=$(PROG)/$(EXE_GMQ)
 
 OBJECTS_LGMQ=$(OBJ)/gmsbase.o $(OBJ)/gmq.o
 OUTPUT_LGMQ=$(PROG)/$(EXE_LGMQ)

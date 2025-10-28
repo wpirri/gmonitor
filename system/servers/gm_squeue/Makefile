@@ -9,8 +9,8 @@ CXXFLAGS=$(PROCESSOR-PARAMS) -g -Wall -Wextra -MMD -O2
 LFLAGS=-L../../shared/$(PROG) -L../../queue/$(PROG)
 LIBS=-lgmshared -lgmq
 OBJECTS=$(OBJ)/gmsafile.o $(OBJ)/gmsaf.o $(OBJ)/gm_squeue.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=gm_squeue
+OUTPUT=$(PROG)/$(EXE)
 
 all: $(OUTPUT)
 

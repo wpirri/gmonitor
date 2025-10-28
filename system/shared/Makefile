@@ -11,8 +11,8 @@ CFLAGS=-fPIC
 OBJECTS=$(OBJ)/cmsg.o $(OBJ)/glog.o $(OBJ)/gmcomm.o $(OBJ)/gmessage.o $(OBJ)/gmidat.o $(OBJ)/gmontdb.o \
 	$(OBJ)/shmem.o $(OBJ)/sincro.o $(OBJ)/ctcp.o $(OBJ)/gmbuffer.o $(OBJ)/gmerror.o $(OBJ)/gmheader.o \
 	$(OBJ)/gmisc.o $(OBJ)/gmstring.o $(OBJ)/sincmem.o
-OUTPUT=$(PROG)/$(EXE)
 EXE=libgmshared.so
+OUTPUT=$(PROG)/$(EXE)
 HEADER_FILES=cmsg.h glog.h gmcomm.h gmerror.h gmheader.h gmisc.h gmshared.h msgtype.h sincmem.h svcstru.h \
 			ctcp.h gmbuffer.h gmconst.h gmessage.h gmidat.h gmontdb.h gmstring.h shmem.h sincro.h
 
