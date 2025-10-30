@@ -38,6 +38,7 @@ using namespace std;
 #include <string.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/msg.h>
 
 #define INDEX_SERVER( a ) (sizeof(CGMTdb::CSystemInfo) + ( a * sizeof(SH_SERVER)))
 #define INDEX_FUNCTION( a ) (sizeof(CGMTdb::CSystemInfo) + ( a * sizeof(SH_FUNCION)) + (MAX_SERVERS * sizeof(SH_SERVER) ))
@@ -155,7 +156,7 @@ void SystemInfo( void )
 
         if(pLog->LogLevel() != si.log_level)
         {
-          //pLog->LogLevel(si.log_level);
+          pLog->LogLevel(si.log_level);
         }
       }
       else
@@ -181,7 +182,8 @@ void CheckServers( void )
   int j;
   CSincMem* pSHM;
   SH_SERVER server;
-  int tot_svr = 0;
+  struct msqid_ds qds;
+  char s[256];
 
   pSHM = new CSincMem(GM_CONFIG_KEY);
   /* creo un espacio de memoria suficientemente
@@ -200,19 +202,46 @@ void CheckServers( void )
     }
     if(strlen(server.nombre))
     {
-      pLog->Add(1, "Server:        %s", server.nombre);
-      pLog->Add(1, "  Descripcion: %s", server.descripcion);
-      pLog->Add(1, "  Modo:        %i", server.modo);
-      pLog->Add(1, "  Path:        %s", server.path);
+      pLog->Add(100, "Server:        %s", server.nombre);
+      pLog->Add(100, "  Descripcion: %s", server.descripcion);
+      pLog->Add(100, "  Modo:        %i", server.modo);
+      pLog->Add(100, "  Path:        %s", server.path);
+      sprintf(s, "Server: %-20.20s", server.nombre);
       for(j = 0; j < MAX_SERVER_INSTANCES; j++)
       {
         if(server.cola[j] > 0)
         {
-          pLog->Add(1, " Instancia %3i Pid: %6i Cola: 0x%08X (%i)", 
-                j, server.pid[j], server.cola[j], server.qid[j]);
+          pLog->Add(100, "  Instancia %i: ", j); 
+          sprintf(&s[strlen(s)], " - [%i] PID: %06i ", j, server.pid[j]);
+          if(kill(server.pid[j], 0) == 0)
+          {
+            pLog->Add(100, "    Pid:  %6i  Ok", server.pid[j]);
+            strcat(s, "Ok    ");
+          }
+          else
+          {
+            pLog->Add(100, "    Pid:  %6i  Error", server.pid[j]);
+            strcat(s, "Error ");
+            /* Hay que limpiar esta instancia de este server */
+
+
+
+
+
+          }
+          if(msgctl(server.qid[j], IPC_STAT, &qds) != 0)
+          {
+            pLog->Add(100, "    Cola: Error");
+            strcat(s, " Q: Error ");
+          }
+          else
+          {
+            pLog->Add(100, "    Cola: %li msgs", qds.msg_qnum);
+            sprintf(&s[strlen(s)], " Q: %li msgs ", qds.msg_qnum);
+          }
         }
-        tot_svr++;
       }
+      pLog->Add(1, "[MONITOR] %s", s);
     }
   }
   pSHM->Close();
