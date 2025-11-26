@@ -182,16 +182,16 @@ long CMsg::Receive(CGMBuffer* msg, long to_cs)
 	long from;
 
 	/* verifivc que se haya hecho el Open */
-	if(m_fd == -1) return -1;
+	if(m_fd == -1) return (-1);
 	rc = Wait(to_cs);
-	if(rc < 0) return -1; /* error */
+	if(rc < 0) return (-2); /* error */
 	if(rc == 0) return 0; /* time-out */
 	//data = (char*)malloc(rc + sizeof(long));
 	if((len = msgrcv(m_fd, data, rc + sizeof(long), -10, 0)) < 0)
 	{
 		m_error = errno;
 		//free(data);
-		return -1;
+		return (-3);
 	}
 	/* copy en la variable from el segundo long que viene en el mensaje
 	que corresponde al ID de la cola donde se espera la respuesta */
@@ -204,7 +204,7 @@ long CMsg::Receive(CGMBuffer* msg, long to_cs)
 	*msg = "";
 	msg->Add((char*)(data + (2*sizeof(long))), len - (2*sizeof(long)));
     //free(data);
-	return from;
+	return (from>0)?from:(-5);
 }
 
 long CMsg::Receive(char* msg, long max_len, long to_cs)
@@ -216,14 +216,14 @@ long CMsg::Receive(char* msg, long max_len, long to_cs)
 	/* verifivc que se haya hecho el Open */
 	if(m_fd == -1) return (-1);
 	rc = Wait(to_cs);
-	if(rc < 0) return (-1); /* error */
+	if(rc < 0) return (-2); /* error */
 	if(rc == 0) return 0; /* time-out */
 	//data = (char*)malloc(rc + sizeof(long));
 	if((len = msgrcv(m_fd, (char*)&data[0], rc + sizeof(long), -10, 0)) < 0)
 	{
 		m_error = errno;
 		//free(data);
-		return (-1);
+		return (-3);
 	}
 	/* copy en la variable from el segundo long que viene en el mensaje
 	que corresponde al ID de la cola donde se espera la respuesta */
@@ -237,11 +237,11 @@ long CMsg::Receive(char* msg, long max_len, long to_cs)
 		/* el mensaje real viene 2 long despu del comienzo del buffer */
 		memcpy(msg, (char*)((&data[0])+(2*sizeof(long))), len - (2*sizeof(long)));
 		//free(data);
-		return from;
+		return (from>0)?from:(-5);
 	}
 	else
 	{
-		return (-1);
+		return (-4);
 	}
 }
 
@@ -252,13 +252,13 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 	long rc, len;
 	bool close_on_exit = false;
 
-	if( key <= 0 || !qmsg || !rmsg ) return -1; /* deben existir */
+	if( key <= 0 || !qmsg || !rmsg ) return (-1); /* deben existir */
 	/* verifico que se haya hecho el Open */
 	if(m_fd == -1)
 	{
 		if(Open(NULL) != 0)
 		{
-			return -1;
+			return (-2);
 		}
 		close_on_exit = true;
 	}
@@ -266,7 +266,7 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 	if((fd = msgget(key, 0)) == -1)
 	{
 		m_error = errno;
-		return -1;
+		return (-3);
 	}
 	/* aloco memoria para el numero de canal, el ID de la cola de retorno y los datos */
 	//data = (char*)malloc((2*sizeof(long)) + qmsg->Length());
@@ -285,7 +285,7 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 		//free(data);
 		close(fd);
 		if(close_on_exit) Close();
-		return -1;
+		return (-4);
 	}
 	//free(data);
 	close(fd);
@@ -294,7 +294,7 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 	if(rc < 0)
 	{
 		if(close_on_exit) Close();
-		return -1; /* error */
+		return (-5); /* error */
 	}
 	if(rc == 0)
 	{
@@ -309,7 +309,7 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 		m_error = errno;
 		//free(data);
 		if(close_on_exit) Close();
-		return -1;
+		return (-6);
 	}
 	*rmsg = "";
 	rmsg->Add((char*)(data + sizeof(long)), len - sizeof(long));
@@ -325,13 +325,13 @@ long CMsg::Query(int key, const char* qmsg, long qlen, char* rmsg, long rmax_len
 	long rc, len;
 	bool close_on_exit = false;
 
-	if( key <= 0 || !qmsg || !rmsg ) return -1; /* deben existir */
+	if( key <= 0 || !qmsg || !rmsg ) return (-1); /* deben existir */
 	/* verifico que se haya hecho el Open */
 	if(m_fd == -1)
 	{
 		if(Open(NULL) != 0)
 		{
-			return -1;
+			return (-2);
 		}
 		close_on_exit = true;
 	}
@@ -339,7 +339,7 @@ long CMsg::Query(int key, const char* qmsg, long qlen, char* rmsg, long rmax_len
 	if((fd = msgget(key, 0)) == -1)
 	{
 		m_error = errno;
-		return -1;
+		return (-3);
 	}
 	/* en el primer long es el canal */
 	memcpy(&data[0], &m_priority, sizeof(long));
@@ -356,7 +356,7 @@ long CMsg::Query(int key, const char* qmsg, long qlen, char* rmsg, long rmax_len
 		//free(data);
 		close(fd);
 		if(close_on_exit) Close();
-		return -1;
+		return (-4);
 	}
 	//free(data);
 	close(fd);
@@ -365,7 +365,7 @@ long CMsg::Query(int key, const char* qmsg, long qlen, char* rmsg, long rmax_len
 	if(rc < 0)
 	{
 		if(close_on_exit) Close();
-		return -1; /* error */
+		return (-5); /* error */
 	}
 	if(rc == 0)
 	{
@@ -380,7 +380,7 @@ long CMsg::Query(int key, const char* qmsg, long qlen, char* rmsg, long rmax_len
 		m_error = errno;
 		//free(data);
 		if(close_on_exit) Close();
-		return -1;
+		return (-6);
 	}
 	if(len <= rmax_len)
 	{
