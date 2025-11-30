@@ -252,7 +252,7 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 	long rc, len;
 	bool close_on_exit = false;
 
-	if( key <= 0 || !qmsg || !rmsg ) return (-1); /* deben existir */
+	if( key <= 0 || !qmsg ) return (-1); /* deben existir */
 	/* verifico que se haya hecho el Open */
 	if(m_fd == -1)
 	{
@@ -274,21 +274,22 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 	memcpy(data, &m_priority, sizeof(long));
 	/* vuelvo a cargar el default */
 	m_priority = MSG_DEFAULT_PRIORITY;
-	/* despu�s el ID de la cola para la respuesta */
+	/* despues el ID de la cola para la respuesta */
 	memcpy((char*)(data+sizeof(long)), &m_key, sizeof(long));
-	/* despu�s los datos */
+	/* despues los datos */
 	memcpy((char*)(data+(2*sizeof(long))), qmsg->Data(), qmsg->Length());
 	/* envio */
 	if(msgsnd(fd, data, (2*sizeof(long)) + qmsg->Length(), 0) == -1)
 	{
 		m_error = errno;
-		//free(data);
 		close(fd);
 		if(close_on_exit) Close();
 		return (-4);
 	}
-	//free(data);
 	close(fd);
+
+	if(!rmsg) return 0;
+
 	/* recepcion */
 	rc = Wait(to_cs);
 	if(rc < 0)
@@ -301,19 +302,16 @@ int CMsg::Query(int key, CGMBuffer* qmsg, CGMBuffer* rmsg, long to_cs)
 		if(close_on_exit) Close();
 		return 0; /* time-out */
 	}
-	/* aloco memoria suficiente para lo que haya en la cola */
-	//data = (char*)malloc(rc + sizeof(long));
 	/* me lo traigo */
 	if((len = msgrcv(m_fd, data, rc + sizeof(long), -10, 0)) < 0)
 	{
 		m_error = errno;
-		//free(data);
 		if(close_on_exit) Close();
 		return (-6);
 	}
 	*rmsg = "";
 	rmsg->Add((char*)(data + sizeof(long)), len - sizeof(long));
-	//free(data);
+
 	if(close_on_exit) Close();
 	return (len - sizeof(long));
 }

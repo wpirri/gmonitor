@@ -534,7 +534,19 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       {
         pLog->Add(100, "MsgQuery - Enviando %s por cola 0x%X", in->Funcion(), cola);
         pMsg->Query(cola, &buff_in, &buff_out, 3000);
-
+        /*
+        if(( rc = pMsg->Query(cola, &buff_in, &buff_out, 3000)) <= 0)
+        {
+          if(rc < 0)
+          {
+            pLog->Add(1, "MsgQuery - ERROR Enviando %s por cola 0x%X", in->Funcion(), cola);
+          }
+          else
+          {
+            pLog->Add(1, "MsgQuery - Time-Out Enviando %s por cola 0x%X", in->Funcion(), cola);
+          }
+        }
+        */
         exit(0);
       }
       break;
@@ -542,6 +554,8 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       /*  Evento 
           Se envía a todos los suscriptores sin esperar respuesta
       */
+      /* Se envia a todas */
+      /*pLog->Add(50, "Buscando %s en modo %c", in->Funcion(), in->TipoMensaje());*/
       lista_colas = pConfig->Cola(in->Funcion(), in->TipoMensaje());
       if((vlen = lista_colas.size()) == 0)
       {
@@ -569,6 +583,19 @@ void MsgQuery(CGMessage* in, CGMessage* out)
         {
           pLog->Add(100, "MsgQuery - Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
           pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000);
+          /*
+          if(( rc = pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000)) <= 0)
+          {
+            if(rc < 0)
+            {
+              pLog->Add(1, "MsgQuery - ERROR Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
+            }
+            else
+            {
+              pLog->Add(1, "MsgQuery - Time-Out Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
+            }
+          }
+          */
         }
         exit(0);
       }
