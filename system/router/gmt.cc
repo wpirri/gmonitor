@@ -53,8 +53,8 @@ int SelectQueue(const char* funcion, char tipo_mensaje);
 void LogMessage(const char* label, CGMessage* msg);
 
 CGLog* pLog;
+CGLog* pAudit;
 CGMTdb* pConfig;
-CMsg *pMsg;
 CGMTdb::CSystemInfo si;
 
 
@@ -66,9 +66,9 @@ int main(int argc, char** argv)
   int pid;
   int loglevel = 20;
   FILE* f_pid;
-  pMsg = NULL;
-  pConfig = NULL;
-  pLog = NULL;
+  pConfig = nullptr;
+  pLog = nullptr;
+  pAudit = nullptr;
 
   /* se empieza a leer del parametro 0 porque inetd manda aca
   el primer argumento, no se si es un bug pero asi se safa */
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
   if(daemon || tokill)
   {
     /* caturo el pid de una corrida anterior */
-    if((f_pid = fopen(PID_FILE, "rb")) != NULL)
+    if((f_pid = fopen(PID_FILE, "rb")) != nullptr)
     {
       fread(&pid, sizeof(int), 1, f_pid);
       fclose(f_pid);
@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     /* guardo el pid actual */
 
     pid = getpid();
-    if((f_pid = fopen(PID_FILE, "wb")) != NULL)
+    if((f_pid = fopen(PID_FILE, "wb")) != nullptr)
     {
       fwrite(&pid, sizeof(int), 1, f_pid);
       fclose(f_pid);
@@ -137,6 +137,7 @@ int main(int argc, char** argv)
 
   pLog = new CGLog("gmt", LOG_FILES, loglevel);
   pLog->Add(1, "Inicio");
+  pAudit = new CGLog("gmaudit", LOG_FILES, 100);
   /* Cre el area de configuracion */
   pConfig = new CGMTdb(MONITOR_CONFIG_PATH,
         MAX_SERVERS, MAX_SERVICES, pLog);
@@ -145,6 +146,7 @@ int main(int argc, char** argv)
     pLog->Add(1, "Error al cargar configuracion");
     delete pConfig;
     delete pLog;
+    delete pAudit;
     return -1;
   }
   
@@ -173,9 +175,9 @@ void Reload(int /*sig*/)
 void OnClose(int sig )
 {
   pLog->Add(1, "Saliendo por signal %i", sig);
-  if(pMsg) delete pMsg;
   if(pConfig) delete pConfig;
   if(pLog) delete pLog;
+  if(pAudit) delete pAudit;
   exit(0);
 }
 
@@ -201,6 +203,7 @@ int MsgRouter()
 {
   int rc;
   int from;
+  CMsg *pMsg;
   CGMessage *pinmsg;
   CGMessage *poutmsg;
   CGMessage *pin2msg;
@@ -218,7 +221,13 @@ int MsgRouter()
   poutmsg = new CGMessage;
   pbuffer = new CGMBuffer;
 
-  pMsg->Open();
+  pLog->Add(100, "[MsgRouter] Creando cola de mensajes del router");
+  if(pMsg->Open() != 0)
+  {
+    pLog->Add(1, "[MsgRouter] ERROR: Creando cola de mensajes");
+    delete pMsg;
+    return (-1);
+  }
 
   /* Inicializacion de mediciones de TPS */
   next_measure = time(&next_measure);
@@ -229,10 +238,10 @@ int MsgRouter()
   do
   {
     pbuffer->Clear();
-    pLog->Add(100, "Esperando mensaje");
+    pLog->Add(100, "[MsgRouter] Esperando mensaje");
     if((from = pMsg->Receive(pbuffer)) < 0)
     {
-      pLog->Add(10, "Error de comunicacion");
+      pLog->Add(10, "[MsgRouter] Error de recepcion de mensaje");
       break;
     }
 
@@ -253,181 +262,183 @@ int MsgRouter()
       next_measure = curr_measure + 10;
     }
 
-    /* Forkeo para que el hijo se quede procesando el mensaje mientras
-            el padre queda listo para atender otro */
-    if(fork() == 0)
+    /*  Forkeo 
+        El hijo se quede procesando el mensaje mientras
+        El Padre retoma el loop
+    */
+    if(fork() > 0) continue;
+
+    pLog->Add(100, "[MsgRouter] Forkeando para procesar mensaje");
+    if((rc = pinmsg->SetMsg(pbuffer)) < 0)
     {
-      pLog->Add(100, "Forkeando para procesar mensaje");
-      if((rc = pinmsg->SetMsg(pbuffer)) < 0)
+      pLog->Add(10, "[MsgRouter] Error en el mensaje recibido");
+      exit(0);
+    }
+    pinmsg->IdRouter(getpid());
+    LogMessage("IN", pinmsg);
+    /* Discrmino el tratamiento para los mensajes interactivos */
+    if(pinmsg->TipoMensaje() == GM_MSG_TYPE_INT)
+    {
+      pLog->Add(100, "[MsgRouter] Mensaje interactivo");
+      /* Me fijo si es el primer requerimiento */
+      if( !pinmsg->IdMoreData())
       {
-        pLog->Add(10, "Error en el mensaje recibido");
-        exit(0);
-      }
-      pinmsg->IdRouter(getpid());
-      LogMessage("IN", pinmsg);
-      /* Discrmino el tratamiento para los mensajes interactivos */
-      if(pinmsg->TipoMensaje() == GM_MSG_TYPE_INT)
-      {
-        pLog->Add(100, "Mensaje interactivo");
-        /* Me fijo si es el primer requerimiento */
-        if( !pinmsg->IdMoreData())
+        pLog->Add(100, "[MsgRouter] Inicio de mensaje interactivo");
+        /* Si es el primero tiro la consulta y despu�s trato la respuesta */
+        MsgQuery(pinmsg, poutmsg);
+        /* No me importa si sali� OK o no, igual me fijo los datos
+        a ver si tengo que recortar */
+        if(poutmsg->GetDataLen() > pinmsg->TamMaxMensaje())
         {
-          pLog->Add(100, "Inicio de mensaje interactivo");
-          /* Si es el primero tiro la consulta y despu�s trato la respuesta */
-          MsgQuery(pinmsg, poutmsg);
-          /* No me importa si sali� OK o no, igual me fijo los datos
-          a ver si tengo que recortar */
-          if(poutmsg->GetDataLen() > pinmsg->TamMaxMensaje())
-          {
-            /* Hay que recortar */
-            pLog->Add(100, "El mensaje necesita continuacion");
-            /* Anoto el tama�o del mensaje completo antes de recortarlo */
-            poutmsg->TamTotMensaje(poutmsg->GetDataLen());
-            /* para el mensaje el servicio de buffer necesito dos contenedores nuevos */
-            pin2msg = new CGMessage;
-            pout2msg = new CGMessage;
-            /* preparo los datos para el servicio de buffer */
-            psbuffer_len = sizeof(ST_SBUFFER) + poutmsg->GetDataLen();
-            psbuffer = (ST_SBUFFER*)calloc(psbuffer_len, sizeof(char));
-            psbuffer->new_buffer.len = poutmsg->GetDataLen();
-            memcpy(&psbuffer->new_buffer.data[0], poutmsg->GetData(),
-              psbuffer->new_buffer.len);
-            /* recorto el mensaje que voy a devolver al tama�o maximo */
-            poutmsg->SetData(&psbuffer->new_buffer.data[0], pinmsg->TamMaxMensaje());
-            /*la vuelta del query la uso para armar el mensaje del servicio de buffers*/
-            pin2msg->SetMsg(poutmsg->GetMsg(), poutmsg->GetHeaderLen());
-            pin2msg->Funcion(".new_buffer");
-            pin2msg->TipoMensaje(GM_MSG_TYPE_CR);
-            pin2msg->SecuenciaConsulta(0);
-            pin2msg->SetData(psbuffer, psbuffer_len);
-            /* lo borro ahora asi puedo usar la variable para la respuesta */
-            free(psbuffer);
-            /* nuevo query */
-            LogMessage("IN", pin2msg);
-            MsgQuery(pin2msg, pout2msg);
-            LogMessage("OUT", pout2msg);
-            /* verifico el valor de retorno */
-            if((rc = pout2msg->CodigoRetorno()) == GME_OK)
-            {
-              /*casteo un puntero a los datos devueltos por el servicio de buffer*/
-              psbuffer = (ST_SBUFFER*)pout2msg->GetData();
-              /* paso el ID del buffer a la respuesta */
-              poutmsg->IdMoreData(psbuffer->new_buffer.id);
-              /* Retorno indicaci�n de mas datos */
-              poutmsg->CodigoRetorno(GME_MORE_DATA);
-            }
-            else
-            {
-              pLog->Add(10, "ERROR %i en servicio .new_buffer", rc);
-              poutmsg->SetData(NULL, 0);
-              poutmsg->TamTotMensaje(0);
-              poutmsg->CodigoRetorno(rc);
-            }
-            delete pin2msg;
-            delete pout2msg;
-          }
-        }
-        else /* interactivo - continuacion */
-        {
-          pLog->Add(100, "Continuacion de mensaje interactivo %u", pinmsg->IdMoreData());
-          /* Si tengo valor en IdMoreData es porque estoy pidiendo mas datos */
-          poutmsg->SetResponse(pinmsg);
-          /* Los datos del responder en este caso son los del router */
-          poutmsg->OrigenRespuesta(GM_ORIG_ROUTER);
-          poutmsg->IdDestino(getpid());
+          /* Hay que recortar */
+          pLog->Add(100, "[MsgRouter] El mensaje necesita continuacion");
+          /* Anoto el tama�o del mensaje completo antes de recortarlo */
+          poutmsg->TamTotMensaje(poutmsg->GetDataLen());
           /* para el mensaje el servicio de buffer necesito dos contenedores nuevos */
           pin2msg = new CGMessage;
           pout2msg = new CGMessage;
           /* preparo los datos para el servicio de buffer */
-          psbuffer_len = sizeof(ST_SBUFFER);
+          psbuffer_len = sizeof(ST_SBUFFER) + poutmsg->GetDataLen();
           psbuffer = (ST_SBUFFER*)calloc(psbuffer_len, sizeof(char));
-          psbuffer->get_buffer.id = pinmsg->IdMoreData();
-          psbuffer->get_buffer.offset = pinmsg->IndiceMensaje();
-          psbuffer->get_buffer.maxlen = pinmsg->TamMaxMensaje();
-          /* Armo la consulta al servicio de buffer */
+          psbuffer->new_buffer.len = poutmsg->GetDataLen();
+          memcpy(&psbuffer->new_buffer.data[0], poutmsg->GetData(),
+            psbuffer->new_buffer.len);
+          /* recorto el mensaje que voy a devolver al tama�o maximo */
+          poutmsg->SetData(&psbuffer->new_buffer.data[0], pinmsg->TamMaxMensaje());
+          /*la vuelta del query la uso para armar el mensaje del servicio de buffers*/
           pin2msg->SetMsg(poutmsg->GetMsg(), poutmsg->GetHeaderLen());
-          pin2msg->Funcion(".get_buffer");
+          pin2msg->Funcion(".new_buffer");
           pin2msg->TipoMensaje(GM_MSG_TYPE_CR);
           pin2msg->SecuenciaConsulta(0);
           pin2msg->SetData(psbuffer, psbuffer_len);
-          /* ya no lo necesito */
+          /* lo borro ahora asi puedo usar la variable para la respuesta */
           free(psbuffer);
           /* nuevo query */
           LogMessage("IN", pin2msg);
           MsgQuery(pin2msg, pout2msg);
           LogMessage("OUT", pout2msg);
+          /* verifico el valor de retorno */
           if((rc = pout2msg->CodigoRetorno()) == GME_OK)
           {
-            /* casteo un puntero a los datos devueltos por el servicio de buffer */
+            /*casteo un puntero a los datos devueltos por el servicio de buffer*/
             psbuffer = (ST_SBUFFER*)pout2msg->GetData();
-            poutmsg->SetData(&psbuffer->get_buffer.data[0], psbuffer->get_buffer.len);
-            /* seteo los valores necesarios para pedir el resto de los pedacitos */
-            poutmsg->TamTotMensaje(psbuffer->get_buffer.totlen);
-            /*comparando los tama�os  me doy cuenta de que ya no necesito mas el buffer*/
-            if(psbuffer->get_buffer.len < pinmsg->TamMaxMensaje())
-            {
-              /* si es el ultimo mensaje borro el buffer */
-              psbuffer_len = sizeof(ST_SBUFFER);
-              psbuffer = (ST_SBUFFER*)calloc(psbuffer_len, sizeof(char));
-              psbuffer->del_buffer.id = pinmsg->IdMoreData();
-              /* Armo la consulta al servicio de buffer */
-              pin2msg->SetMsg(poutmsg->GetMsg(), poutmsg->GetHeaderLen());
-              pin2msg->Funcion(".del_buffer");
-              pin2msg->TipoMensaje(GM_MSG_TYPE_NOT);
-              pin2msg->SecuenciaConsulta(0);
-              pin2msg->SetData(psbuffer, psbuffer_len);
-              /* ya no lo necesito */
-              free(psbuffer);
-              /* nuevo query */
-              LogMessage("IN", pin2msg);
-              MsgQuery(pin2msg, pout2msg);
-              LogMessage("OUT", pout2msg);
-              /* el ultimo mensaje lleva el OK */
-              poutmsg->CodigoRetorno(GME_OK);
-            }
-            else
-            {
-              /* El codigo de error indica que el mensaje tiene continuacion */
-              poutmsg->CodigoRetorno(GME_MORE_DATA);
-            }
+            /* paso el ID del buffer a la respuesta */
+            poutmsg->IdMoreData(psbuffer->new_buffer.id);
+            /* Retorno indicaci�n de mas datos */
+            poutmsg->CodigoRetorno(GME_MORE_DATA);
           }
           else
           {
-            pLog->Add(10, "ERROR %i en servicio .get_buffer", rc);
+            pLog->Add(10, "[MsgRouter] ERROR %i en servicio .new_buffer", rc);
+            poutmsg->SetData(nullptr, 0);
+            poutmsg->TamTotMensaje(0);
             poutmsg->CodigoRetorno(rc);
           }
           delete pin2msg;
           delete pout2msg;
         }
       }
-      else
+      else /* interactivo - continuacion */
       {
-        if( !strcmp(pinmsg->Funcion(), ".log-level"))
+        pLog->Add(100, "[MsgRouter] Continuacion de mensaje interactivo %u", pinmsg->IdMoreData());
+        /* Si tengo valor en IdMoreData es porque estoy pidiendo mas datos */
+        poutmsg->SetResponse(pinmsg);
+        /* Los datos del responder en este caso son los del router */
+        poutmsg->OrigenRespuesta(GM_ORIG_ROUTER);
+        poutmsg->IdDestino(getpid());
+        /* para el mensaje el servicio de buffer necesito dos contenedores nuevos */
+        pin2msg = new CGMessage;
+        pout2msg = new CGMessage;
+        /* preparo los datos para el servicio de buffer */
+        psbuffer_len = sizeof(ST_SBUFFER);
+        psbuffer = (ST_SBUFFER*)calloc(psbuffer_len, sizeof(char));
+        psbuffer->get_buffer.id = pinmsg->IdMoreData();
+        psbuffer->get_buffer.offset = pinmsg->IndiceMensaje();
+        psbuffer->get_buffer.maxlen = pinmsg->TamMaxMensaje();
+        /* Armo la consulta al servicio de buffer */
+        pin2msg->SetMsg(poutmsg->GetMsg(), poutmsg->GetHeaderLen());
+        pin2msg->Funcion(".get_buffer");
+        pin2msg->TipoMensaje(GM_MSG_TYPE_CR);
+        pin2msg->SecuenciaConsulta(0);
+        pin2msg->SetData(psbuffer, psbuffer_len);
+        /* ya no lo necesito */
+        free(psbuffer);
+        /* nuevo query */
+        LogMessage("IN", pin2msg);
+        MsgQuery(pin2msg, pout2msg);
+        LogMessage("OUT", pout2msg);
+        if((rc = pout2msg->CodigoRetorno()) == GME_OK)
         {
-          pConfig->GetSysInfo(&tsi);
-          tsi.log_level = subint(pinmsg->GetData(), 0, pinmsg->GetDataLen());
-          pConfig->SetSysInfo(tsi);
-          pLog->LogLevel(tsi.log_level);
+          /* casteo un puntero a los datos devueltos por el servicio de buffer */
+          psbuffer = (ST_SBUFFER*)pout2msg->GetData();
+          poutmsg->SetData(&psbuffer->get_buffer.data[0], psbuffer->get_buffer.len);
+          /* seteo los valores necesarios para pedir el resto de los pedacitos */
+          poutmsg->TamTotMensaje(psbuffer->get_buffer.totlen);
+          /*comparando los tama�os  me doy cuenta de que ya no necesito mas el buffer*/
+          if(psbuffer->get_buffer.len < pinmsg->TamMaxMensaje())
+          {
+            /* si es el ultimo mensaje borro el buffer */
+            psbuffer_len = sizeof(ST_SBUFFER);
+            psbuffer = (ST_SBUFFER*)calloc(psbuffer_len, sizeof(char));
+            psbuffer->del_buffer.id = pinmsg->IdMoreData();
+            /* Armo la consulta al servicio de buffer */
+            pin2msg->SetMsg(poutmsg->GetMsg(), poutmsg->GetHeaderLen());
+            pin2msg->Funcion(".del_buffer");
+            pin2msg->TipoMensaje(GM_MSG_TYPE_NOT);
+            pin2msg->SecuenciaConsulta(0);
+            pin2msg->SetData(psbuffer, psbuffer_len);
+            /* ya no lo necesito */
+            free(psbuffer);
+            /* nuevo query */
+            LogMessage("IN", pin2msg);
+            MsgQuery(pin2msg, pout2msg);
+            LogMessage("OUT", pout2msg);
+            /* el ultimo mensaje lleva el OK */
+            poutmsg->CodigoRetorno(GME_OK);
+          }
+          else
+          {
+            /* El codigo de error indica que el mensaje tiene continuacion */
+            poutmsg->CodigoRetorno(GME_MORE_DATA);
+          }
         }
-        MsgQuery(pinmsg, poutmsg);
+        else
+        {
+          pLog->Add(10, "[MsgRouter] ERROR %i en servicio .get_buffer", rc);
+          poutmsg->CodigoRetorno(rc);
+        }
+        delete pin2msg;
+        delete pout2msg;
       }
-      LogMessage("OUT", poutmsg);
-      pbuffer->Set(poutmsg->GetMsg(), poutmsg->GetMsgLen());
-      if(pMsg->Send(from, pbuffer) != 0)
+    }
+    else
+    {
+      if( !strcmp(pinmsg->Funcion(), ".log-level"))
       {
-        pLog->Add(10, "Error al devolver el mensaje");
+        pConfig->GetSysInfo(&tsi);
+        tsi.log_level = subint(pinmsg->GetData(), 0, pinmsg->GetDataLen());
+        pConfig->SetSysInfo(tsi);
+        pLog->LogLevel(tsi.log_level);
       }
-      /* Establesco las condiciones para que el ciclo del mensaje continue o finalice */
-      if( poutmsg->TipoMensaje() != GM_MSG_TYPE_R_INT ||
-        (poutmsg->TipoMensaje() == GM_MSG_TYPE_R_INT && poutmsg->CodigoRetorno() != GME_MORE_DATA))
-      {
-        /* limpio el buffer de moredata */
+      MsgQuery(pinmsg, poutmsg);
+    }
+    LogMessage("OUT", poutmsg);
+    pbuffer->Set(poutmsg->GetMsg(), poutmsg->GetMsgLen());
+    if(pMsg->Send(from, pbuffer) != 0)
+    {
+      pLog->Add(10, "[MsgRouter] Error al devolver el mensaje");
+    }
+    /* Establesco las condiciones para que el ciclo del mensaje continue o finalice */
+    if( poutmsg->TipoMensaje() != GM_MSG_TYPE_R_INT ||
+      (poutmsg->TipoMensaje() == GM_MSG_TYPE_R_INT && poutmsg->CodigoRetorno() != GME_MORE_DATA))
+    {
+      /* limpio el buffer de moredata */
 
 
-      }
-      /* Una vez terminada su tar�a el hijo se va */
-      exit(0);
-    } /* Ac� termina el fork */
+    }
+    /* El hijo se va */
+    exit(0);
+
   } while(1);
   delete poutmsg;
   delete pinmsg;
@@ -449,7 +460,6 @@ void MsgQuery(CGMessage* in, CGMessage* out)
   int rc;
   int ppid = 0;
 
-  /*pLog->Add(50, "MsgQuery(...)");*/
   /* inicializo el mensaje de respuesta */
   out->SetResponse(in);
   pMsg = new CMsg();
@@ -458,7 +468,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
     delete pMsg;
     out->CodigoRetorno(GME_MSGQ_ERROR);
     out->OrigenRespuesta(GM_ORIG_ROUTER);
-    pLog->Add(10, "MsgQuery - Error al abrir cola de mensaje");
+    pLog->Add(10, "[MsgQuery] Error al abrir cola de mensaje");
   }
   else
   {
@@ -471,38 +481,36 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       /* Hay que buscar la cola menos cargada */
       if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
       {
-        pLog->Add(10, "MsgQuery - Error al buscar funcion %s tipo '%c'",
+        pLog->Add(10, "[MsgQuery] Error al buscar funcion %s tipo '%c'",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
         break;
       }
-      /*pLog->Add(50, "Usando cola 0x%X para %s", cola, in->Funcion());*/
       if(( rc = pMsg->Query(cola, &buff_in, &buff_out, 3000)) <= 0)
       {
         out->SetData(buff_out.Data(), buff_out.Length());
         if(rc < 0)
         {
           out->CodigoRetorno(GME_MSGQ_ERROR);
-          pLog->Add(10, "MsgQuery - Error en el Query de mensaje");
+          pLog->Add(10, "[MsgQuery] Error en el Query de mensaje");
         }
         else
         {
           out->CodigoRetorno(GME_MSGQ_TIMEOUT);
-          pLog->Add(10, "MsgQuery - Time out en el Query de mensaje");
+          pLog->Add(10, "[MsgQuery] Time out en el Query de mensaje");
         }
         out->OrigenRespuesta(GM_ORIG_ROUTER);
         out->IdDestino(getpid());
       }
       else
       {
-        /*pLog->Add(50, "Envio OK, Completando respuesta");*/
         if(out->SetMsg(buff_out.Data(), buff_out.Length()) != 0)
         {
           out->CodigoRetorno(GME_MSGQ_ERROR);
           out->OrigenRespuesta(GM_ORIG_ROUTER);
           out->IdDestino(getpid());
-          pLog->Add(10, "MsgQuery - Error al setear mensaje devuelto");
+          pLog->Add(10, "[MsgQuery] Error al setear mensaje devuelto");
         }
       }
       break;
@@ -510,10 +518,9 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       /*  notificacion
           Se envía a la cola mas libre sin esperar respuesta
       */
-      /* Hay que buscar la cola menos cargada */
       if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
       {
-        pLog->Add(10, "MsgQuery - Error al buscar funcion %s tipo '%c'",
+        pLog->Add(10, "[MsgQuery] Error al buscar funcion %s tipo '%c'",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
@@ -523,43 +530,25 @@ void MsgQuery(CGMessage* in, CGMessage* out)
           El padre vuelve con el Ok de mensaje procesado
           El hijo se encarga de enviarlo y exit
       */
-      pLog->Add(100, "MsgQuery - Fork para desacoplar respuesta");
-      if(fork() == 0)
+      pLog->Add(100, "[MsgQuery] Fork para desacoplar respuesta");
+      if(fork() > 0)
       {
-        out->CodigoRetorno(GME_OK);
-        out->OrigenRespuesta(GM_ORIG_ROUTER);
-        out->IdDestino(getpid());
-      }
-      else
-      {
-        pLog->Add(100, "MsgQuery - Enviando %s por cola 0x%X", in->Funcion(), cola);
+        pLog->Add(100, "M[MsgQuery] Enviando %s por cola 0x%X", in->Funcion(), cola);
         pMsg->Query(cola, &buff_in, &buff_out, 3000);
-        /*
-        if(( rc = pMsg->Query(cola, &buff_in, &buff_out, 3000)) <= 0)
-        {
-          if(rc < 0)
-          {
-            pLog->Add(1, "MsgQuery - ERROR Enviando %s por cola 0x%X", in->Funcion(), cola);
-          }
-          else
-          {
-            pLog->Add(1, "MsgQuery - Time-Out Enviando %s por cola 0x%X", in->Funcion(), cola);
-          }
-        }
-        */
         exit(0);
       }
+      out->CodigoRetorno(GME_OK);
+      out->OrigenRespuesta(GM_ORIG_ROUTER);
+      out->IdDestino(getpid());
       break;
     case GM_MSG_TYPE_MSG:
       /*  Evento 
           Se envía a todos los suscriptores sin esperar respuesta
       */
-      /* Se envia a todas */
-      /*pLog->Add(50, "Buscando %s en modo %c", in->Funcion(), in->TipoMensaje());*/
       lista_colas = pConfig->Cola(in->Funcion(), in->TipoMensaje());
       if((vlen = lista_colas.size()) == 0)
       {
-        pLog->Add(10, "MsgQuery - Error al buscar funcion %s tipo '%c'",
+        pLog->Add(10, "[MsgQuery] Error al buscar funcion %s tipo '%c'",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
@@ -569,39 +558,22 @@ void MsgQuery(CGMessage* in, CGMessage* out)
           El padre vuelve con el Ok de mensaje procesado
           El hijo se encarga de enviarlo y exit
       */
-      pLog->Add(100, "MsgQuery - Fork para desacoplar respuesta");
-      if(fork() == 0)
+      pLog->Add(100, "[MsgQuery] Fork para desacoplar respuesta");
+      for(cola = 0; cola < vlen; cola++)
       {
-        out->CodigoRetorno(GME_OK);
-        out->OrigenRespuesta(GM_ORIG_ROUTER);
-        out->IdDestino(getpid());
-      }
-      else
-      {
-        /*pLog->Add(50, "Enviando %s por %i  colas", in->Funcion(), vlen);*/
-        for(cola = 0; cola < vlen; cola++)
+        if(fork() > 0)
         {
-          pLog->Add(100, "MsgQuery - Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
+          pLog->Add(100, "[MsgQuery] Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
           pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000);
-          /*
-          if(( rc = pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000)) <= 0)
-          {
-            if(rc < 0)
-            {
-              pLog->Add(1, "MsgQuery - ERROR Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
-            }
-            else
-            {
-              pLog->Add(1, "MsgQuery - Time-Out Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
-            }
-          }
-          */
+          exit(0);
         }
-        exit(0);
       }
+      out->CodigoRetorno(GME_OK);
+      out->OrigenRespuesta(GM_ORIG_ROUTER);
+      out->IdDestino(getpid());
       break;
     default:
-      pLog->Add(10, "MsgQuery - Tipo de mensaje [%c] no implementado", in->TipoMensaje());
+      pLog->Add(10, "[MsgQuery] Tipo de mensaje [%c] no implementado", in->TipoMensaje());
       break;
     }
     delete pMsg;
@@ -663,14 +635,16 @@ void LogMessage(const char* label, CGMessage* msg)
   char strTmp[60]; /* para mostrar hasta 60 caracteres del mensaje */
   int i;
 
-  pLog->Add(100, "== %-3.3s ==============================================================", label);
-  pLog->Add(20, "(%c)%-28.28s %05lu Id: Tr/%05u Md/%05u Or/%010u Ds/%010u Orig: Co/%c Re/%c Rc: %03u",
+  pAudit->Add(1, "[%-3.3s](%c)%-24.24s %05lu Id: Tr/%05u Md/%05u Or/%08u Ds/%08u Orig: Co/%c Re/%c Rc: %03u",
+              label,
               msg->TipoMensaje(),
               msg->Funcion(),
               msg->GetDataLen(),
               msg->IdTrans(), msg->IdMoreData(), msg->IdOrigen(), msg->IdDestino(),
               msg->OrigenConsulta(), msg->OrigenRespuesta(),
               msg->CodigoRetorno());
+
+  pLog->Add(100, "== %-3.3s ==============================================================", label);
   pLog->Add(100, "  Tam. Total:     [%lu]", msg->GetMsgLen());
   pLog->Add(100, "  Tam. Header:    [%u]",  msg->GetHeaderLen());
   pLog->Add(100, "  Tam. Datos:     [%lu]", msg->GetDataLen());
