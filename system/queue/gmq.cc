@@ -419,7 +419,6 @@ void ServerLoop()
       {
         /* si es un mensaje que no requiere respuesta con datos lo contesto ya */
         if( inMessage.TipoMensaje() == GM_MSG_TYPE_MSG ||
-          /*inMessage.TipoMensaje() == GM_MSG_TYPE_QUE ||*/
             inMessage.TipoMensaje() == GM_MSG_TYPE_NOT  )
         {
           outMessage.SetData(NULL, 0);
@@ -462,7 +461,6 @@ void ServerLoop()
       break;
     }
     if( inMessage.TipoMensaje() != GM_MSG_TYPE_MSG &&
-      /*inMessage.TipoMensaje() != GM_MSG_TYPE_QUE &&*/
         inMessage.TipoMensaje() != GM_MSG_TYPE_NOT  )
     {
       if(rc == GME_OK)

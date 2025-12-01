@@ -71,6 +71,7 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
   long indata;
   unsigned long trans_to;
   int wait;
+  int rc;
 
   signal(SIGPIPE, SIG_IGN);
   signal(SIGKILL,         OnClose);
@@ -101,15 +102,9 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
   do
   {
     m_pServer->m_pLog->Add(100, "[gmtransac] Proximo time-out en %i centesimas (-1 = infinito)", wait);
-    switch(m_pServer->Wait(fn, &typ, in, 256, &inlen, wait))
+    rc = m_pServer->Wait(fn, &typ, in, 256, &inlen, wait);
+    if(rc == GME_WAIT_OK)
     {
-    case GME_WAIT_ERROR:
-      OnClose(0);
-      break;
-    case GME_WAIT_OK:
-/*
-      rc = GME_OK;
-*/
       if( !strcmp(fn, ".begintrans"))
       {
         memcpy(&indata, in, sizeof(long));
@@ -141,9 +136,6 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
         {
           m_pServer->m_pLog->Add(15, "[gmtransac] ERROR: Se intento finalizar la transaccion %u que no existe",
                 m_pServer->m_ClientData.m_trans);
-/*
-          rc = GME_UNKNOWN_TRAN;
-*/
         }
       }
       else if( !strcmp(fn, ".aborttrans"))
@@ -160,30 +152,28 @@ int main(int /*argc*/, char** /*argv*/, char** /*env*/)
         {
           m_pServer->m_pLog->Add(15, "[gmtransac] ERROR: Se intento abortar la transaccion %u que no existe",
                 m_pServer->m_ClientData.m_trans);
-/*
-          rc = GME_UNKNOWN_TRAN;
-*/
         }
       }
-/*
-      else
-      {
-        rc = GME_SVC_UNRESOLVED;
-      }
-*/
-      /* en este case no va break para que despues procese timeout */
-    case GME_WAIT_TIMEOUT:
-      m_pServer->m_pLog->Add(100, "[gmtransac] Verificando transacciones vencidas");
-      while((trans_to = m_pTransac->Check()) > 0)
-      {
-        m_pServer->Post(".aborttrans", &trans_to, sizeof(unsigned int));
-        m_pServer->m_pLog->Add(100, "[gmtransac] Transaccion %lu abortada time-out", trans_to);
-      }
+    }
+    else if(rc == GME_WAIT_ERROR)
+    {
       break;
     }
+
+    m_pServer->m_pLog->Add(100, "[gmtransac] Verificando transacciones vencidas");
+    while((trans_to = m_pTransac->Check()) > 0)
+    {
+      m_pServer->Post(".aborttrans", &trans_to, sizeof(unsigned int));
+      m_pServer->m_pLog->Add(100, "[gmtransac] Transaccion %lu abortada time-out", trans_to);
+    }
+
     wait = m_pTransac->NextTo();
     if(wait > 0) wait *= 100;
+
   } while(true);
+
+  OnClose(0);
+
   return 0;
 }
 

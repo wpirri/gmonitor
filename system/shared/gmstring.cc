@@ -87,7 +87,7 @@ vector<string> split(const char* s, const char sep)
 	vector<string> vs;
 
 	len = strlen(s);
-	ps = new char[len+1];
+	ps = (char*)calloc(len+1, sizeof(char));
 	strcpy(ps, s);
 	ss = ps;
 	for(i = 0; i < len; i++)
@@ -100,7 +100,7 @@ vector<string> split(const char* s, const char sep)
 		}
 	}
 	vs.push_back(string(ss));
-	delete ps;
+	free(ps);
 	return vs;
 }
 

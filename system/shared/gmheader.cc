@@ -90,12 +90,10 @@ int CGMHeader::SetHeader(const char* msg)
 	if(	m_header.TipoMensaje[0] != GM_MSG_TYPE_CR     &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_MSG    &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_INT    &&
-		m_header.TipoMensaje[0] != GM_MSG_TYPE_QUE    &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_NOT    &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_CR   &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_MSG  &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_INT  &&
-		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_QUE  &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_NOT   ) return (-1);
 
 	for(i = 0; i < 5; i++)
@@ -193,12 +191,10 @@ int CGMHeader::SetHeader(CGMBuffer* buffer)
 	if(	m_header.TipoMensaje[0] != GM_MSG_TYPE_CR     &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_MSG    &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_INT    &&
-		m_header.TipoMensaje[0] != GM_MSG_TYPE_QUE    &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_NOT    &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_CR   &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_MSG  &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_INT  &&
-		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_QUE  &&
 		m_header.TipoMensaje[0] != GM_MSG_TYPE_R_NOT   ) return (-1);
 
 	for(i = 0; i < 5; i++)
@@ -653,8 +649,6 @@ char CGMHeader::TipoRespuesta(char tc)
                 return GM_MSG_TYPE_R_MSG;
         case GM_MSG_TYPE_INT:
                 return GM_MSG_TYPE_R_INT;
-        case GM_MSG_TYPE_QUE:
-                return GM_MSG_TYPE_R_QUE;
         case GM_MSG_TYPE_NOT:
                 return GM_MSG_TYPE_R_NOT;
         default:

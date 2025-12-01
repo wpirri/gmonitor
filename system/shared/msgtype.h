@@ -21,13 +21,11 @@
 #define GM_MSG_TYPE_CR          'C'
 #define GM_MSG_TYPE_MSG         'M'
 #define GM_MSG_TYPE_INT         'G'
-#define GM_MSG_TYPE_QUE         'Q'
 #define GM_MSG_TYPE_NOT         'N'
 
 #define GM_MSG_TYPE_R_CR        'R'
 #define GM_MSG_TYPE_R_MSG       'O'
 #define GM_MSG_TYPE_R_INT       'L'
-#define GM_MSG_TYPE_R_QUE       'S'
 #define GM_MSG_TYPE_R_NOT       'P'
 
 #define GM_ORIG_CLI             'C'

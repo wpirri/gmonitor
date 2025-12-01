@@ -136,7 +136,6 @@ int CGMServerWait::Wait(char *fn, char *typ, void *data, unsigned long maxlen, u
       if(maxlen && inMessage.GetDataLen() > maxlen) return GME_WAIT_ERROR;
       /* si es un mensaje que no requiere respuesta con datos lo contesto ya */
       if( inMessage.TipoMensaje() == GM_MSG_TYPE_MSG ||
-        /*inMessage.TipoMensaje() == GM_MSG_TYPE_QUE ||*/
           inMessage.TipoMensaje() == GM_MSG_TYPE_NOT  )
       {
         m_outMessage.CodigoRetorno(GME_OK);

@@ -188,9 +188,6 @@ long CGMTimer::TimeOut()
       case GM_MSG_TYPE_INT:
         /* no va a ser posible */
         break;
-      case GM_MSG_TYPE_QUE:
-        /* rc = Enqueue() */
-        break;
       case GM_MSG_TYPE_NOT:
         rc = m_pServer->Notify(servicio, msg, msg_len);
         break;
