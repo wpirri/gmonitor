@@ -314,9 +314,7 @@ int MsgRouter()
           /* lo borro ahora asi puedo usar la variable para la respuesta */
           free(psbuffer);
           /* nuevo query */
-          LogMessage("IN", pin2msg);
           MsgQuery(pin2msg, pout2msg);
-          LogMessage("OUT", pout2msg);
           /* verifico el valor de retorno */
           if((rc = pout2msg->CodigoRetorno()) == GME_OK)
           {
@@ -364,9 +362,7 @@ int MsgRouter()
         /* ya no lo necesito */
         free(psbuffer);
         /* nuevo query */
-        LogMessage("IN", pin2msg);
         MsgQuery(pin2msg, pout2msg);
-        LogMessage("OUT", pout2msg);
         if((rc = pout2msg->CodigoRetorno()) == GME_OK)
         {
           /* casteo un puntero a los datos devueltos por el servicio de buffer */
@@ -390,9 +386,7 @@ int MsgRouter()
             /* ya no lo necesito */
             free(psbuffer);
             /* nuevo query */
-            LogMessage("IN", pin2msg);
             MsgQuery(pin2msg, pout2msg);
-            LogMessage("OUT", pout2msg);
             /* el ultimo mensaje lleva el OK */
             poutmsg->CodigoRetorno(GME_OK);
           }
@@ -487,6 +481,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
         out->OrigenRespuesta(GM_ORIG_ROUTER);
         break;
       }
+      LogMessage("  >", in);
       if(( rc = pMsg->Query(cola, &buff_in, &buff_out, 3000)) <= 0)
       {
         out->SetData(buff_out.Data(), buff_out.Length());
@@ -513,6 +508,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
           pLog->Add(10, "[MsgQuery] ERROR: al setear mensaje devuelto");
         }
       }
+      LogMessage("  <", out);
       break;
     case GM_MSG_TYPE_NOT:
       /*  notificacion
@@ -533,7 +529,8 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       pLog->Add(100, "[MsgQuery] Fork para desacoplar respuesta");
       if(fork() > 0)
       {
-        pLog->Add(100, "M[MsgQuery] Enviando %s por cola 0x%X", in->Funcion(), cola);
+        pLog->Add(100, "[MsgQuery] Enviando %s por cola 0x%X", in->Funcion(), cola);
+        LogMessage("  >", in);
         pMsg->Query(cola, &buff_in, &buff_out, 3000);
         exit(0);
       }
@@ -563,6 +560,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       {
         if(fork() > 0)
         {
+          LogMessage("  >", in);
           pLog->Add(100, "[MsgQuery] Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
           pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000);
           exit(0);
@@ -598,7 +596,7 @@ int SelectQueue(const char* funcion, char tipo_mensaje)
   CMsg msg;
   int qi;
 
-  pLog->Add(50, "SelectQueue - Buscando server mas libre para %s en modo %c", funcion, tipo_mensaje);
+  pLog->Add(50, "[SelectQueue] Buscando server mas libre para %s en modo %c", funcion, tipo_mensaje);
   lista_colas = pConfig->Cola(funcion, tipo_mensaje);
   if((vlen = lista_colas.size()) == 0) return -1;
   if(vlen > 1)
@@ -607,25 +605,25 @@ int SelectQueue(const char* funcion, char tipo_mensaje)
     qi = getpid() % vlen;
     candidate = lista_colas[qi];
     candidate_qlen = msg.GetRemoteCount(candidate);
-    pLog->Add(100, "SelectQueue - Cola candidata 0x%08X con %i msgs", lista_colas[qi], candidate_qlen);
+    pLog->Add(100, "[SelectQueue] Cola candidata 0x%08X con %i msgs", lista_colas[qi], candidate_qlen);
     for(i = 1; i < vlen; i++)
     {
       /* miro la cola una sola vez */
       if(++qi >= vlen) qi = 0;
       qlen = msg.GetRemoteCount(lista_colas[qi]);
-      pLog->Add(100, "SelectQueue - Cola candidata 0x%08X con %i msgs", lista_colas[qi], qlen);
+      pLog->Add(100, "[SelectQueue] Cola candidata 0x%08X con %i msgs", lista_colas[qi], qlen);
       if(qlen >= 0 && qlen < candidate_qlen)
       {
         candidate = lista_colas[qi];
         candidate_qlen = qlen;
       }
     }
-    pLog->Add(100, "SelectQueue - Cola seleccionada 0x%08X", candidate);
+    pLog->Add(100, "[SelectQueue] Cola seleccionada 0x%08X", candidate);
     return candidate;
   }
   else
   {
-    pLog->Add(100, "SelectQueue - Hay una sola cola: 0x%08X", lista_colas[0]);
+    pLog->Add(100, "[SelectQueue] Hay una sola cola: 0x%08X", lista_colas[0]);
     return lista_colas[0];
   }
 }
