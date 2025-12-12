@@ -459,10 +459,10 @@ void MsgQuery(CGMessage* in, CGMessage* out)
   pMsg = new CMsg();
   if(pMsg->Open() != 0)
   {
+    pLog->Add(10, "[MsgQuery] ERROR: al abrir cola de mensaje");
     delete pMsg;
     out->CodigoRetorno(GME_MSGQ_ERROR);
     out->OrigenRespuesta(GM_ORIG_ROUTER);
-    pLog->Add(10, "[MsgQuery] ERROR: al abrir cola de mensaje");
   }
   else
   {
@@ -475,7 +475,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       /* Hay que buscar la cola menos cargada */
       if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
       {
-        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion %s tipo '%c'",
+        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo '%c'",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
@@ -487,13 +487,15 @@ void MsgQuery(CGMessage* in, CGMessage* out)
         out->SetData(buff_out.Data(), buff_out.Length());
         if(rc < 0)
         {
+          pLog->Add(10, "[MsgQuery] ERROR: %i en el Query de mensaje [%s] tipo '%c'",
+                    rc, in->Funcion(), in->TipoMensaje());
           out->CodigoRetorno(GME_MSGQ_ERROR);
-          pLog->Add(10, "[MsgQuery] ERROR: en el Query de mensaje");
         }
         else
         {
+          pLog->Add(10, "[MsgQuery] Time out en el Query de mensaje [%s] tipo '%c'",
+                    in->Funcion(), in->TipoMensaje());
           out->CodigoRetorno(GME_MSGQ_TIMEOUT);
-          pLog->Add(10, "[MsgQuery] Time out en el Query de mensaje");
         }
         out->OrigenRespuesta(GM_ORIG_ROUTER);
         out->IdDestino(getpid());
@@ -502,10 +504,10 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       {
         if(out->SetMsg(buff_out.Data(), buff_out.Length()) != 0)
         {
+          pLog->Add(10, "[MsgQuery] ERROR: al setear mensaje devuelto");
           out->CodigoRetorno(GME_MSGQ_ERROR);
           out->OrigenRespuesta(GM_ORIG_ROUTER);
           out->IdDestino(getpid());
-          pLog->Add(10, "[MsgQuery] ERROR: al setear mensaje devuelto");
         }
       }
       LogMessage("  <", out);
@@ -516,7 +518,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       */
       if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
       {
-        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion %s tipo '%c'",
+        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo '%c'",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
@@ -545,7 +547,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       lista_colas = pConfig->Cola(in->Funcion(), in->TipoMensaje());
       if((vlen = lista_colas.size()) == 0)
       {
-        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion %s tipo '%c'",
+        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo '%c'",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
