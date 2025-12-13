@@ -10,6 +10,8 @@
 include configure.mk
 
 all:
+	chmod 0755 fixeol.sh
+	./fixeol.sh
 	make -C shared
 	make -C listener
 	make -C router
