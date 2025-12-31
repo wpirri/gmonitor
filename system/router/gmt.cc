@@ -39,6 +39,7 @@ using namespace std;
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <time.h>
 
 #define PID_FILE  "/var/run/Gnu-Monitor_gmt.pid"
 
@@ -50,7 +51,7 @@ void Reload(int sig);
 int MsgRouter();
 void MsgQuery(CGMessage* in, CGMessage* out);
 int SelectQueue(const char* funcion, char tipo_mensaje);
-void LogMessage(const char* label, CGMessage* msg);
+void LogMessage(const char* label, int src, int dst, CGMessage* msg);
 
 CGLog* pLog;
 CGLog* pAudit;
@@ -275,7 +276,7 @@ int MsgRouter()
       exit(0);
     }
     pinmsg->IdRouter(getpid());
-    LogMessage("IN", pinmsg);
+    LogMessage("IN", from, 0, pinmsg);
     /* Discrmino el tratamiento para los mensajes interactivos */
     if(pinmsg->TipoMensaje() == GM_MSG_TYPE_INT)
     {
@@ -416,11 +417,12 @@ int MsgRouter()
       }
       MsgQuery(pinmsg, poutmsg);
     }
-    LogMessage("OUT", poutmsg);
+    LogMessage("OUT", 0, from, poutmsg);
     pbuffer->Set(poutmsg->GetMsg(), poutmsg->GetMsgLen());
     if(pMsg->Send(from, pbuffer) != 0)
     {
-      pLog->Add(10, "[MsgRouter] ERROR: al devolver el mensaje");
+      pLog->Add(10, "[MsgRouter] ERROR: al devolver el mensaje [%s] tipo [%c] a 0X%X",
+                    poutmsg->Funcion(), poutmsg->TipoMensaje(), from);
     }
     /* Establesco las condiciones para que el ciclo del mensaje continue o finalice */
     if( poutmsg->TipoMensaje() != GM_MSG_TYPE_R_INT ||
@@ -453,11 +455,24 @@ void MsgQuery(CGMessage* in, CGMessage* out)
   int cola;
   int rc;
   int ppid = 0;
+  time_t entry_time, t1, t2;
 
+  entry_time = time(&entry_time);
   /* inicializo el mensaje de respuesta */
   out->SetResponse(in);
   pMsg = new CMsg();
-  if(pMsg->Open() != 0)
+
+  t1 = time(&t1);
+
+  rc = pMsg->Open();
+
+  t2 = time(&t2);
+  if( (t2-t1) > 1 )
+  {
+    pLog->Add(5, "[MsgQuery] WARNING: apertura de cola de mensajes demoró %i seg.", (t2-entry_time));
+  }
+
+  if(rc != 0)
   {
     pLog->Add(10, "[MsgQuery] ERROR: al abrir cola de mensaje");
     delete pMsg;
@@ -473,27 +488,49 @@ void MsgQuery(CGMessage* in, CGMessage* out)
     case GM_MSG_TYPE_CR: /* consulta / respuesta */
     case GM_MSG_TYPE_INT: /* interactivo */
       /* Hay que buscar la cola menos cargada */
-      if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
+      t1 = time(&t1);
+
+      cola = SelectQueue(in->Funcion(), in->TipoMensaje());
+
+      t2 = time(&t2);
+      if( (t2-t1) > 1 )
       {
-        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo '%c'",
+        pLog->Add(5, "[MsgQuery] WARNING: SelectQueue() demoró %i seg.", (t2-entry_time));
+      }
+
+      if(cola < 0)
+      {
+        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo [%c]",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
         break;
       }
-      LogMessage("  >", in);
-      if(( rc = pMsg->Query(cola, &buff_in, &buff_out, 3000)) <= 0)
+      LogMessage("  >", 0, cola, in);
+
+      t1 = time(&t1);
+
+      rc = pMsg->Query(cola, &buff_in, &buff_out, 3000);
+
+      t2 = time(&t2);
+      if( (t2-t1) > 1 )
+      {
+        pLog->Add(5, "[MsgQuery] WARNING: Query() [%s] tipo [%c] demoró %i seg.", 
+                    in->Funcion(), in->TipoMensaje(), (t2-entry_time));
+      }
+
+      if(rc <= 0)
       {
         out->SetData(buff_out.Data(), buff_out.Length());
         if(rc < 0)
         {
-          pLog->Add(10, "[MsgQuery] ERROR: %i en el Query de mensaje [%s] tipo '%c'",
+          pLog->Add(10, "[MsgQuery] ERROR: %i en el Query de mensaje [%s] tipo [%c]",
                     rc, in->Funcion(), in->TipoMensaje());
           out->CodigoRetorno(GME_MSGQ_ERROR);
         }
         else
         {
-          pLog->Add(10, "[MsgQuery] Time out en el Query de mensaje [%s] tipo '%c'",
+          pLog->Add(10, "[MsgQuery] Time out en el Query de mensaje [%s] tipo [%c]",
                     in->Funcion(), in->TipoMensaje());
           out->CodigoRetorno(GME_MSGQ_TIMEOUT);
         }
@@ -504,13 +541,14 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       {
         if(out->SetMsg(buff_out.Data(), buff_out.Length()) != 0)
         {
-          pLog->Add(10, "[MsgQuery] ERROR: al setear mensaje devuelto");
+          pLog->Add(10, "[MsgQuery] ERROR: al setear mensaje para devolver, mensaje [%s] tipo [%c]",
+                      in->Funcion(), in->TipoMensaje());
           out->CodigoRetorno(GME_MSGQ_ERROR);
           out->OrigenRespuesta(GM_ORIG_ROUTER);
           out->IdDestino(getpid());
         }
       }
-      LogMessage("  <", out);
+      LogMessage("  <", cola, 0, out);
       break;
     case GM_MSG_TYPE_NOT:
       /*  notificacion
@@ -518,7 +556,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       */
       if((cola = SelectQueue(in->Funcion(), in->TipoMensaje())) < 0)
       {
-        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo '%c'",
+        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo [%c]",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
@@ -531,9 +569,28 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       pLog->Add(100, "[MsgQuery] Fork para desacoplar respuesta");
       if(fork() > 0)
       {
-        pLog->Add(100, "[MsgQuery] Enviando %s por cola 0x%X", in->Funcion(), cola);
-        LogMessage("  >", in);
+        pLog->Add(100, "[MsgQuery] Enviando [%s] tipo [%c] por cola 0x%X",
+                      in->Funcion(), in->TipoMensaje(), cola);
+        LogMessage("  >", 0, cola, in);
+
+        t1 = time(&t1);
+
         pMsg->Query(cola, &buff_in, &buff_out, 3000);
+
+        t2 = time(&t2);
+        if( (t2-t1) > 1 )
+        {
+          pLog->Add(5, "[MsgQuery] WARNING: Query() [%s] tipo [%c] demoró %i seg.", 
+                      in->Funcion(), in->TipoMensaje(), (t2-entry_time));
+        }
+
+        //t2 = time(&t2);
+        if( (t2-entry_time) > 1 )
+        {
+          pLog->Add(5, "[MsgQuery] WARNING: funcion [%s] tipo [%c] demoró %i seg.", 
+                      in->Funcion(), in->TipoMensaje(), (t2-entry_time));
+        }
+
         exit(0);
       }
       out->CodigoRetorno(GME_OK);
@@ -547,7 +604,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       lista_colas = pConfig->Cola(in->Funcion(), in->TipoMensaje());
       if((vlen = lista_colas.size()) == 0)
       {
-        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo '%c'",
+        pLog->Add(10, "[MsgQuery] ERROR: al buscar funcion [%s] tipo [%c]",
             in->Funcion(), in->TipoMensaje());
         out->CodigoRetorno(GME_SVC_NOTFOUND);
         out->OrigenRespuesta(GM_ORIG_ROUTER);
@@ -562,9 +619,28 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       {
         if(fork() > 0)
         {
-          LogMessage("  >", in);
-          pLog->Add(100, "[MsgQuery] Enviando %s por cola 0x%X", in->Funcion(), lista_colas[cola]);
+          LogMessage("  >", 0, lista_colas[cola], in);
+          pLog->Add(100, "[MsgQuery] Enviando [%s] tipo [%c] por cola 0x%X", 
+                        in->Funcion(), in->TipoMensaje(), lista_colas[cola]);
+
+          t1 = time(&t1);
+
           pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000);
+
+          t2 = time(&t2);
+          if( (t2-t1) > 1 )
+          {
+            pLog->Add(5, "[MsgQuery] WARNING: Query() [%s] tipo [%c] demoró %i seg.", 
+                        in->Funcion(), in->TipoMensaje(), (t2-entry_time));
+          }
+
+          //t2 = time(&t2);
+          if( (t2-entry_time) > 1 )
+          {
+            pLog->Add(5, "[MsgQuery] WARNING: funcion [%s] tipo [%c] demoró %i seg.", 
+                        in->Funcion(), in->TipoMensaje(), (t2-entry_time));
+          }
+
           exit(0);
         }
       }
@@ -577,6 +653,13 @@ void MsgQuery(CGMessage* in, CGMessage* out)
       break;
     }
     delete pMsg;
+  }
+
+  t2 = time(&t2);
+  if( (t2-entry_time) > 1 )
+  {
+    pLog->Add(5, "[MsgQuery] WARNING: funcion [%s] tipo [%c] demoró %i seg.", 
+                in->Funcion(), in->TipoMensaje(), (t2-entry_time));
   }
 
   if(ppid > 0) exit(0);
@@ -630,15 +713,16 @@ int SelectQueue(const char* funcion, char tipo_mensaje)
   }
 }
 
-void LogMessage(const char* label, CGMessage* msg)
+void LogMessage(const char* label, int src, int dst, CGMessage* msg)
 {
   char strTmp[60]; /* para mostrar hasta 60 caracteres del mensaje */
   int i;
 
-  pAudit->Add(1, "[%-3.3s](%c)%-24.24s %05lu Id: Tr/%05u Md/%05u Or/%08u Ds/%08u Orig: Co/%c Re/%c Rc: %03u",
+  pAudit->Add(1, "[%-3.3s](%c)%-24.24s Src: %08X Dst: %08X DLen: %05lu Id: (Tr/%05u Md/%05u Or/%08u Ds/%08u) Orig: (Co/%c Re/%c) Rc: %03u",
               label,
               msg->TipoMensaje(),
               msg->Funcion(),
+              src, dst,
               msg->GetDataLen(),
               msg->IdTrans(), msg->IdMoreData(), msg->IdOrigen(), msg->IdDestino(),
               msg->OrigenConsulta(), msg->OrigenRespuesta(),
