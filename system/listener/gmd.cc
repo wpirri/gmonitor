@@ -271,6 +271,7 @@ void OnChildExit(int sig)
 int MessageProc(CTcp* s, CMsg* pmsg)
 {
   int rc;
+  int time_out;
   CGMessage in;
   CGMessage out;
   CGMBuffer ibuff;
@@ -305,7 +306,17 @@ int MessageProc(CTcp* s, CMsg* pmsg)
     if(verbose) syslog(LOG_DEBUG, "Enviando a la cola del router y esperando respuesta...");
     /* Hago la consulta a la cola del router */
     ibuff.Set(in.GetMsg(), in.GetMsgLen());
-    if(pmsg->Query(pmsg->GetRemoteKey(BIN_MONITOR), &ibuff, &obuff, 3000) > 0)
+
+    if(in.TipoMensaje() == GM_MSG_TYPE_CR || in.TipoMensaje() == GM_MSG_TYPE_INT)
+    {
+      time_out = 3000;
+    }
+    else
+    {
+      time_out = 100;
+    }
+
+    if(pmsg->Query(pmsg->GetRemoteKey(BIN_MONITOR), &ibuff, &obuff, time_out) > 0)
     {
       out.SetMsg(&obuff);
     }

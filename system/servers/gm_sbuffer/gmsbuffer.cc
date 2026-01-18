@@ -119,7 +119,7 @@ int CGMSBuffer::Process(const char *funcion,
     memcpy(&pt->set_timer.data[0], sbfi, sizeof(ST_SBUFFER));
     m_pLog->Add(100, "Se levanta un timer para .del_buffer");
     rc = m_pServer->Call(".set_timer",
-          pt, sizeof(ST_STIMER) + sizeof(ST_SBUFFER), &gmio, 3000);
+          pt, sizeof(ST_STIMER) + sizeof(ST_SBUFFER), &gmio, 100);
     if(rc != GME_OK)
     {
       /* no hay mas id's disponibles */

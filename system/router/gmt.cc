@@ -575,7 +575,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
 
         t1 = time(&t1);
 
-        pMsg->Query(cola, &buff_in, &buff_out, 3000);
+        pMsg->Query(cola, &buff_in, &buff_out, 100);
 
         t2 = time(&t2);
         if( (t2-t1) > 1 )
@@ -625,7 +625,7 @@ void MsgQuery(CGMessage* in, CGMessage* out)
 
           t1 = time(&t1);
 
-          pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 3000);
+          pMsg->Query(lista_colas[cola], &buff_in, &buff_out, 100);
 
           t2 = time(&t2);
           if( (t2-t1) > 1 )

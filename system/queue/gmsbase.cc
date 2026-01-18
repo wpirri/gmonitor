@@ -93,7 +93,7 @@ int CGMServerBase::Notify(const char *event, const void *data, unsigned long len
   /* Hago la consulta a la cola del router */
   resp_len = qmsg.Query(qmsg.GetRemoteKey(BIN_MONITOR), 
                         omsg.GetMsg(), omsg.GetMsgLen(), 
-                        &resp_buffer[0], GM_COMM_MSG_LEN, 3000);
+                        &resp_buffer[0], GM_COMM_MSG_LEN, 100);
   if(resp_len > 0)
   {
     imsg.SetMsg(&resp_buffer[0], resp_len);
@@ -158,7 +158,7 @@ int CGMServerBase::Post(const char *event, const void *data, unsigned long len)
   omsg.SetData(data, len);
   /* Hago la consulta a la cola del router */
   ibuff.Set(omsg.GetMsg(), omsg.GetMsgLen());
-  if(qmsg.Query(qmsg.GetRemoteKey(BIN_MONITOR), &ibuff, &obuff, 3000) > 0)
+  if(qmsg.Query(qmsg.GetRemoteKey(BIN_MONITOR), &ibuff, &obuff, 100) > 0)
   {
     imsg.SetMsg(&obuff);
   }
@@ -440,7 +440,7 @@ int CGMServerBase::Enqueue(string& queue, const void *data, unsigned long len)
 
 int CGMServerBase::Dequeue(const char* queue, GMIOS *pdata)
 {
-  return Call(".dequeue", queue, strlen(queue)+1, pdata, 3000);
+  return Call(".dequeue", queue, strlen(queue)+1, pdata, 100);
 }
 
 int CGMServerBase::Dequeue(string& queue, GMIOS *pdata)
